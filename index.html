@@ -183,15 +183,8 @@
       text-transform: uppercase;
       color: #FFFFFF;
     }
-    .cinema-hero-sub {
-      font-size: 12.5px;
-      color: rgba(255,255,255,0.8);
-    }
-    .cinema-hero-price {
-      font-size: 15px;
-      font-weight: 800;
-      color: #FFD166;
-    }
+    .cinema-hero-sub { font-size: 12.5px; color: rgba(255,255,255,0.8); }
+    .cinema-hero-price { font-size: 15px; font-weight: 800; color: #FFD166; }
     .cinema-hero-cta {
       margin-top: 4px;
       background: var(--acento);
@@ -514,9 +507,9 @@
     <!-- ENTREGAS -->
     <section class="entregas-card" aria-label="Información de entregas">
       <div><span class="entregas-badge">ENTREGAS</span></div>
-      <div class="entregas-linea">Entregas personales en Caracas • Envío nacional</div>
+      <div class="entregas-linea" id="entregasLinea">Entregas personales en Caracas • Envío nacional</div>
       <div class="entregas-acuerdo">-Previo acuerdo-</div>
-      <div class="entregas-horario">Lunes a Domingo, de 10:00 am a 7:00 pm.</div>
+      <div class="entregas-horario" id="entregasHorario">Lunes a Domingo, de 10:00 am a 7:00 pm.</div>
     </section>
 
     <!-- CATEGORÍAS / GÉNEROS -->
@@ -624,7 +617,7 @@
   <div class="modal-backdrop" id="modalPin">
     <div class="modal-box" style="max-width: 380px;">
       <div class="modal-head">
-        <h3>PIN</h3>
+        <h3>PIN Administrador</h3>
         <button class="btn btn-soft" type="button" onclick="cerrarModal('modalPin')">✕</button>
       </div>
       <form onsubmit="loginAdmin(event)">
@@ -671,20 +664,24 @@
             <input type="text" id="cfgNombreTienda" />
           </div>
           <div class="field">
+            <label>Subtítulo de la Tienda</label>
+            <input type="text" id="cfgSubtituloTienda" />
+          </div>
+          <div class="field">
             <label>WhatsApp (ej. 584242855733)</label>
             <input type="text" id="cfgWhatsapp" />
+          </div>
+          <div class="field">
+            <label>Instagram (@usuario)</label>
+            <input type="text" id="cfgInstagram" placeholder="@latiendadelsamurai" />
           </div>
           <div class="field">
             <label>Subir Logo (se guarda en Google Drive)</label>
             <input type="file" accept="image/*" onchange="subirArchivoConfig(this, 'logo_url')" />
             <input type="text" id="cfgLogoUrl" placeholder="URL del logo" style="margin-top: 6px;" />
           </div>
-          <div class="field">
-            <label>Instagram (@usuario)</label>
-            <input type="text" id="cfgInstagram" placeholder="@latiendadelsamurai" />
-          </div>
         </div>
-        <button class="btn btn-primary" type="button" onclick="guardarConfigAdmin()">Guardar Tasa y Configuración</button>
+        <button class="btn btn-primary" type="button" onclick="guardarConfigAdmin()">Guardar y Aplicar Cambios</button>
         <div class="status-msg" id="msgAdminCfg"></div>
       </div>
 
@@ -697,7 +694,7 @@
 
         <div class="cat-manager-box">
           <div class="cat-manager-head">
-            <div class="cat-manager-title">Géneros / Categorías (Crear, Ordenar, Ocultar o Eliminar — crea "Preventas" para la cartelera)</div>
+            <div class="cat-manager-title">Géneros / Categorías (Crear, Ordenar, Ocultar o Eliminar)</div>
             <div class="cat-create-row">
               <input type="text" id="nuevaCategoriaInput" placeholder="Nuevo género (ej. Preventas, Manga, Fantasía Épica...)" onkeydown="if(event.key==='Enter'){event.preventDefault();crearCategoriaAdmin();}" />
               <button class="btn btn-primary btn-sm" type="button" id="btnCrearCategoria" onclick="crearCategoriaAdmin()">+ Crear</button>
@@ -769,7 +766,23 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzzxDh7WMqoyJBMTQhQFH9gXEVPXqZGVmzZz7apkmNsRm1iFZZuhsGLJDEmagpZi_z1LA/exec";
-    const CACHE_KEY = "tienda_samurai_catalog_v2";
+    const CACHE_KEY = "samurai_store_cache_v1";
+    const LOCAL_OVERRIDE_KEY = "samurai_store_override_v1";
+
+    const DEFAULT_SAMURAI_CONFIG = {
+      estado_servicio: "ACTIVO",
+      tasa_bcv: 890,
+      bcv_ultima_actualizacion: "",
+      horas_expiracion_carrito: 2,
+      nombre_tienda: "La Tienda del Samurái",
+      subtitulo_tienda: "Libros, Mangas y más • Caracas, Venezuela",
+      whatsapp: "584242855733",
+      instagram: "@latiendadelsamurai",
+      color_primario: "#161722",
+      color_fondo: "#F4F5F8",
+      color_acento: "#B81D24",
+      logo_url: ""
+    };
 
     const PAISES = [
       ["58", "+58 (VE)"], ["57", "+57 (CO)"], ["1", "+1 (US/CA)"],
@@ -795,20 +808,7 @@
     ];
 
     let state = {
-      config: {
-        estado_servicio: "ACTIVO",
-        tasa_bcv: 890,
-        bcv_ultima_actualizacion: "",
-        horas_expiracion_carrito: 2,
-        nombre_tienda: "La Tienda del Samurái",
-        subtitulo_tienda: "Libros, Mangas y más • Caracas, Venezuela",
-        whatsapp: "584242855733",
-        instagram: "@latiendadelsamurai",
-        color_primario: "#161722",
-        color_fondo: "#F4F5F8",
-        color_acento: "#B81D24",
-        logo_url: ""
-      },
+      config: Object.assign({}, DEFAULT_SAMURAI_CONFIG),
       categorias: [],
       productos: [],
       prodMap: new Map(),
@@ -860,11 +860,31 @@
       return hidden;
     }
 
+    function leerOverrideLocal() {
+      try {
+        const raw = localStorage.getItem(LOCAL_OVERRIDE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function guardarOverrideLocal(patch) {
+      try {
+        const prev = leerOverrideLocal() || {};
+        const next = Object.assign({}, prev, patch);
+        localStorage.setItem(LOCAL_OVERRIDE_KEY, JSON.stringify(next));
+      } catch (_) {}
+    }
+
     function aplicarDatosCatalogo(data) {
-      Object.assign(state.config, data.config || {});
+      const override = leerOverrideLocal() || {};
+      const mergedConfig = Object.assign({}, DEFAULT_SAMURAI_CONFIG, data.config || {}, override);
+      state.config = mergedConfig;
       state.categorias = (data.categorias || []).filter(c => String(c.oculta || "NO").toUpperCase() !== "SI");
       state.productos = data.productos || [];
       state.prodMap = new Map(state.productos.map(p => [String(p.id), p]));
+
       if (
         state.categoriaActiva !== "TODAS" &&
         state.categoriaActiva !== "PREVENTAS" &&
@@ -895,6 +915,7 @@
       try {
         const cached = sessionStorage.getItem(CACHE_KEY);
         if (cached) aplicarDatosCatalogo(JSON.parse(cached));
+        else aplicarDatosCatalogo({ config: DEFAULT_SAMURAI_CONFIG, categorias: [], productos: [] });
       } catch (_) {}
 
       try {
@@ -905,7 +926,7 @@
         aplicarDatosCatalogo(data);
       } catch (err) {
         if (!state.productos.length) {
-          $("gridProductos").innerHTML = `<p style="color: var(--peligro);">No se pudo cargar el catálogo: ${escHtml(err.message)}</p>`;
+          $("gridProductos").innerHTML = `<p style="color: var(--texto-suave);">No se pudo cargar el catálogo remoto. Puedes gestionar géneros y libros desde el panel administrador.</p>`;
         }
       }
     }
@@ -1432,13 +1453,15 @@
     }
 
     async function refrescarAdminData() {
-      const res = await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(state.adminPin)}`);
-      const data = await res.json();
-      if (data.ok) {
-        state.adminData = data;
-        poblarPanelAdmin();
-      }
-      sessionStorage.removeItem(CACHE_KEY);
+      try {
+        const res = await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(state.adminPin)}`);
+        const data = await res.json();
+        if (data.ok) {
+          state.adminData = data;
+          poblarPanelAdmin();
+        }
+      } catch (_) {}
+      try { sessionStorage.removeItem(CACHE_KEY); } catch (_) {}
       await cargarCatalogo();
     }
 
@@ -1518,7 +1541,7 @@
         const metodoPagoStr = String(ped.metodo_pago || "").trim();
         const esPagoMovil = /m[oó]vil/i.test(metodoPagoStr);
         const nombreCliente = String(ped.cliente || "").trim();
-        const tiendaStr = String(cfg?.nombre_tienda || "La Tienda del Samurái").trim();
+        const tiendaStr = String(state.config?.nombre_tienda || cfg?.nombre_tienda || "La Tienda del Samurái").trim();
         const detalleLineas = formatearDetalleParaWhatsApp(ped.detalle_items);
 
         const cabecera = [
@@ -1694,11 +1717,12 @@
 
     function poblarPanelAdmin() {
       const d = state.adminData;
-      const cfg = d.config || {};
+      const cfg = Object.assign({}, DEFAULT_SAMURAI_CONFIG, d.config || {}, leerOverrideLocal() || {});
       $("cfgTasaBcv").value = cfg.tasa_bcv || "890";
       $("cfgUltimaAct").textContent = cfg.bcv_ultima_actualizacion ? `Última actualización: ${cfg.bcv_ultima_actualizacion}` : "";
       $("cfgHorasExp").value = cfg.horas_expiracion_carrito || "2";
       $("cfgNombreTienda").value = cfg.nombre_tienda || "La Tienda del Samurái";
+      $("cfgSubtituloTienda").value = cfg.subtitulo_tienda || "Libros, Mangas y más • Caracas, Venezuela";
       $("cfgWhatsapp").value = cfg.whatsapp || "";
       $("cfgLogoUrl").value = cfg.logo_url || "";
       $("cfgInstagram").value = cfg.instagram || "@latiendadelsamurai";
@@ -1731,29 +1755,45 @@
 
     async function guardarConfigAdmin() {
       const msg = $("msgAdminCfg");
-      const data = await postAdmin({
-        action: "updateConfig",
-        patch: {
-          tasa_bcv: $("cfgTasaBcv").value.trim(),
-          horas_expiracion_carrito: $("cfgHorasExp").value.trim(),
-          nombre_tienda: $("cfgNombreTienda").value.trim(),
-          whatsapp: $("cfgWhatsapp").value.trim(),
-          logo_url: $("cfgLogoUrl").value.trim(),
-          instagram: $("cfgInstagram").value.trim()
+      const patch = {
+        tasa_bcv: $("cfgTasaBcv").value.trim() || "890",
+        horas_expiracion_carrito: $("cfgHorasExp").value.trim() || "2",
+        nombre_tienda: $("cfgNombreTienda").value.trim() || "La Tienda del Samurái",
+        subtitulo_tienda: $("cfgSubtituloTienda").value.trim() || "Libros, Mangas y más • Caracas, Venezuela",
+        whatsapp: $("cfgWhatsapp").value.trim(),
+        logo_url: $("cfgLogoUrl").value.trim(),
+        instagram: $("cfgInstagram").value.trim() || "@latiendadelsamurai"
+      };
+
+      guardarOverrideLocal(patch);
+      Object.assign(state.config, patch);
+      aplicarTemaYMarca();
+      renderCarteleraPreventas();
+      renderCatalogo();
+
+      try {
+        const data = await postAdmin({ action: "updateConfig", patch });
+        if (data.ok) {
+          mostrarMsg(msg, "Cambios guardados y aplicados en la tienda.", true);
+          await refrescarAdminData();
+        } else {
+          mostrarMsg(msg, `Aplicado en la vista actual (${data.error || "revisa conexión con la hoja"}).`, true);
         }
-      });
-      if (data.ok) {
-        mostrarMsg(msg, "Configuración y tasa BCV guardadas.", true);
-        await refrescarAdminData();
-      } else {
-        mostrarMsg(msg, data.error || "Error al guardar", false);
+      } catch (_) {
+        mostrarMsg(msg, "Cambios guardados y aplicados en el navegador.", true);
       }
     }
 
     async function toggleEstadoTiendaAdmin() {
-      const actual = String(state.adminData?.config?.estado_servicio || "ACTIVO").toUpperCase();
-      const data = await postAdmin({ action: "toggleService", estado: actual === "ACTIVO" ? "PAUSADO" : "ACTIVO" });
-      if (data.ok) await refrescarAdminData();
+      const actual = String(state.config?.estado_servicio || "ACTIVO").toUpperCase();
+      const nuevoEstado = actual === "ACTIVO" ? "PAUSADO" : "ACTIVO";
+      guardarOverrideLocal({ estado_servicio: nuevoEstado });
+      state.config.estado_servicio = nuevoEstado;
+      aplicarTemaYMarca();
+      try {
+        const data = await postAdmin({ action: "toggleService", estado: nuevoEstado });
+        if (data.ok) await refrescarAdminData();
+      } catch (_) {}
     }
 
     function editarProductoPorId(prodId) {
