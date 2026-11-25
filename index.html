@@ -601,6 +601,15 @@
             <input type="file" accept="image/*" onchange="subirArchivoConfig(this, 'portada_url')" />
             <input type="text" id="cfgPortadaUrl" placeholder="URL de portada" style="margin-top: 6px;" />
           </div>
+          <div class="field" style="grid-column: 1 / -1;">
+            <label>Métodos de Pago (Añadir o Quitar)</label>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+              <input type="text" id="nuevoMetodoPagoInput" placeholder="Ej. Zinli, USDT / Binance, Transferencia..." style="flex: 1; min-width: 200px;" onkeydown="if(event.key==='Enter'){event.preventDefault();agregarMetodoPagoAdmin();}" />
+              <button class="btn btn-soft btn-sm" type="button" onclick="agregarMetodoPagoAdmin()">+ Añadir método</button>
+            </div>
+            <div id="adminMetodosPagoList" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+            <input type="hidden" id="cfgMetodosPago" />
+          </div>
         </div>
         <button class="btn btn-primary" type="button" onclick="guardarConfigAdmin()">Guardar Tasa y Configuración</button>
         <div class="status-msg" id="msgAdminCfg"></div>
@@ -617,7 +626,7 @@
           <div class="cat-manager-head">
             <div class="cat-manager-title">Categorías del Catálogo (Crear, Ordenar, Ocultar o Eliminar)</div>
             <div class="cat-create-row">
-              <input type="text" id="nuevaCategoriaInput" placeholder="Nueva categoría (ej. Manos, Labiales, Brochas...)" onkeydown="if(event.key==='Enter'){event.preventDefault();crearCategoriaAdmin();}" />
+              <input type="text" id="nuevaCategoriaInput" placeholder="Nueva categoría (ej. Novelas, Ciencia Ficción...)" onkeydown="if(event.key==='Enter'){event.preventDefault();crearCategoriaAdmin();}" />
               <button class="btn btn-primary btn-sm" type="button" id="btnCrearCategoria" onclick="crearCategoriaAdmin()">+ Crear</button>
             </div>
           </div>
@@ -626,7 +635,7 @@
         </div>
 
         <div class="admin-grid-2" style="margin-bottom: 14px; background: #FAF9FE; padding: 12px; border-radius: 12px; border: 1px solid var(--borde);">
-          <div class="field"><label>ID (vacío para crear nuevo)</label><input type="text" id="prodId" placeholder="Ej. maquillaje1 o vacío" /></div>
+          <div class="field"><label>ID (vacío para crear nuevo)</label><input type="text" id="prodId" placeholder="Ej. libros1 o vacío" /></div>
           <div class="field"><label>Categoría</label><select id="prodCategoria"></select></div>
           <div class="field"><label>Nombre del Producto *</label><input type="text" id="prodNombre" /></div>
           <div class="field"><label>Detalle / Variante</label><input type="text" id="prodDetalle" /></div>
@@ -686,10 +695,13 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyTnjLuhEgY_zElqDzvyJ86eHce1mYLJZs5uFt_9zyZ1jgVO9IRx_1KnsNv6dVAmFvWcw/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyivH9o3icH1xoEcg0KKAD5ADEp-GTyrGf4sRuQqsg1JeoRsoLQqM3vFLFrsJ1ySpl3-w/exec";
     const TIKTOK_URL = "https://www.tiktok.com/@.paos.world";
     const DEV_WA_URL = "https://wa.me/584241913036?text=Hola%20Kevin%2C%20vi%20la%20p%C3%A1gina%20de%20Pao%27s%20World%20y%20me%20gustar%C3%ADa%20cotizar%20una%20web%20para%20mi%20negocio.";
     const CACHE_KEY = "paos_world_catalog_v1";
+
+    // PIN por defecto si no has guardado otro en la hoja Config
+    const ADMIN_PIN_PRUEBAS = "paosworld#20200";
 
     const PAISES = [
       ["58", "+58 (VE)"], ["57", "+57 (CO)"], ["1", "+1 (US/CA)"],
@@ -725,6 +737,7 @@
         whatsapp: "584242855733",
         instagram: "@paos.world",
         tiktok: "@.paos.world",
+        metodos_pago: "Pago Móvil|Divisas|PayPal",
         color_primario: "#A99BE8",
         color_fondo: "#F4F2FC",
         color_acento: "#8575D4",
@@ -746,6 +759,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       iniciarSecuenciaMarcaAgua();
       poblarPaises();
+      poblarSelectorMetodosPago();
       cargarCatalogo();
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") cerrarModal("modalLightbox");
@@ -815,6 +829,62 @@
       $("cliCodigoPais").innerHTML = PAISES.map(([cod, label]) =>
         `<option value="${cod}" ${cod === "58" ? "selected" : ""}>${label}</option>`
       ).join("");
+    }
+
+    function parsearMetodosPago(raw) {
+      const arr = String(raw || "")
+        .split("|")
+        .map(s => s.trim())
+        .filter(Boolean);
+      return arr.length ? arr : ["Pago Móvil", "Divisas", "PayPal"];
+    }
+
+    function renderListaMetodosPagoAdmin(listaMetodos) {
+      const metodos = parsearMetodosPago(Array.isArray(listaMetodos) ? listaMetodos.join("|") : listaMetodos);
+      if ($("cfgMetodosPago")) $("cfgMetodosPago").value = metodos.join("|");
+      const box = $("adminMetodosPagoList");
+      if (!box) return;
+
+      box.innerHTML = metodos.map((m, idx) => `
+        <span style="display: inline-flex; align-items: center; gap: 6px; background: #ECE7FA; color: var(--texto); padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;">
+          <span>${escHtml(m)}</span>
+          <button type="button" title="Quitar método" style="border: none; background: transparent; color: var(--peligro); font-weight: 800; cursor: pointer; padding: 0 2px;" onclick="quitarMetodoPagoAdmin(${idx})">✕</button>
+        </span>
+      `).join("");
+    }
+
+    function agregarMetodoPagoAdmin() {
+      const input = $("nuevoMetodoPagoInput");
+      const nombre = String(input?.value || "").trim();
+      if (!nombre) return;
+      const actuales = parsearMetodosPago($("cfgMetodosPago")?.value);
+      if (!actuales.some(x => x.toLowerCase() === nombre.toLowerCase())) {
+        actuales.push(nombre);
+        renderListaMetodosPagoAdmin(actuales);
+      }
+      input.value = "";
+    }
+
+    function quitarMetodoPagoAdmin(idx) {
+      const actuales = parsearMetodosPago($("cfgMetodosPago")?.value);
+      if (actuales.length <= 1) {
+        alert("Debe quedar al menos un método de pago activo.");
+        return;
+      }
+      actuales.splice(idx, 1);
+      renderListaMetodosPagoAdmin(actuales);
+    }
+
+    function poblarSelectorMetodosPago() {
+      const sel = $("cliPago");
+      if (!sel) return;
+      const metodos = parsearMetodosPago(state.config.metodos_pago);
+      const previo = sel.value;
+      sel.innerHTML = metodos.map(m => `<option value="${escAttr(m)}">${escHtml(m)}</option>`).join("");
+      if (previo && metodos.includes(previo)) {
+        sel.value = previo;
+      }
+      renderModalCarrito();
     }
 
     function obtenerCategoriasOcultasSet() {
@@ -933,6 +1003,8 @@
       } else {
         portadaBox.style.display = "none";
       }
+
+      poblarSelectorMetodosPago();
     }
 
     function renderCategorias() {
@@ -1053,7 +1125,9 @@
     function precioUnitarioSegunPago(item, metodoPago) {
       const base = Number(item.precio_usd) || 0;
       const promo = parseFloat(item.promo_divisas);
-      if (String(metodoPago || "").toLowerCase() === "divisas" && !isNaN(promo) && promo > 0) {
+      const met = String(metodoPago || "").toLowerCase();
+      const aplicaPromo = met === "divisas" || met.includes("usdt") || met.includes("binance") || met.includes("efectivo");
+      if (aplicaPromo && !isNaN(promo) && promo > 0) {
         return promo;
       }
       return base;
@@ -1129,7 +1203,7 @@
       const descBox = $("orderDescriptionBox");
       const promoNote = $("cartPromoNote");
       const metodoPago = $("cliPago")?.value || "Pago Móvil";
-      const esPagoMovil = /m[oó]vil/i.test(metodoPago);
+      const esPagoMovil = /m[oó]vil|transferencia/i.test(metodoPago);
       const tasa = parseFloat(state.config.tasa_bcv) || 890;
 
       if (!state.carrito.length) {
@@ -1148,7 +1222,7 @@
             <div>
               <div style="font-weight: 700;">${escHtml(it.nombre)}</div>
               <div style="font-size: 12px; color: ${aplicaPromo ? "var(--exito)" : "var(--texto-suave)"}; font-weight: ${aplicaPromo ? "700" : "400"};">
-                $${unit.toFixed(2)} c/u ${aplicaPromo ? `(Promo Divisas • antes $${Number(it.precio_usd).toFixed(2)})` : ""}
+                $${unit.toFixed(2)} c/u ${aplicaPromo ? `(Promo • antes $${Number(it.precio_usd).toFixed(2)})` : ""}
               </div>
             </div>
             <div class="qty-controls">
@@ -1162,7 +1236,7 @@
 
       const { totalUsd, ahorroPromo } = calcularTotalesCarrito(metodoPago);
       promoNote.textContent = ahorroPromo > 0
-        ? `¡Promoción en Divisas aplicada! Ahorras $${ahorroPromo.toFixed(2)} en este pedido.`
+        ? `¡Promoción aplicada! Ahorras $${ahorroPromo.toFixed(2)} en este pedido.`
         : "";
 
       const detalleItemsHtml = state.carrito.map(it => {
@@ -1255,7 +1329,7 @@
         $("cliCodigoPais").value = "58";
         sessionStorage.removeItem(CACHE_KEY);
         await cargarCatalogo();
-        mostrarMsg(msg, `¡Listo! Tu pedido ${data.pedido_id} fue reservado con éxito. Paola lo revisará desde el panel.`, true);
+        mostrarMsg(msg, `¡Listo! Tu pedido ${data.pedido_id} fue reservado con éxito.`, true);
       } catch (err) {
         mostrarMsg(msg, err.message, false);
       } finally {
@@ -1266,7 +1340,12 @@
 
     const normalizarWhatsAppAdmin = (tel) => String(tel || "").replace(/\D/g, "");
 
-    function abrirModalPin() {
+    async function abrirModalPin() {
+      // --- ACCESO DIRECTO PARA PRUEBAS (borra estas 3 líneas al terminar para pedir PIN) ---
+      $("adminPinInput").value = state.adminPin || ADMIN_PIN_PRUEBAS;
+      return loginAdmin({ preventDefault: () => {} });
+      // -------------------------------------------------------------------------------
+
       $("adminPinInput").value = "";
       $("msgPin").style.display = "none";
       $("modalPin").classList.add("open");
@@ -1425,7 +1504,7 @@
         const totalUsdNum = Number(ped.total_usd || 0);
         const montoHoyBsFmt = fmtBs(totalUsdNum * tasaActual);
         const metodoPagoStr = String(ped.metodo_pago || "").trim();
-        const esPagoMovil = /m[oó]vil/i.test(metodoPagoStr);
+        const esPagoMovil = /m[oó]vil|transferencia/i.test(metodoPagoStr);
         const nombreCliente = String(ped.cliente || "").trim();
         const tiendaStr = String(cfg?.nombre_tienda || "Pao's World").trim();
         const detalleLineas = formatearDetalleParaWhatsApp(ped.detalle_items);
@@ -1770,6 +1849,7 @@
       $("cfgWhatsapp").value = cfg.whatsapp || "";
       $("cfgLogoUrl").value = cfg.logo_url || "";
       $("cfgPortadaUrl").value = cfg.portada_url || "";
+      renderListaMetodosPagoAdmin(cfg.metodos_pago || state.config.metodos_pago);
 
       const est = String(cfg.estado_servicio || "ACTIVO").toUpperCase();
       $("btnEstadoTienda").textContent = `Estado: ${est}`;
@@ -1809,11 +1889,12 @@
           nombre_tienda: $("cfgNombreTienda").value.trim(),
           whatsapp: $("cfgWhatsapp").value.trim(),
           logo_url: $("cfgLogoUrl").value.trim(),
-          portada_url: $("cfgPortadaUrl").value.trim()
+          portada_url: $("cfgPortadaUrl").value.trim(),
+          metodos_pago: $("cfgMetodosPago")?.value || "Pago Móvil|Divisas|PayPal"
         }
       });
       if (data.ok) {
-        mostrarMsg(msg, "Configuración y tasa BCV guardadas.", true);
+        mostrarMsg(msg, "Configuración, métodos de pago y tasa BCV guardados.", true);
         await refrescarAdminData();
       } else {
         mostrarMsg(msg, data.error || "Error al guardar", false);
