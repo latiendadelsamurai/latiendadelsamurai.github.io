@@ -1128,11 +1128,11 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyivH9o3icH1xoEcg0KKAD5ADEp-GTyrGf4sRuQqsg1JeoRsoLQqM3vFLFrsJ1ySpl3-w/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbwpVjdQx2c5Ye9fzCgTzEJGNUwxOf_KDuWFLS9dMsweb8n7lDLSJz-Y10rVbV5jZgKBXA/exec";
     const INSTAGRAM_URL = "https://www.instagram.com/latiendadelsamurai/";
     const INSTAGRAM_HANDLE = "@latiendadelsamurai";
     const DEV_WA_URL = "https://wa.me/584241913036?text=Hola%20Kevin%2C%20vi%20la%20p%C3%A1gina%20de%20Tienda%20del%20Samurai%20y%20me%20gustar%C3%ADa%20cotizar%20una%20web%20para%20mi%20negocio.";
-    const CACHE_KEY = "tienda_del_samurai_catalog_v7";
+    const CACHE_KEY = "tienda_del_samurai_catalog_v8";
     const QTY_OVERRIDE_KEY = "tienda_del_samurai_qty_overrides_v1";
     const CAT_IMG_OVERRIDE_KEY = "tienda_del_samurai_cat_imgs_v1";
     const BOOK_META_OVERRIDE_KEY = "tienda_del_samurai_book_meta_v1";
@@ -1309,7 +1309,7 @@
       try {
         ["paos_world_catalog_v1", "tienda_del_samurai_catalog_v1", "tienda_del_samurai_catalog_v2",
          "tienda_del_samurai_catalog_v3", "tienda_del_samurai_catalog_v4", "tienda_del_samurai_catalog_v5",
-         "tienda_del_samurai_catalog_v6"]
+         "tienda_del_samurai_catalog_v6", "tienda_del_samurai_catalog_v7"]
           .forEach(k => sessionStorage.removeItem(k));
       } catch (_) {}
       iniciarSecuenciaMarcaAgua();
@@ -2405,15 +2405,16 @@
       if (!categoriaActual) return;
 
       mostrarMsg(msg, `Subiendo foto para "${categoriaActual}"...`, true);
-      const url = await subirBase64Drive(file);
+      const subida = await subirBase64Drive(file);
       input.value = "";
 
-      if (url) {
-        $("catMediaUrlInput").value = url;
+      if (subida.url) {
+        $("catMediaUrlInput").value = subida.url;
         actualizarPreviewCategoriaAdmin();
-        await aplicarYGuardarImagenCategoria(categoriaActual, url, true);
+        await aplicarYGuardarImagenCategoria(categoriaActual, subida.url, true);
       } else {
-        mostrarMsg(msg, `No se pudo subir la imagen de "${categoriaActual}". Revisa la conexión o pega la URL de la imagen.`, false);
+        const detalle = subida.error ? ` (${subida.error})` : "";
+        mostrarMsg(msg, `No se pudo subir la imagen de "${categoriaActual}"${detalle}. Revisa la conexión o pega la URL de la imagen.`, false);
       }
     }
 
@@ -2996,40 +2997,84 @@
     async function subirArchivoConfig(input, campoDestino) {
       const file = input.files?.[0];
       if (!file) return;
-      const url = await subirBase64Drive(file);
-      if (url) $(campoDestino === "logo_url" ? "cfgLogoUrl" : "cfgPortadaUrl").value = url;
+      const res = await subirBase64Drive(file);
+      if (res.url) $(campoDestino === "logo_url" ? "cfgLogoUrl" : "cfgPortadaUrl").value = res.url;
     }
 
     async function subirFotoProducto(input) {
       const file = input.files?.[0];
       if (!file) return;
-      const url = await subirBase64Drive(file);
-      if (url) {
-        $("prodImagenUrl").value = url;
+      const res = await subirBase64Drive(file);
+      if (res.url) {
+        $("prodImagenUrl").value = res.url;
         actualizarPreviewLibro();
       }
     }
 
-    function subirBase64Drive(file) {
+    function prepararImagenParaSubida(file, maxDim = 1200, quality = 0.82) {
       return new Promise((resolve) => {
         const reader = new FileReader();
-        reader.onload = async () => {
-          try {
-            const base64 = String(reader.result).split(",")[1] || "";
-            const data = await postAdmin({
-              action: "uploadMedia",
-              fileName: file.name,
-              mimeType: file.type || "image/jpeg",
-              base64
-            });
-            resolve(data && data.ok ? (data.url || data.imagen_url || "") : "");
-          } catch (_) {
-            resolve("");
-          }
+        reader.onload = () => {
+          const dataUrl = String(reader.result || "");
+          const origBase64 = dataUrl.split(",")[1] || "";
+          const origMime = file.type || "image/jpeg";
+          const origName = file.name || `imagen_${Date.now()}.jpg`;
+
+          const img = new Image();
+          img.onload = () => {
+            let w = img.width || maxDim;
+            let h = img.height || maxDim;
+            if (w > maxDim || h > maxDim) {
+              if (w >= h) {
+                h = Math.round((h * maxDim) / w);
+                w = maxDim;
+              } else {
+                w = Math.round((w * maxDim) / h);
+                h = maxDim;
+              }
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+              resolve({ base64: origBase64, mimeType: origMime, fileName: origName });
+              return;
+            }
+            ctx.drawImage(img, 0, 0, w, h);
+            const outMime = "image/jpeg";
+            const outUrl = canvas.toDataURL(outMime, quality);
+            const outBase64 = outUrl.split(",")[1] || origBase64;
+            const safeName = origName.replace(/\.[^.]+$/, "") + ".jpg";
+            resolve({ base64: outBase64, mimeType: outMime, fileName: safeName });
+          };
+          img.onerror = () => resolve({ base64: origBase64, mimeType: origMime, fileName: origName });
+          img.src = dataUrl;
         };
-        reader.onerror = () => resolve("");
+        reader.onerror = () => resolve(null);
         reader.readAsDataURL(file);
       });
+    }
+
+    async function subirBase64Drive(file) {
+      const prepared = await prepararImagenParaSubida(file);
+      if (!prepared || !prepared.base64) {
+        return { url: "", error: "No se pudo leer el archivo" };
+      }
+      try {
+        const data = await postAdmin({
+          action: "uploadMedia",
+          fileName: prepared.fileName,
+          mimeType: prepared.mimeType,
+          base64: prepared.base64
+        });
+        if (data && data.ok && (data.url || data.imagen_url)) {
+          return { url: data.url || data.imagen_url, error: "" };
+        }
+        return { url: "", error: (data && data.error) || "Respuesta sin URL" };
+      } catch (err) {
+        return { url: "", error: err.message || "Error de red" };
+      }
     }
 
     function cambiarTabAdmin(tabId, btnEl) {
