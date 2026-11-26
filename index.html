@@ -92,6 +92,8 @@
     .btn-white { background: var(--blanco); color: var(--acento); }
     .btn-primary { background: var(--acento); color: var(--blanco); }
     .btn-primary:hover { background: var(--acento-oscuro); }
+    .btn-outline { background: var(--blanco); color: var(--primario); border: 1.5px solid var(--primario); }
+    .btn-outline:hover { background: #F5F2ED; }
     .btn-soft { background: #EFEAE3; color: var(--texto); }
     .btn-soft:hover { background: #E4DDD3; }
     .btn-qty-off { background: #FFF4E5; color: #8A4B08; border: 1px solid #F2C98A; }
@@ -145,6 +147,99 @@
       background: #FAF8F5; color: var(--texto-suave); font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;
     }
     .cat-chip.active { background: var(--primario); color: var(--blanco); border-color: var(--primario); box-shadow: inset 0 -2px 0 var(--acento); }
+
+    /* Carrusel visual de categorías (sólo si hay categorías y con respaldo limpio si no tienen imagen) */
+    .cat-showcase {
+      background: var(--blanco);
+      border: 1px solid var(--borde);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 14px rgba(23, 23, 26, 0.05);
+    }
+    .cat-showcase-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+    .cat-showcase-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--texto);
+    }
+    .cat-showcase-track {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(135px, 165px);
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+    }
+    .cat-visual-card {
+      border: 1.5px solid var(--borde);
+      border-radius: 14px;
+      background: #FAF8F5;
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+    }
+    .cat-visual-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--acento);
+      box-shadow: 0 6px 16px rgba(23, 23, 26, 0.1);
+    }
+    .cat-visual-card.active {
+      border-color: var(--acento);
+      box-shadow: 0 0 0 2px rgba(166, 28, 28, 0.18);
+    }
+    .cat-visual-thumb {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      background: linear-gradient(155deg, #1A1A1E 0%, #2D191C 68%, #5E1414 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cat-visual-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .cat-visual-fallback {
+      color: var(--blanco);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+    }
+    .cat-visual-label {
+      padding: 8px 10px;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--texto);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      background: var(--blanco);
+    }
+    .cat-visual-label span:first-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
     /* Tarjetas y fotos optimizadas para portadas de libros */
     .grid-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(235px, 1fr)); gap: 18px; }
@@ -279,9 +374,94 @@
       .modal-backdrop { padding: 10px 4vw; }
       .modal-box.wide { width: 92vw; max-width: 92vw; padding: 14px; }
     }
-    .lightbox-box { max-width: 680px; text-align: center; }
-    .lightbox-img-wrap { width: 100%; padding: 14px; background: #F8F5F0; border-radius: 14px; overflow: hidden; margin-bottom: 14px; border: 1px solid var(--borde); display: flex; justify-content: center; }
-    .lightbox-img-wrap img { max-width: 100%; max-height: 70vh; object-fit: contain; display: block; border-radius: 8px; }
+
+    /* Ficha de libro ampliada: imagen arriba, editorial y descripción abajo, y botones de carrito/comprar */
+    .lightbox-box { max-width: 620px; text-align: left; }
+    .lightbox-img-wrap {
+      width: 100%;
+      padding: 16px;
+      background: #F8F5F0;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      border: 1px solid var(--borde);
+      display: flex;
+      justify-content: center;
+    }
+    .lightbox-img-wrap img {
+      max-width: 100%;
+      max-height: 58vh;
+      object-fit: contain;
+      display: block;
+      border-radius: 8px;
+      box-shadow: 0 8px 20px rgba(23, 23, 26, 0.15);
+    }
+    .lb-meta-below {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 14px;
+      background: #FAF8F5;
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      margin-bottom: 14px;
+    }
+    .lb-editorial-row {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--primario);
+    }
+    .lb-editorial-row span {
+      color: var(--acento);
+    }
+    .lb-desc-text {
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--texto-suave);
+      white-space: pre-line;
+    }
+    .lb-purchase-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .lb-price-qty-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .lb-qty-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border: 1.5px solid var(--borde);
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: #FAF8F5;
+    }
+    .lb-qty-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: var(--blanco);
+      color: var(--texto);
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+    .lb-actions-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 480px) {
+      .lb-actions-row { grid-template-columns: 1fr; }
+    }
+
     .modal-head {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--borde); gap: 10px; text-align: left;
@@ -436,9 +616,42 @@
       flex: 1; min-width: 190px; padding: 8px 11px; border-radius: 10px;
       border: 1.5px solid var(--borde); font-size: 13px; color: var(--texto); background: var(--blanco);
     }
+    .cat-media-editor {
+      background: var(--blanco);
+      border: 1px solid var(--borde);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .cat-media-preview {
+      width: 48px;
+      height: 62px;
+      border-radius: 8px;
+      border: 1px solid var(--borde);
+      background: #F5F2ED;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--acento);
+    }
+    .cat-media-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
     .cat-order-list {
       display: flex; flex-direction: column; gap: 6px; margin-top: 10px;
-      max-height: 220px; overflow-y: auto;
+      max-height: 230px; overflow-y: auto;
     }
     .cat-order-item {
       display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -454,6 +667,10 @@
     .cat-badge-qty-off {
       font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 999px;
       background: #FFF4E5; color: #8A4B08; border: 1px solid #F2C98A;
+    }
+    .cat-badge-img {
+      font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 999px;
+      background: #EEF2FF; color: #3730A3; border: 1px solid #C7D2FE;
     }
     .cat-order-actions { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .prod-row-hidden { opacity: 0.72; background: #FAF8F5; }
@@ -505,6 +722,11 @@
       <line x1="4" y1="15" x2="20" y2="15"></line>
       <line x1="10" y1="3" x2="8" y2="21"></line>
       <line x1="16" y1="3" x2="14" y2="21"></line>
+    </symbol>
+    <symbol id="ico-img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+      <polyline points="21 15 16 10 5 21"></polyline>
     </symbol>
     <symbol id="ico-samurai-book" viewBox="0 0 120 110">
       <circle cx="60" cy="48" r="34" fill="#141417" />
@@ -574,6 +796,14 @@
       <div class="entregas-horario">Lunes a Domingo, de 10:00 am a 7:00 pm.</div>
     </section>
 
+    <section class="cat-showcase" id="catShowcase" aria-label="Categorías destacadas" style="display: none;">
+      <div class="cat-showcase-head">
+        <h2 class="cat-showcase-title">Categorías</h2>
+        <button class="btn btn-soft btn-sm" type="button" onclick="seleccionarCategoria('TODAS')">Ver todas</button>
+      </div>
+      <div class="cat-showcase-track" id="catShowcaseTrack"></div>
+    </section>
+
     <section class="controls-bar">
       <input type="text" id="searchInput" class="search-input" placeholder="Buscar libros, novelas, manga, filosofía, historia, ciencia ficción..." oninput="renderCatalogo()" />
       <div class="cats-row" id="catsRow"></div>
@@ -615,12 +845,30 @@
       <div class="lightbox-img-wrap">
         <img id="lbImg" src="" alt="" />
       </div>
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-        <div style="text-align: left;">
-          <div class="price-usd" id="lbPrecioUsd"></div>
-          <div class="price-bs" id="lbPrecioBs"></div>
+
+      <div class="lb-meta-below" id="lbMetaBelow">
+        <div class="lb-editorial-row" id="lbEditorialRow">Editorial: <span id="lbEditorial"></span></div>
+        <div class="lb-desc-text" id="lbDescripcion"></div>
+      </div>
+
+      <div class="lb-purchase-bar">
+        <div class="lb-price-qty-row">
+          <div>
+            <div class="price-usd" id="lbPrecioUsd"></div>
+            <div class="price-bs" id="lbPrecioBs"></div>
+            <div class="stock-txt" id="lbStockTxt" style="margin-bottom: 0; margin-top: 2px;"></div>
+          </div>
+          <div class="lb-qty-box" aria-label="Cantidad">
+            <button class="lb-qty-btn" type="button" onclick="ajustarCantidadLightbox(-1)">−</button>
+            <span id="lbQtyValue" style="font-weight: 800; min-width: 22px; text-align: center;">1</span>
+            <button class="lb-qty-btn" type="button" onclick="ajustarCantidadLightbox(1)">+</button>
+          </div>
         </div>
-        <button class="btn btn-primary" type="button" id="lbBtnAgregar">Agregar al carrito</button>
+
+        <div class="lb-actions-row">
+          <button class="btn btn-outline" type="button" id="lbBtnAgregar">Añadir al carrito</button>
+          <button class="btn btn-primary" type="button" id="lbBtnComprar">Comprar ahora</button>
+        </div>
       </div>
     </div>
   </div>
@@ -768,12 +1016,34 @@
 
         <div class="cat-manager-box">
           <div class="cat-manager-head">
-            <div class="cat-manager-title">Categorías de Libros (Crear, Ordenar, Control de Cantidad, Ocultar o Eliminar)</div>
+            <div class="cat-manager-title">Categorías de Libros (Crear, Imagen, Ordenar, Control de Cantidad, Ocultar o Eliminar)</div>
             <div class="cat-create-row">
-              <input type="text" id="nuevaCategoriaInput" placeholder="Nueva categoría (ej. Novelas, Ciencia Ficción...)" onkeydown="if(event.key==='Enter'){event.preventDefault();crearCategoriaAdmin();}" />
+              <input type="text" id="nuevaCategoriaInput" placeholder="Nueva categoría (ej. Novelas, Juegos...)" onkeydown="if(event.key==='Enter'){event.preventDefault();crearCategoriaAdmin();}" />
               <button class="btn btn-primary btn-sm" type="button" id="btnCrearCategoria" onclick="crearCategoriaAdmin()">+ Crear</button>
             </div>
           </div>
+
+          <div class="cat-media-editor" id="catMediaEditor" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 240px;">
+              <div class="cat-media-preview" id="catMediaPreview">CAT</div>
+              <div style="flex: 1; min-width: 180px;">
+                <div style="font-size: 12.5px; font-weight: 800; margin-bottom: 4px;">
+                  Imagen de categoría: <span id="catMediaNombreLbl" style="color: var(--acento);"></span>
+                </div>
+                <input type="text" id="catMediaUrlInput" placeholder="URL de imagen (opcional — si queda vacío se ve limpio)" style="padding: 6px 9px; font-size: 12px;" oninput="actualizarPreviewCategoriaAdmin()" />
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+              <label class="btn btn-soft btn-sm" style="cursor: pointer; margin: 0;">
+                Subir foto
+                <input type="file" accept="image/*" style="display: none;" onchange="subirFotoCategoriaAdmin(this)" />
+              </label>
+              <button class="btn btn-primary btn-sm" type="button" onclick="guardarImagenCategoriaAdmin()">Guardar foto</button>
+              <button class="btn btn-soft btn-sm" type="button" onclick="quitarImagenCategoriaAdmin()">Sin foto</button>
+              <button class="btn btn-soft btn-sm" type="button" onclick="cerrarEditorImagenCategoria()">Listo</button>
+            </div>
+          </div>
+
           <div class="cat-order-list" id="adminCatOrderList"></div>
           <div class="status-msg" id="msgAdminCat"></div>
         </div>
@@ -799,10 +1069,15 @@
               <div class="field"><label>ID (vacío para crear nuevo)</label><input type="text" id="prodId" placeholder="Ej. libros1 o vacío" /></div>
               <div class="field"><label>Categoría</label><select id="prodCategoria"></select></div>
               <div class="field"><label>Título del Libro *</label><input type="text" id="prodNombre" placeholder="Ej. El Arte de la Guerra" /></div>
+              <div class="field"><label>Editorial *</label><input type="text" id="prodEditorial" placeholder="Ej. Planeta, Crossbooks, Norma..." /></div>
               <div class="field"><label>Detalle / Edición / Autor</label><input type="text" id="prodDetalle" placeholder="Ej. Tapa blanda • Sun Tzu" /></div>
               <div class="field"><label>Precio BCV (USD) *</label><input type="number" step="0.01" id="prodPrecioUsd" /></div>
               <div class="field"><label>Precio Promo Divisas (opcional)</label><input type="number" step="0.01" id="prodPromoUsd" /></div>
               <div class="field"><label>Stock (ejemplares)</label><input type="number" step="1" id="prodStock" value="5" /></div>
+              <div class="field" style="grid-column: 1 / -1;">
+                <label>Descripción del libro (se muestra debajo de la imagen al abrirlo)</label>
+                <textarea id="prodDescripcion" rows="2" placeholder="Sinopsis, argumento o detalles del libro..."></textarea>
+              </div>
             </div>
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
               <button class="btn btn-primary" type="button" onclick="guardarProductoAdmin()">Guardar Libro</button>
@@ -857,8 +1132,10 @@
     const INSTAGRAM_URL = "https://www.instagram.com/latiendadelsamurai/";
     const INSTAGRAM_HANDLE = "@latiendadelsamurai";
     const DEV_WA_URL = "https://wa.me/584241913036?text=Hola%20Kevin%2C%20vi%20la%20p%C3%A1gina%20de%20Tienda%20del%20Samurai%20y%20me%20gustar%C3%ADa%20cotizar%20una%20web%20para%20mi%20negocio.";
-    const CACHE_KEY = "tienda_del_samurai_catalog_v5";
+    const CACHE_KEY = "tienda_del_samurai_catalog_v6";
     const QTY_OVERRIDE_KEY = "tienda_del_samurai_qty_overrides_v1";
+    const CAT_IMG_OVERRIDE_KEY = "tienda_del_samurai_cat_imgs_v1";
+    const BOOK_META_OVERRIDE_KEY = "tienda_del_samurai_book_meta_v1";
 
     // PIN por defecto para pruebas y acceso rápido
     const ADMIN_PIN_PRUEBAS = "samurai#20200";
@@ -879,11 +1156,13 @@
       ["prodId", "id", ""],
       ["prodCategoria", "categoria", "Otros"],
       ["prodNombre", "nombre", ""],
+      ["prodEditorial", "editorial", ""],
       ["prodDetalle", "detalle_variante", ""],
       ["prodPrecioUsd", "precio_bcv_usd", 0],
       ["prodPromoUsd", "precio_promo_divisas", ""],
       ["prodStock", "stock", 0],
-      ["prodImagenUrl", "imagen_url", ""]
+      ["prodImagenUrl", "imagen_url", ""],
+      ["prodDescripcion", "descripcion", ""]
     ];
 
     let state = {
@@ -910,6 +1189,9 @@
       prodMap: new Map(),
       categoriaActiva: "TODAS",
       carrito: [],
+      lightboxProdId: null,
+      lightboxQty: 1,
+      catEditandoNombre: "",
       adminPin: "",
       adminData: null
     };
@@ -917,26 +1199,75 @@
     const $ = (id) => document.getElementById(id);
     const fmtBs = (val) => (Number(val) || 0).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    function cargarOverridesCantidad() {
+    function leerJsonStorage(clave, fallback) {
       try {
-        const raw = localStorage.getItem(QTY_OVERRIDE_KEY);
-        const parsed = raw ? JSON.parse(raw) : {};
-        return {
-          categorias: parsed.categorias || {},
-          productos: parsed.productos || {}
-        };
+        const raw = localStorage.getItem(clave);
+        return raw ? Object.assign({}, fallback, JSON.parse(raw)) : Object.assign({}, fallback);
       } catch (_) {
-        return { categorias: {}, productos: {} };
+        return Object.assign({}, fallback);
       }
     }
 
-    function guardarOverridesCantidad(overrides) {
+    function guardarJsonStorage(clave, obj) {
       try {
-        localStorage.setItem(QTY_OVERRIDE_KEY, JSON.stringify({
-          categorias: overrides.categorias || {},
-          productos: overrides.productos || {}
-        }));
+        localStorage.setItem(clave, JSON.stringify(obj));
       } catch (_) {}
+    }
+
+    function cargarOverridesCantidad() {
+      const parsed = leerJsonStorage(QTY_OVERRIDE_KEY, { categorias: {}, productos: {} });
+      return {
+        categorias: parsed.categorias || {},
+        productos: parsed.productos || {}
+      };
+    }
+
+    function guardarOverridesCantidad(overrides) {
+      guardarJsonStorage(QTY_OVERRIDE_KEY, {
+        categorias: overrides.categorias || {},
+        productos: overrides.productos || {}
+      });
+    }
+
+    function obtenerImagenCategoria(catObj) {
+      const overrides = leerJsonStorage(CAT_IMG_OVERRIDE_KEY, {});
+      const key = String(catObj?.categoria || "").trim().toLowerCase();
+      if (key && Object.prototype.hasOwnProperty.call(overrides, key)) {
+        return String(overrides[key] || "").trim();
+      }
+      return String(catObj?.imagen_url || catObj?.imagen || catObj?.foto_url || "").trim();
+    }
+
+    function guardarImagenCategoriaLocal(categoria, url) {
+      const overrides = leerJsonStorage(CAT_IMG_OVERRIDE_KEY, {});
+      const key = String(categoria || "").trim().toLowerCase();
+      if (!key) return;
+      const limpio = String(url || "").trim();
+      if (limpio) overrides[key] = limpio;
+      else overrides[key] = "";
+      guardarJsonStorage(CAT_IMG_OVERRIDE_KEY, overrides);
+    }
+
+    function enriquecerLibroConMeta(prodObj) {
+      if (!prodObj) return prodObj;
+      const metas = leerJsonStorage(BOOK_META_OVERRIDE_KEY, {});
+      const key = String(prodObj.id || "").trim();
+      const extra = (key && metas[key]) || {};
+      return Object.assign({}, prodObj, {
+        editorial: String(prodObj.editorial || extra.editorial || "").trim(),
+        descripcion: String(prodObj.descripcion || extra.descripcion || "").trim()
+      });
+    }
+
+    function guardarMetaLibroLocal(prodId, editorial, descripcion) {
+      const key = String(prodId || "").trim();
+      if (!key) return;
+      const metas = leerJsonStorage(BOOK_META_OVERRIDE_KEY, {});
+      metas[key] = {
+        editorial: String(editorial || "").trim(),
+        descripcion: String(descripcion || "").trim()
+      };
+      guardarJsonStorage(BOOK_META_OVERRIDE_KEY, metas);
     }
 
     function esCantidadDesactivadaCategoria(catObj) {
@@ -972,11 +1303,9 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       try {
-        sessionStorage.removeItem("paos_world_catalog_v1");
-        sessionStorage.removeItem("tienda_del_samurai_catalog_v1");
-        sessionStorage.removeItem("tienda_del_samurai_catalog_v2");
-        sessionStorage.removeItem("tienda_del_samurai_catalog_v3");
-        sessionStorage.removeItem("tienda_del_samurai_catalog_v4");
+        ["paos_world_catalog_v1", "tienda_del_samurai_catalog_v1", "tienda_del_samurai_catalog_v2",
+         "tienda_del_samurai_catalog_v3", "tienda_del_samurai_catalog_v4", "tienda_del_samurai_catalog_v5"]
+          .forEach(k => sessionStorage.removeItem(k));
       } catch (_) {}
       iniciarSecuenciaMarcaAgua();
       poblarPaises();
@@ -1169,7 +1498,7 @@
     function aplicarDatosCatalogo(data) {
       Object.assign(state.config, data.config || {});
       state.categorias = (data.categorias || []).filter(c => String(c.oculta || "NO").toUpperCase() !== "SI");
-      state.productos = data.productos || [];
+      state.productos = (data.productos || []).map(enriquecerLibroConMeta);
       state.prodMap = new Map(state.productos.map(p => [String(p.id), p]));
       if (state.categoriaActiva !== "TODAS" && !state.categorias.some(c => c.categoria === state.categoriaActiva)) {
         state.categoriaActiva = "TODAS";
@@ -1297,6 +1626,35 @@
         chips.push(`<button class="cat-chip ${active}" onclick="seleccionarCategoria('${escAttr(cat.categoria)}')">${escHtml(cat.categoria)}</button>`);
       }
       $("catsRow").innerHTML = chips.join("");
+
+      const showcase = $("catShowcase");
+      const track = $("catShowcaseTrack");
+      if (showcase && track) {
+        if (!catsVisibles.length) {
+          showcase.style.display = "none";
+          track.innerHTML = "";
+        } else {
+          showcase.style.display = "block";
+          track.innerHTML = catsVisibles.map(cat => {
+            const imgUrl = obtenerImagenCategoria(cat);
+            const activeClass = state.categoriaActiva === cat.categoria ? "active" : "";
+            const initials = escHtml((cat.categoria || "CAT").trim().slice(0, 3).toUpperCase());
+            const thumbContent = imgUrl
+              ? `<img src="${escAttr(imgUrl)}" alt="${escAttr(cat.categoria)}" loading="lazy" decoding="async" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';" /><span class="cat-visual-fallback" style="display:none;">${initials}</span>`
+              : `<span class="cat-visual-fallback">${initials}</span>`;
+
+            return `
+              <button type="button" class="cat-visual-card ${activeClass}" onclick="seleccionarCategoria('${escAttr(cat.categoria)}')">
+                <div class="cat-visual-thumb">${thumbContent}</div>
+                <div class="cat-visual-label">
+                  <span>${escHtml(cat.categoria)}</span>
+                  <span>→</span>
+                </div>
+              </button>
+            `;
+          }).join("");
+        }
+      }
     }
 
     function seleccionarCategoria(cat) {
@@ -1314,7 +1672,7 @@
         const catLower = String(p.categoria || "").trim().toLowerCase();
         if (hiddenSet.has(catLower)) return false;
         const matchCat = state.categoriaActiva === "TODAS" || p.categoria === state.categoriaActiva;
-        const matchQ = !q || `${p.nombre} ${p.detalle_variante} ${p.categoria}`.toLowerCase().includes(q);
+        const matchQ = !q || `${p.nombre} ${p.editorial || ""} ${p.detalle_variante || ""} ${p.descripcion || ""} ${p.categoria}`.toLowerCase().includes(q);
         return matchCat && matchQ;
       });
 
@@ -1341,19 +1699,16 @@
         const imgHtml = tieneFoto
           ? `<img src="${escAttr(p.imagen_url)}" alt="${escAttr(p.nombre)}" loading="lazy" decoding="async" />`
           : `<span style="font-size: 28px; font-weight: 800; color: var(--acento); opacity: 0.45;">${escHtml(p.categoria.slice(0, 2).toUpperCase())}</span>`;
-        const clickAttrs = tieneFoto
-          ? `class="card-img clickable" onclick="abrirLightbox('${escAttr(p.id)}')" title="Ver portada ampliada"`
-          : `class="card-img"`;
 
         return `
           <article class="card">
-            <div ${clickAttrs}>
+            <div class="card-img clickable" onclick="abrirLightbox('${escAttr(p.id)}')" title="Ver detalles del libro">
               ${imgHtml}
               <span class="card-badge">${escHtml(p.categoria)}</span>
             </div>
             <div class="card-body">
               <div class="card-title">${escHtml(p.nombre)}</div>
-              <div class="card-var">${escHtml(p.detalle_variante || "")}</div>
+              <div class="card-var">${escHtml(p.editorial || p.detalle_variante || "")}</div>
               <div class="price-box">
                 <div class="price-usd">$${precioUsd.toFixed(2)}</div>
                 <div class="price-bs">Bs. ${fmtBs(precioUsd * tasa)}</div>
@@ -1371,9 +1726,20 @@
       }).join("");
     }
 
+    function obtenerMaxCantidadLightbox(prod) {
+      if (!prod) return 1;
+      const qtySinControl = esCantidadDesactivadaProducto(prod, state.categorias);
+      if (qtySinControl) return 99;
+      return Math.max(1, Number(prod.stock) || 1);
+    }
+
     function abrirLightbox(prodId) {
-      const prod = state.prodMap.get(String(prodId));
-      if (!prod || !prod.imagen_url) return;
+      const rawProd = state.prodMap.get(String(prodId));
+      const prod = enriquecerLibroConMeta(rawProd);
+      if (!prod) return;
+
+      state.lightboxProdId = String(prod.id);
+      state.lightboxQty = 1;
 
       const tasa = parseFloat(state.config.tasa_bcv) || 890;
       const precioUsd = Number(prod.precio_bcv_usd) || 0;
@@ -1383,19 +1749,64 @@
 
       $("lbTitulo").textContent = prod.nombre || "";
       $("lbDetalle").textContent = [prod.categoria, prod.detalle_variante].filter(Boolean).join(" • ");
-      $("lbImg").src = prod.imagen_url;
-      $("lbImg").alt = prod.nombre || "Libro";
+
+      const imgEl = $("lbImg");
+      if (prod.imagen_url) {
+        imgEl.src = prod.imagen_url;
+        imgEl.alt = prod.nombre || "Libro";
+        imgEl.style.display = "block";
+      } else {
+        imgEl.src = "";
+        imgEl.alt = "";
+        imgEl.style.display = "none";
+      }
+
+      const editorialTxt = prod.editorial || prod.detalle_variante || "Edición disponible";
+      const descTxt = prod.descripcion || prod.detalle_variante || "Consulta disponibilidad y detalles de esta edición con nosotros.";
+
+      $("lbEditorial").textContent = editorialTxt;
+      $("lbDescripcion").textContent = descTxt;
+
       $("lbPrecioUsd").textContent = `$${precioUsd.toFixed(2)}`;
       $("lbPrecioBs").textContent = `Bs. ${fmtBs(precioUsd * tasa)}`;
+      $("lbQtyValue").textContent = "1";
+
+      const stockEl = $("lbStockTxt");
+      stockEl.className = `stock-txt ${qtySinControl ? "stock-preventa" : (sinStock ? "stock-out" : "")}`;
+      stockEl.textContent = qtySinControl
+        ? "Disponible • Encargo / Preventa"
+        : (sinStock ? "Agotado por ahora" : `Inventario disponible: ${stock} unidades`);
 
       const btnAdd = $("lbBtnAgregar");
+      const btnBuy = $("lbBtnComprar");
+
       btnAdd.disabled = sinStock;
-      btnAdd.textContent = sinStock ? "Sin stock" : (qtySinControl ? "Pedir por encargo" : "Agregar al carrito");
+      btnBuy.disabled = sinStock;
+      btnAdd.textContent = sinStock ? "Sin stock" : "Añadir al carrito";
+      btnBuy.textContent = sinStock ? "Sin stock" : "Comprar ahora";
+
       btnAdd.onclick = () => {
-        agregarAlCarrito(prod.id);
+        agregarAlCarrito(prod.id, state.lightboxQty);
         cerrarModal("modalLightbox");
       };
+      btnBuy.onclick = () => {
+        agregarAlCarrito(prod.id, state.lightboxQty);
+        cerrarModal("modalLightbox");
+        abrirCarrito();
+      };
+
       $("modalLightbox").classList.add("open");
+    }
+
+    function ajustarCantidadLightbox(delta) {
+      const prod = state.prodMap.get(String(state.lightboxProdId));
+      if (!prod) return;
+      const maxQty = obtenerMaxCantidadLightbox(prod);
+      const next = (state.lightboxQty || 1) + delta;
+      if (next >= 1 && next <= maxQty) {
+        state.lightboxQty = next;
+        $("lbQtyValue").textContent = String(next);
+      }
     }
 
     function cerrarLightboxBackdrop(ev) {
@@ -1443,29 +1854,35 @@
       };
     }
 
-    function agregarAlCarrito(prodId) {
+    function agregarAlCarrito(prodId, cantidadSolicitada = 1) {
       const prod = state.prodMap.get(String(prodId));
       const stock = Number(prod?.stock) || 0;
       const qtySinControl = prod ? esCantidadDesactivadaProducto(prod, state.categorias) : false;
       if (!prod || (!qtySinControl && stock <= 0)) return;
 
+      const cantSumar = Math.max(1, parseInt(cantidadSolicitada, 10) || 1);
       const existente = state.carrito.find(x => String(x.id) === String(prodId));
+
       if (existente) {
         existente.qtySinControl = qtySinControl;
         existente.maxStock = qtySinControl ? Infinity : stock;
-        if (!qtySinControl && existente.cantidad + 1 > stock) {
+        if (!qtySinControl && existente.cantidad + cantSumar > stock) {
           alert(`Solo quedan ${stock} unidades disponibles de "${prod.nombre}".`);
           return;
         }
-        existente.cantidad += 1;
+        existente.cantidad += cantSumar;
       } else {
+        if (!qtySinControl && cantSumar > stock) {
+          alert(`Solo quedan ${stock} unidades disponibles de "${prod.nombre}".`);
+          return;
+        }
         const promoNum = parseFloat(prod.precio_promo_divisas);
         state.carrito.push({
           id: prod.id,
           nombre: prod.nombre,
           precio_usd: Number(prod.precio_bcv_usd) || 0,
           promo_divisas: !isNaN(promoNum) && promoNum > 0 ? promoNum : null,
-          cantidad: 1,
+          cantidad: cantSumar,
           qtySinControl: qtySinControl,
           maxStock: qtySinControl ? Infinity : stock
         });
@@ -1786,7 +2203,7 @@
       const lista = Array.isArray(productos) ? productos : [];
       const q = obtenerFiltroAdmin();
       if (!q) return lista;
-      return lista.filter(p => `${p.id} ${p.categoria} ${p.nombre} ${p.detalle_variante || ""}`.toLowerCase().includes(q));
+      return lista.filter(p => `${p.id} ${p.categoria} ${p.nombre} ${p.editorial || ""} ${p.detalle_variante || ""}`.toLowerCase().includes(q));
     }
 
     function filtrarAdminCatalogo() {
@@ -1935,6 +2352,86 @@
       }).join("");
     }
 
+    function abrirEditorImagenCategoria(categoria) {
+      const catObj = (state.adminData?.categorias || state.categorias || []).find(
+        c => String(c.categoria || "").trim().toLowerCase() === String(categoria || "").trim().toLowerCase()
+      ) || { categoria };
+
+      state.catEditandoNombre = catObj.categoria;
+      $("catMediaNombreLbl").textContent = catObj.categoria;
+      $("catMediaUrlInput").value = obtenerImagenCategoria(catObj);
+      $("catMediaEditor").style.display = "flex";
+      actualizarPreviewCategoriaAdmin();
+    }
+
+    function cerrarEditorImagenCategoria() {
+      state.catEditandoNombre = "";
+      $("catMediaEditor").style.display = "none";
+    }
+
+    function actualizarPreviewCategoriaAdmin() {
+      const box = $("catMediaPreview");
+      if (!box) return;
+      const url = String($("catMediaUrlInput")?.value || "").trim();
+      const initials = escHtml((state.catEditandoNombre || "CAT").trim().slice(0, 3).toUpperCase());
+      if (url) {
+        box.innerHTML = `<img src="${escAttr(url)}" alt="Vista categoría" onerror="this.parentElement.textContent='${initials}'" />`;
+      } else {
+        box.textContent = initials;
+      }
+    }
+
+    async function subirFotoCategoriaAdmin(input) {
+      const file = input.files?.[0];
+      if (!file) return;
+      const url = await subirBase64Drive(file);
+      if (url) {
+        $("catMediaUrlInput").value = url;
+        actualizarPreviewCategoriaAdmin();
+      }
+      input.value = "";
+    }
+
+    async function guardarImagenCategoriaAdmin() {
+      const categoria = state.catEditandoNombre;
+      if (!categoria) return;
+      const url = String($("catMediaUrlInput")?.value || "").trim();
+      const msg = $("msgAdminCat");
+
+      guardarImagenCategoriaLocal(categoria, url);
+      if (state.adminData?.categorias) {
+        state.adminData.categorias = state.adminData.categorias.map(c =>
+          String(c.categoria || "").trim().toLowerCase() === categoria.toLowerCase()
+            ? Object.assign({}, c, { imagen_url: url })
+            : c
+        );
+        renderListaCategoriasAdmin(state.adminData.categorias);
+        sincronizarCatalogoDesdeAdmin();
+      }
+
+      mostrarMsg(
+        msg,
+        url
+          ? `Imagen actualizada para la categoría "${categoria}".`
+          : `Se quitó la imagen de "${categoria}" (se mostrará respaldo limpio).`,
+        true
+      );
+
+      try {
+        await postAdmin({
+          action: "updateCategoryImage",
+          categoria: categoria,
+          imagen_url: url
+        });
+      } catch (_) {}
+    }
+
+    async function quitarImagenCategoriaAdmin() {
+      if ($("catMediaUrlInput")) $("catMediaUrlInput").value = "";
+      actualizarPreviewCategoriaAdmin();
+      await guardarImagenCategoriaAdmin();
+    }
+
     function renderListaCategoriasAdmin(categorias, categoriaSeleccionadaActual) {
       const todasCats = Array.isArray(categorias) ? categorias : [];
       const selectEl = $("prodCategoria");
@@ -1967,8 +2464,10 @@
         const esUltimo = idx >= todasCats.length - 1;
         const estaOculta = String(c.oculta || "NO").toUpperCase() === "SI";
         const qtyDesactivada = esCantidadDesactivadaCategoria(c);
+        const tieneImg = Boolean(obtenerImagenCategoria(c));
         const badgeOculta = estaOculta ? `<span class="cat-badge-hidden">OCULTA</span>` : "";
         const badgeQty = qtyDesactivada ? `<span class="cat-badge-qty-off">CANT. OFF</span>` : "";
+        const badgeImg = tieneImg ? `<span class="cat-badge-img">FOTO</span>` : "";
         const eyeIcon = estaOculta ? "#ico-eye" : "#ico-eye-off";
         const eyeTitle = estaOculta ? "Mostrar categoría en catálogo" : "Ocultar categoría en catálogo";
         const qtyTitle = qtyDesactivada
@@ -1978,8 +2477,9 @@
 
         return `
           <div class="cat-order-item ${estaOculta ? "is-hidden" : ""}">
-            <span class="cat-order-name">${idx + 1}. ${escHtml(c.categoria)} ${badgeQty} ${badgeOculta}</span>
+            <span class="cat-order-name">${idx + 1}. ${escHtml(c.categoria)} ${badgeImg} ${badgeQty} ${badgeOculta}</span>
             <div class="cat-order-actions">
+              <button class="btn btn-soft btn-sm" type="button" title="Imagen de categoría" aria-label="Imagen de categoría" onclick="abrirEditorImagenCategoria('${escAttr(c.categoria)}')"><svg width="14" height="14" aria-hidden="true"><use href="#ico-img"></use></svg><span>Foto</span></button>
               <button class="btn btn-soft btn-sm" type="button" title="Ascender categoría" ${esPrimero ? "disabled" : ""} onclick="moverCategoriaAdmin('${escAttr(c.categoria)}', 'up')">↑</button>
               <button class="btn btn-soft btn-sm" type="button" title="Descender categoría" ${esUltimo ? "disabled" : ""} onclick="moverCategoriaAdmin('${escAttr(c.categoria)}', 'down')">↓</button>
               <button class="btn ${qtyBtnClass} btn-sm" type="button" title="${qtyTitle}" aria-label="${qtyTitle}" onclick="toggleCantidadCategoriaAdmin('${escAttr(c.categoria)}', ${!qtyDesactivada})"><svg width="14" height="14" aria-hidden="true"><use href="#ico-qty"></use></svg><span>${qtyDesactivada ? "Cant. OFF" : "Cant. ON"}</span></button>
@@ -2326,7 +2826,7 @@
       $("btnEstadoTienda").textContent = `Estado: ${est}`;
 
       renderListaCategoriasAdmin(d.categorias || []);
-      renderTablaProductosAdmin(d.productos || []);
+      renderTablaProductosAdmin((d.productos || []).map(enriquecerLibroConMeta));
       renderTablaPedidosAdmin(d.pedidos || [], cfg);
 
       $("adminMovsBody").innerHTML = (d.movimientos || []).map(m => `
@@ -2382,7 +2882,8 @@
     }
 
     function editarProductoPorId(prodId) {
-      const p = (state.adminData?.productos || []).find(x => String(x.id) === String(prodId));
+      const raw = (state.adminData?.productos || []).find(x => String(x.id) === String(prodId));
+      const p = enriquecerLibroConMeta(raw);
       if (!p) return;
       for (const [elId, prop, defVal] of PROD_FIELDS) {
         $(elId).value = p[prop] ?? defVal;
@@ -2403,6 +2904,8 @@
     async function guardarProductoAdmin() {
       const msg = $("msgAdminProd");
       const idActual = $("prodId").value.trim();
+      const editorialVal = $("prodEditorial")?.value.trim() || "";
+      const descripcionVal = $("prodDescripcion")?.value.trim() || "";
       const prodExistente = idActual
         ? (state.adminData?.productos || []).find(x => String(x.id) === idActual)
         : null;
@@ -2413,6 +2916,8 @@
           id: idActual,
           categoria: $("prodCategoria").value,
           nombre: $("prodNombre").value.trim(),
+          editorial: editorialVal,
+          descripcion: descripcionVal,
           detalle_variante: $("prodDetalle").value.trim(),
           precio_bcv_usd: parseFloat($("prodPrecioUsd").value) || 0,
           precio_promo_divisas: $("prodPromoUsd").value.trim(),
@@ -2422,7 +2927,11 @@
         }
       });
       if (data.ok) {
-        mostrarMsg(msg, `Libro guardado (${data.id}).`, true);
+        const idGuardado = data.id || idActual;
+        if (idGuardado) {
+          guardarMetaLibroLocal(idGuardado, editorialVal, descripcionVal);
+        }
+        mostrarMsg(msg, `Libro guardado (${idGuardado || "OK"}).`, true);
         limpiarFormProducto();
         await refrescarAdminData();
       } else {
