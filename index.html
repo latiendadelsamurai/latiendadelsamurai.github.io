@@ -390,12 +390,12 @@
           <div class="field"><label>Comisión PayPal (%)</label><input type="number" step="0.01" min="0" id="cfgPaypalPct" /></div>
           <div class="field"><label>Comisión PayPal Fija (USD)</label><input type="number" step="0.01" min="0" id="cfgPaypalFija" /></div>
           <div class="field">
-            <label>Subir Logo (se guarda en Google Drive)</label>
+            <label>Subir Logo (se guarda en Google Drive y Sheet)</label>
             <input type="file" accept="image/*" onchange="subirArchivoConfig(this,'logo_url')" />
             <input type="text" id="cfgLogoUrl" placeholder="URL del logo" style="margin-top:6px;" />
           </div>
           <div class="field">
-            <label>Subir Portada (se guarda en Google Drive)</label>
+            <label>Subir Portada (se guarda en Google Drive y Sheet)</label>
             <input type="file" accept="image/*" onchange="subirArchivoConfig(this,'portada_url')" />
             <input type="text" id="cfgPortadaUrl" placeholder="URL de portada" style="margin-top:6px;" />
           </div>
@@ -422,7 +422,7 @@
 
         <div class="cat-manager-box">
           <div class="cat-manager-head">
-            <div class="cat-manager-title">Categorías de Libros (Crear, Editar Nombre, Imagen, Ordenar, Control de Cantidad, Ocultar o Eliminar)</div>
+            <div class="cat-manager-title">Categorías de Libros (Guardadas en Drive y Sheet — Crear, Editar, Foto, Ordenar, Cant., Ocultar o Eliminar)</div>
             <div class="cat-create-row">
               <input type="text" id="nuevaCategoriaInput" placeholder="Nueva categoría (ej. Novelas, Juegos...)" onkeydown="if(event.key==='Enter'){event.preventDefault();crearCategoriaAdmin();}" />
               <button class="btn btn-primary btn-sm" type="button" id="btnCrearCategoria" onclick="crearCategoriaAdmin()">+ Crear</button>
@@ -433,14 +433,14 @@
             <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:240px;">
               <div class="cat-media-preview" id="catMediaPreview">CAT</div>
               <div style="flex:1;min-width:180px;">
-                <div style="font-size:12.5px;font-weight:800;margin-bottom:4px;">Imagen de categoría: <span id="catMediaNombreLbl" style="color:var(--acento);"></span></div>
-                <input type="text" id="catMediaUrlInput" placeholder="URL de imagen o adjunta una foto (se guarda automáticamente)" style="padding:6px 9px;font-size:12px;" oninput="actualizarPreviewCategoriaAdmin()" />
+                <div style="font-size:12.5px;font-weight:800;margin-bottom:4px;">Foto en Drive y Sheet para: <span id="catMediaNombreLbl" style="color:var(--acento);"></span></div>
+                <input type="text" id="catMediaUrlInput" placeholder="Se llena al subir foto a Drive o pega una URL" style="padding:6px 9px;font-size:12px;" oninput="actualizarPreviewCategoriaAdmin()" />
               </div>
             </div>
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-              <label class="btn btn-soft btn-sm" style="cursor:pointer;margin:0;">Adjuntar foto<input type="file" accept="image/*" style="display:none;" onchange="subirFotoCategoriaAdmin(this)" /></label>
-              <button class="btn btn-primary btn-sm" type="button" onclick="guardarImagenCategoriaAdmin()">Guardar foto</button>
-              <button class="btn btn-soft btn-sm" type="button" onclick="quitarImagenCategoriaAdmin()">Sin foto</button>
+              <label class="btn btn-soft btn-sm" style="cursor:pointer;margin:0;">Subir foto a Drive<input type="file" accept="image/*" style="display:none;" onchange="subirFotoCategoriaAdmin(this)" /></label>
+              <button class="btn btn-primary btn-sm" type="button" onclick="guardarImagenCategoriaAdmin()">Guardar en Sheet</button>
+              <button class="btn btn-soft btn-sm" type="button" onclick="quitarImagenCategoriaAdmin()">Quitar foto</button>
               <button class="btn btn-soft btn-sm" type="button" onclick="cerrarEditorImagenCategoria()">Listo</button>
             </div>
           </div>
@@ -517,10 +517,6 @@
     const INSTAGRAM_URL = "https://www.instagram.com/latiendadelsamurai/";
     const INSTAGRAM_HANDLE = "@latiendadelsamurai";
     const DEV_WA_URL = "https://wa.me/584241913036?text=Hola%20Kevin%2C%20vi%20la%20p%C3%A1gina%20de%20Tienda%20del%20Samurai%20y%20me%20gustar%C3%ADa%20cotizar%20una%20web%20para%20mi%20negocio.";
-    const CACHE_KEY = "tienda_del_samurai_catalog_v8";
-    const QTY_KEY = "tienda_del_samurai_qty_overrides_v1";
-    const CAT_IMG_KEY = "tienda_del_samurai_cat_imgs_v1";
-    const BOOK_META_KEY = "tienda_del_samurai_book_meta_v1";
     const ADMIN_PIN_PRUEBAS = "samurai#20200";
 
     const PAISES = [
@@ -557,69 +553,59 @@
     const cerrarBackdrop = (ev, id) => { if (ev.target && ev.target.id === id) cerrarModal(id); };
     const mostrarMsg = (el, txt, ok) => { if (!el) return; el.textContent = txt; el.className = `status-msg ${ok ? "ok" : "err"}`; el.style.display = "block"; };
 
-    function readStore(key, fallback) {
-      try { const raw = localStorage.getItem(key); return raw ? Object.assign({}, fallback, JSON.parse(raw)) : Object.assign({}, fallback); }
-      catch (_) { return Object.assign({}, fallback); }
+    function limpiarDatosLocalesViejos() {
+      try {
+        Object.keys(localStorage).forEach(k => {
+          if (/samurai|paos_world/i.test(k)) localStorage.removeItem(k);
+        });
+        sessionStorage.clear();
+      } catch (_) {}
     }
-    function writeStore(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (_) {} }
-    const getQtyOverrides = () => { const p = readStore(QTY_KEY, { categorias: {}, productos: {} }); return { categorias: p.categorias || {}, productos: p.productos || {} }; };
 
+    // Lee directamente la URL de imagen guardada en la Sheet / backend
     function obtenerImagenCategoria(catObj) {
-      const m = readStore(CAT_IMG_KEY, {});
-      const k = String(catObj?.categoria || "").trim().toLowerCase();
-      return (k && Object.prototype.hasOwnProperty.call(m, k)) ? String(m[k] || "").trim() : String(catObj?.imagen_url || catObj?.imagen || catObj?.foto_url || "").trim();
+      if (!catObj) return "";
+      return String(
+        catObj.imagen_url ?? catObj.imagen ?? catObj.foto_url ?? catObj.foto ?? catObj.url_imagen ?? ""
+      ).trim();
     }
-    function guardarImagenCategoriaLocal(cat, url) {
-      const k = String(cat || "").trim().toLowerCase();
-      if (!k) return;
-      const m = readStore(CAT_IMG_KEY, {});
-      m[k] = String(url || "").trim();
-      writeStore(CAT_IMG_KEY, m);
+
+    function normalizarCategoriaSheet(c) {
+      if (!c) return c;
+      const url = obtenerImagenCategoria(c);
+      return Object.assign({}, c, {
+        categoria: String(c.categoria ?? c.nombre ?? "").trim(),
+        imagen_url: url,
+        imagen: url,
+        oculta: String(c.oculta || "NO").trim().toUpperCase()
+      });
     }
-    function migrarImagenCategoriaLocal(oldCat, newCat) {
-      const o = String(oldCat || "").trim().toLowerCase(), n = String(newCat || "").trim().toLowerCase();
-      if (!o || !n || o === n) return;
-      const m = readStore(CAT_IMG_KEY, {});
-      if (Object.prototype.hasOwnProperty.call(m, o)) { m[n] = m[o]; delete m[o]; writeStore(CAT_IMG_KEY, m); }
-    }
-    const enriquecerCategoria = (c) => c ? Object.assign({}, c, { imagen_url: obtenerImagenCategoria(c) }) : c;
-    const enriquecerLibro = (p) => {
+
+    function normalizarLibroSheet(p) {
       if (!p) return p;
-      const extra = (readStore(BOOK_META_KEY, {})[String(p.id || "").trim()]) || {};
-      return Object.assign({}, p, { editorial: String(p.editorial || extra.editorial || "").trim(), descripcion: String(p.descripcion || extra.descripcion || "").trim() });
-    };
-    function guardarMetaLibroLocal(id, editorial, descripcion) {
-      const k = String(id || "").trim();
-      if (!k) return;
-      const m = readStore(BOOK_META_KEY, {});
-      m[k] = { editorial: String(editorial || "").trim(), descripcion: String(descripcion || "").trim() };
-      writeStore(BOOK_META_KEY, m);
+      return Object.assign({}, p, {
+        editorial: String(p.editorial ?? "").trim(),
+        descripcion: String(p.descripcion ?? "").trim(),
+        imagen_url: String(p.imagen_url ?? p.imagen ?? p.foto_url ?? "").trim()
+      });
     }
 
     const isOffFlag = (v) => ["NO","DESACTIVADA","OFF","FALSE","0"].includes(String(v ?? "").trim().toUpperCase());
+
     function esCantidadDesactivadaCategoria(catObj) {
-      const ov = getQtyOverrides().categorias;
-      const k = String(catObj?.categoria || "").trim().toLowerCase();
-      return (k && Object.prototype.hasOwnProperty.call(ov, k)) ? Boolean(ov[k]) : isOffFlag(catObj?.control_cantidad ?? catObj?.cantidad_activa);
+      return isOffFlag(catObj?.control_cantidad ?? catObj?.cantidad_activa);
     }
+
     function esCantidadDesactivadaProducto(prodObj, cats) {
-      const ov = getQtyOverrides();
-      const pk = String(prodObj?.id || "").trim();
-      const ck = String(prodObj?.categoria || "").trim().toLowerCase();
-      if (pk && Object.prototype.hasOwnProperty.call(ov.productos, pk)) return Boolean(ov.productos[pk]);
       const vp = String(prodObj?.control_cantidad ?? prodObj?.cantidad_activa ?? "").trim();
       if (vp) return isOffFlag(vp);
-      if (ck && Object.prototype.hasOwnProperty.call(ov.categorias, ck)) return Boolean(ov.categorias[ck]);
+      const ck = String(prodObj?.categoria || "").trim().toLowerCase();
       const found = (cats || state.categorias || []).find(c => String(c.categoria || "").trim().toLowerCase() === ck);
       return found ? esCantidadDesactivadaCategoria(found) : false;
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      try {
-        ["paos_world_catalog_v1","tienda_del_samurai_catalog_v1","tienda_del_samurai_catalog_v2","tienda_del_samurai_catalog_v3",
-         "tienda_del_samurai_catalog_v4","tienda_del_samurai_catalog_v5","tienda_del_samurai_catalog_v6","tienda_del_samurai_catalog_v7"]
-          .forEach(k => sessionStorage.removeItem(k));
-      } catch (_) {}
+      limpiarDatosLocalesViejos();
       iniciarSecuenciaMarcaAgua();
       $("cliCodigoPais").innerHTML = PAISES.map(([c, l]) => `<option value="${c}" ${c === "58" ? "selected" : ""}>${l}</option>`).join("");
       poblarSelectorMetodosPago();
@@ -703,8 +689,8 @@
 
     function aplicarDatosCatalogo(data) {
       Object.assign(state.config, data.config || {});
-      state.categorias = (data.categorias || []).map(enriquecerCategoria).filter(c => String(c.oculta || "NO").toUpperCase() !== "SI");
-      state.productos = (data.productos || []).map(enriquecerLibro);
+      state.categorias = (data.categorias || []).map(normalizarCategoriaSheet).filter(c => c.categoria && c.oculta !== "SI");
+      state.productos = (data.productos || []).map(normalizarLibroSheet);
       state.prodMap = new Map(state.productos.map(p => [String(p.id), p]));
       if (state.categoriaActiva !== "TODAS" && !state.categorias.some(c => c.categoria === state.categoriaActiva)) state.categoriaActiva = "TODAS";
       aplicarTemaYMarca(); renderCategorias(); renderCatalogo(); actualizarBadgeCarrito();
@@ -714,21 +700,19 @@
       if (!state.adminData) return;
       aplicarDatosCatalogo({
         config: state.adminData.config || state.config,
-        categorias: (state.adminData.categorias || []).map(enriquecerCategoria).filter(c => String(c.oculta || "NO").toUpperCase() !== "SI"),
+        categorias: (state.adminData.categorias || []).map(normalizarCategoriaSheet).filter(c => c.oculta !== "SI"),
         productos: (state.adminData.productos || []).filter(p => String(p.activo || "SI").toUpperCase() === "SI")
       });
-      try { sessionStorage.removeItem(CACHE_KEY); } catch (_) {}
     }
 
     async function cargarCatalogo() {
-      try { const c = sessionStorage.getItem(CACHE_KEY); if (c) aplicarDatosCatalogo(JSON.parse(c)); } catch (_) {}
       try {
-        const data = await (await fetch(`${API_URL}?action=catalog`)).json();
+        const res = await fetch(`${API_URL}?action=catalog&_t=${Date.now()}`, { cache: "no-store" });
+        const data = await res.json();
         if (!data.ok) throw new Error(data.error || "Error al cargar catálogo");
-        try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch (_) {}
         aplicarDatosCatalogo(data);
       } catch (err) {
-        if (!state.productos.length) $("gridProductos").innerHTML = `<p style="color:var(--peligro);">No se pudo cargar el catálogo: ${escHtml(err.message)}</p>`;
+        if (!state.productos.length) $("gridProductos").innerHTML = `<p style="color:var(--peligro);">No se pudo cargar el catálogo desde la Sheet: ${escHtml(err.message)}</p>`;
       }
     }
 
@@ -778,7 +762,7 @@
 
     function renderCategorias() {
       const hidden = obtenerCategoriasOcultasSet();
-      const catsVis = (state.categorias || []).map(enriquecerCategoria).filter(c => String(c.oculta || "NO").toUpperCase() !== "SI" && !hidden.has(String(c.categoria || "").trim().toLowerCase()));
+      const catsVis = (state.categorias || []).map(normalizarCategoriaSheet).filter(c => c.oculta !== "SI" && !hidden.has(String(c.categoria || "").trim().toLowerCase()));
       const prodsVis = (state.productos || []).filter(p => !hidden.has(String(p.categoria || "").trim().toLowerCase()));
 
       $("catsRow").innerHTML = [
@@ -842,7 +826,7 @@
     }
 
     function abrirLightbox(prodId) {
-      const prod = enriquecerLibro(state.prodMap.get(String(prodId)));
+      const prod = normalizarLibroSheet(state.prodMap.get(String(prodId)));
       if (!prod) return;
       state.lightboxProdId = String(prod.id); state.lightboxQty = 1;
       const tasa = parseFloat(state.config.tasa_bcv) || 890, usd = Number(prod.precio_bcv_usd) || 0;
@@ -981,14 +965,14 @@
         const data = await (await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createOrder", cliente: $("cliNombre").value.trim(), telefono: `+${tel}`, modalidad_entrega: $("cliEntrega").value, metodo_pago: metodoPago, total_usd: Number(totalUsd.toFixed(2)), total_bs: Number((totalUsd * tasa).toFixed(2)), items }) })).json();
         if (!data.ok) throw new Error(data.error || "No se pudo registrar el pedido");
         state.carrito = []; actualizarBadgeCarrito(); renderModalCarrito(); $("formPedido").reset(); $("cliCodigoPais").value = "58";
-        sessionStorage.removeItem(CACHE_KEY); await cargarCatalogo();
+        await cargarCatalogo();
         mostrarMsg(msg, `¡Listo! Tu pedido ${data.pedido_id} fue reservado con éxito.`, true);
       } catch (err) { mostrarMsg(msg, err.message, false); }
       finally { btn.disabled = false; btn.textContent = "Confirmar y Reservar Pedido"; }
     }
 
     const normalizarWhatsAppAdmin = (t) => String(t || "").replace(/\D/g, "");
-    const construirDatosAdminLocales = () => ({ config: Object.assign({}, state.config), categorias: state.categorias.slice().map(enriquecerCategoria), productos: state.productos.slice().map(enriquecerLibro), pedidos: state.adminData?.pedidos || [], movimientos: state.adminData?.movimientos || [] });
+    const construirDatosAdminLocales = () => ({ config: Object.assign({}, state.config), categorias: state.categorias.slice().map(normalizarCategoriaSheet), productos: state.productos.slice().map(normalizarLibroSheet), pedidos: state.adminData?.pedidos || [], movimientos: state.adminData?.movimientos || [] });
 
     async function abrirModalPin() {
       $("msgPin").style.display = "none"; $("msgPin").className = "status-msg";
@@ -1001,10 +985,11 @@
     async function autenticarAdmin(pin, silencioso) {
       const btn = $("btnLoginPin"); if (btn) { btn.disabled = true; btn.textContent = "Verificando..."; }
       try {
-        const data = await (await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(pin)}`)).json();
+        const res = await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(pin)}&_t=${Date.now()}`, { cache: "no-store" });
+        const data = await res.json();
         if (!data?.ok) throw new Error(data?.error || "PIN incorrecto");
-        data.categorias = (data.categorias || []).map(enriquecerCategoria);
-        data.productos = (data.productos || []).map(enriquecerLibro);
+        data.categorias = (data.categorias || []).map(normalizarCategoriaSheet);
+        data.productos = (data.productos || []).map(normalizarLibroSheet);
         state.adminPin = pin; state.adminData = data; cerrarModal("modalPin"); poblarPanelAdmin(); $("modalAdmin").classList.add("open");
       } catch (err) {
         if (pin === ADMIN_PIN_PRUEBAS && (silencioso || !state.adminData)) {
@@ -1015,10 +1000,16 @@
 
     async function refrescarAdminData() {
       try {
-        const data = await (await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(state.adminPin)}`)).json();
-        if (data?.ok) { data.categorias = (data.categorias || []).map(enriquecerCategoria); data.productos = (data.productos || []).map(enriquecerLibro); state.adminData = data; poblarPanelAdmin(); }
+        const res = await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(state.adminPin)}&_t=${Date.now()}`, { cache: "no-store" });
+        const data = await res.json();
+        if (data?.ok) {
+          data.categorias = (data.categorias || []).map(normalizarCategoriaSheet);
+          data.productos = (data.productos || []).map(normalizarLibroSheet);
+          state.adminData = data;
+          poblarPanelAdmin();
+        }
       } catch (_) {}
-      sessionStorage.removeItem(CACHE_KEY); await cargarCatalogo();
+      await cargarCatalogo();
     }
 
     const obtenerFiltroAdmin = () => String($("adminSearchInput")?.value || "").trim().toLowerCase();
@@ -1078,69 +1069,96 @@
     async function renombrarCategoriaAdmin(categoriaActual) {
       const msg = $("msgAdminCat"), actual = String(categoriaActual || "").trim();
       if (!actual) return;
-      const sugerido = prompt(`Editar nombre de la categoría "${actual}" (corrige ortografía, tildes o mayúsculas):`, actual);
+      const sugerido = prompt(`Editar nombre de la categoría "${actual}":`, actual);
       if (sugerido === null) return;
       const nuevo = String(sugerido || "").trim();
       if (!nuevo) return mostrarMsg(msg, "El nombre de la categoría no puede quedar vacío.", false);
       if (nuevo === actual) return;
 
-      migrarImagenCategoriaLocal(actual, nuevo);
-      const oldL = actual.toLowerCase();
-      if (state.adminData?.categorias) state.adminData.categorias = state.adminData.categorias.map(c => String(c.categoria || "").trim().toLowerCase() === oldL ? Object.assign({}, c, { categoria: nuevo }) : c);
-      if (state.adminData?.productos) state.adminData.productos = state.adminData.productos.map(p => String(p.categoria || "").trim().toLowerCase() === oldL ? Object.assign({}, p, { categoria: nuevo }) : p);
-      if (state.categoriaActiva.toLowerCase() === oldL) state.categoriaActiva = nuevo;
-      if (state.catEditandoNombre.toLowerCase() === oldL) { state.catEditandoNombre = nuevo; if ($("catMediaNombreLbl")) $("catMediaNombreLbl").textContent = nuevo; }
-      if (state.adminData) { renderListaCategoriasAdmin(state.adminData.categorias || []); renderTablaProductosAdmin(state.adminData.productos || []); sincronizarCatalogoDesdeAdmin(); }
+      const catObj = (state.adminData?.categorias || []).find(c => String(c.categoria || "").trim().toLowerCase() === actual.toLowerCase());
+      const imgUrl = obtenerImagenCategoria(catObj);
 
       try {
-        const data = await postAdmin({ action: "renameCategory", old_categoria: actual, new_categoria: nuevo });
-        if (data && data.ok === false) { mostrarMsg(msg, data.error || "No se pudo renombrar la categoría.", false); return await refrescarAdminData(); }
-        mostrarMsg(msg, `Categoría actualizada: "${actual}" → "${nuevo}".`, true);
+        const data = await postAdmin({ action: "renameCategory", old_categoria: actual, new_categoria: nuevo, imagen_url: imgUrl, imagen: imgUrl });
+        if (data && data.ok === false) return mostrarMsg(msg, data.error || "No se pudo renombrar la categoría en la Sheet.", false);
+        mostrarMsg(msg, `Categoría actualizada en Sheet: "${actual}" → "${nuevo}".`, true);
         await refrescarAdminData();
-      } catch (err) { mostrarMsg(msg, `Nombre actualizado localmente a "${nuevo}" (revisa conexión con Apps Script: ${err.message}).`, true); }
+      } catch (err) {
+        mostrarMsg(msg, `Error al guardar en Sheet: ${err.message}`, false);
+      }
     }
 
     function abrirEditorImagenCategoria(categoria) {
-      const catObj = ([...(state.adminData?.categorias || []), ...(state.categorias || [])]).find(c => String(c.categoria || "").trim().toLowerCase() === String(categoria || "").trim().toLowerCase()) || { categoria };
-      state.catEditandoNombre = catObj.categoria; $("catMediaNombreLbl").textContent = catObj.categoria;
-      $("catMediaUrlInput").value = obtenerImagenCategoria(catObj); $("catMediaEditor").style.display = "flex";
-      actualizarPreviewCategoriaAdmin(); $("catMediaUrlInput")?.focus();
+      const catObj = ([...(state.adminData?.categorias || []), ...(state.categorias || [])])
+        .map(normalizarCategoriaSheet)
+        .find(c => String(c.categoria || "").trim().toLowerCase() === String(categoria || "").trim().toLowerCase()) || { categoria };
+      state.catEditandoNombre = catObj.categoria;
+      $("catMediaNombreLbl").textContent = catObj.categoria;
+      $("catMediaUrlInput").value = obtenerImagenCategoria(catObj);
+      $("catMediaEditor").style.display = "flex";
+      actualizarPreviewCategoriaAdmin();
+      $("catMediaUrlInput")?.focus();
     }
-    function cerrarEditorImagenCategoria() { state.catEditandoNombre = ""; $("catMediaEditor").style.display = "none"; }
+
+    function cerrarEditorImagenCategoria() {
+      state.catEditandoNombre = "";
+      $("catMediaEditor").style.display = "none";
+    }
+
     function actualizarPreviewCategoriaAdmin() {
       const box = $("catMediaPreview"); if (!box) return;
       const url = String($("catMediaUrlInput")?.value || "").trim(), init = escHtml((state.catEditandoNombre || "CAT").trim().slice(0, 3).toUpperCase());
       box.innerHTML = url ? `<img src="${escAttr(url)}" alt="Vista categoría" onerror="this.parentElement.textContent='${init}'" />` : init;
     }
 
+    // Sube la imagen a Google Drive y guarda la URL en Google Sheets (no en localStorage)
     async function subirFotoCategoriaAdmin(input) {
       const file = input.files?.[0]; if (!file) return;
       const cat = state.catEditandoNombre, msg = $("msgAdminCat"); if (!cat) return;
-      mostrarMsg(msg, `Subiendo foto para "${cat}"...`, true);
-      const subida = await subirBase64Drive(file); input.value = "";
-      if (subida.url) { $("catMediaUrlInput").value = subida.url; actualizarPreviewCategoriaAdmin(); await aplicarYGuardarImagenCategoria(cat, subida.url, true); }
-      else mostrarMsg(msg, `No se pudo subir la imagen de "${cat}"${subida.error ? ` (${subida.error})` : ""}. Revisa la conexión o pega la URL de la imagen.`, false);
+      mostrarMsg(msg, `Subiendo foto de "${cat}" a Google Drive...`, true);
+      const subida = await subirBase64Drive(file);
+      input.value = "";
+      if (!subida.url) {
+        return mostrarMsg(msg, `No se pudo subir a Drive${subida.error ? `: ${subida.error}` : ""}.`, false);
+      }
+      $("catMediaUrlInput").value = subida.url;
+      actualizarPreviewCategoriaAdmin();
+      await aplicarYGuardarImagenCategoria(cat, subida.url, true);
     }
 
     async function aplicarYGuardarImagenCategoria(categoria, url, desdeAdjunto = false) {
-      const msg = $("msgAdminCat"), limpio = String(url || "").trim(), k = String(categoria || "").trim().toLowerCase();
-      guardarImagenCategoriaLocal(categoria, limpio);
-      if (state.adminData?.categorias) {
-        state.adminData.categorias = state.adminData.categorias.map(c => String(c.categoria || "").trim().toLowerCase() === k ? Object.assign({}, c, { imagen_url: limpio, imagen: limpio }) : c);
-        renderListaCategoriasAdmin(state.adminData.categorias);
-      }
-      sincronizarCatalogoDesdeAdmin();
+      const msg = $("msgAdminCat"), limpio = String(url || "").trim();
+      mostrarMsg(msg, `Guardando foto de "${categoria}" en Google Sheets...`, true);
       try {
-        const data = await postAdmin({ action: "updateCategoryImage", categoria, imagen_url: limpio, imagen: limpio });
-        if (data && data.ok === false) return mostrarMsg(msg, `Foto guardada localmente para "${categoria}" (aviso del servidor: ${data.error || "sin cambio en hoja"}).`, true);
-      } catch (_) {}
-      mostrarMsg(msg, limpio ? (desdeAdjunto ? `Foto adjuntada y guardada para "${categoria}".` : `Imagen guardada para la categoría "${categoria}".`) : `Se quitó la imagen de "${categoria}" (se mostrará respaldo limpio).`, true);
+        const data = await postAdmin({
+          action: "updateCategoryImage",
+          categoria,
+          imagen_url: limpio,
+          imagen: limpio,
+          foto_url: limpio
+        });
+        if (data && data.ok === false) {
+          return mostrarMsg(msg, `No se guardó en la Sheet (${data.error || "revisa tu Apps Script"}).`, false);
+        }
+        await refrescarAdminData();
+        mostrarMsg(msg, limpio
+          ? (desdeAdjunto ? `Foto subida a Drive y guardada en la Sheet para "${categoria}".` : `Imagen guardada en la Sheet para "${categoria}".`)
+          : `Foto eliminada de la Sheet para "${categoria}".`, true);
+      } catch (err) {
+        mostrarMsg(msg, `Error al guardar en Sheet: ${err.message}`, false);
+      }
     }
+
     const guardarImagenCategoriaAdmin = () => state.catEditandoNombre && aplicarYGuardarImagenCategoria(state.catEditandoNombre, String($("catMediaUrlInput")?.value || "").trim(), false);
-    const quitarImagenCategoriaAdmin = () => { if (!state.catEditandoNombre) return; if ($("catMediaUrlInput")) $("catMediaUrlInput").value = ""; actualizarPreviewCategoriaAdmin(); return aplicarYGuardarImagenCategoria(state.catEditandoNombre, "", false); };
+    const quitarImagenCategoriaAdmin = () => {
+      if (!state.catEditandoNombre) return;
+      if ($("catMediaUrlInput")) $("catMediaUrlInput").value = "";
+      actualizarPreviewCategoriaAdmin();
+      return aplicarYGuardarImagenCategoria(state.catEditandoNombre, "", false);
+    };
 
     function renderListaCategoriasAdmin(categorias, selActual) {
-      const todas = (Array.isArray(categorias) ? categorias : []).map(enriquecerCategoria);
+      const todas = (Array.isArray(categorias) ? categorias : []).map(normalizarCategoriaSheet);
       const sel = $("prodCategoria");
       if (sel) {
         const prev = selActual || sel.value;
@@ -1152,14 +1170,14 @@
       if (!vis.length) { listEl.innerHTML = `<p style="color:var(--texto-suave);font-size:12.5px;">${q ? "No hay categorías que coincidan con la búsqueda." : "No hay categorías registradas aún."}</p>`; return; }
 
       listEl.innerHTML = vis.map(c => {
-        const idx = todas.findIndex(x => x.categoria === c.categoria), oculta = String(c.oculta || "NO").toUpperCase() === "SI";
+        const idx = todas.findIndex(x => x.categoria === c.categoria), oculta = c.oculta === "SI";
         const qtyOff = esCantidadDesactivadaCategoria(c), imgUrl = obtenerImagenCategoria(c);
         return `
           <div class="cat-order-item ${oculta ? "is-hidden" : ""}">
-            <span class="cat-order-name">${imgUrl ? `<img src="${escAttr(imgUrl)}" alt="${escAttr(c.categoria)}" style="width:24px;height:30px;object-fit:cover;border-radius:4px;border:1px solid var(--borde);" />` : ""}<span>${idx + 1}. ${escHtml(c.categoria)}</span>${imgUrl ? `<span class="badge-tag cat-badge-img">FOTO OK</span>` : ""}${qtyOff ? `<span class="badge-tag cat-badge-qty-off">CANT. OFF</span>` : ""}${oculta ? `<span class="badge-tag cat-badge-hidden">OCULTA</span>` : ""}</span>
+            <span class="cat-order-name">${imgUrl ? `<img src="${escAttr(imgUrl)}" alt="${escAttr(c.categoria)}" style="width:24px;height:30px;object-fit:cover;border-radius:4px;border:1px solid var(--borde);" />` : ""}<span>${idx + 1}. ${escHtml(c.categoria)}</span>${imgUrl ? `<span class="badge-tag cat-badge-img">SHEET OK</span>` : ""}${qtyOff ? `<span class="badge-tag cat-badge-qty-off">CANT. OFF</span>` : ""}${oculta ? `<span class="badge-tag cat-badge-hidden">OCULTA</span>` : ""}</span>
             <div class="cat-order-actions">
               <button class="btn btn-soft btn-sm" type="button" title="Editar nombre de categoría" onclick="renombrarCategoriaAdmin('${escAttr(c.categoria)}')"><svg width="13" height="13" aria-hidden="true"><use href="#ico-edit"></use></svg><span>Editar</span></button>
-              <button class="btn btn-soft btn-sm" type="button" title="Imagen de categoría" onclick="abrirEditorImagenCategoria('${escAttr(c.categoria)}')"><svg width="14" height="14" aria-hidden="true"><use href="#ico-img"></use></svg><span>Foto</span></button>
+              <button class="btn btn-soft btn-sm" type="button" title="Imagen de categoría (Drive + Sheet)" onclick="abrirEditorImagenCategoria('${escAttr(c.categoria)}')"><svg width="14" height="14" aria-hidden="true"><use href="#ico-img"></use></svg><span>Foto</span></button>
               <button class="btn btn-soft btn-sm" type="button" title="Ascender categoría" ${idx <= 0 ? "disabled" : ""} onclick="moverItemAdmin('cat','${escAttr(c.categoria)}','up')">↑</button>
               <button class="btn btn-soft btn-sm" type="button" title="Descender categoría" ${idx >= todas.length - 1 ? "disabled" : ""} onclick="moverItemAdmin('cat','${escAttr(c.categoria)}','down')">↓</button>
               <button class="btn ${qtyOff ? "btn-qty-off" : "btn-qty-on"} btn-sm" type="button" title="${qtyOff ? "Activar control de cantidad" : "Desactivar cantidad / preventa"}" onclick="toggleCantidadAdmin('cat','${escAttr(c.categoria)}',${!qtyOff})"><svg width="14" height="14" aria-hidden="true"><use href="#ico-qty"></use></svg><span>${qtyOff ? "Cant. OFF" : "Cant. ON"}</span></button>
@@ -1202,19 +1220,16 @@
     }
 
     async function toggleCantidadAdmin(kind, target, desactivar) {
-      const esCat = kind === "cat", msg = $(esCat ? "msgAdminCat" : "msgAdminProd"), ov = getQtyOverrides();
-      if (esCat) {
-        const k = String(target || "").trim().toLowerCase(); ov.categorias[k] = Boolean(desactivar); writeStore(QTY_KEY, ov);
-        if (state.adminData?.categorias) state.adminData.categorias = state.adminData.categorias.map(c => String(c.categoria || "").trim().toLowerCase() === k ? Object.assign({}, c, { control_cantidad: desactivar ? "NO" : "SI" }) : c);
-        renderListaCategoriasAdmin(state.adminData?.categorias || []); renderTablaProductosAdmin(state.adminData?.productos || []); sincronizarCatalogoDesdeAdmin();
-        mostrarMsg(msg, desactivar ? `Control de cantidad desactivado en "${target}" (modo encargo/preventa).` : `Control de cantidad activado en "${target}".`, true);
-        try { await postAdmin({ action: "toggleCategoryQtyControl", categoria: target, control_cantidad: desactivar ? "NO" : "SI", desactivar_cantidad: Boolean(desactivar) }); } catch (_) {}
-      } else {
-        const k = String(target || "").trim(); ov.productos[k] = Boolean(desactivar); writeStore(QTY_KEY, ov);
-        if (state.adminData?.productos) state.adminData.productos = state.adminData.productos.map(p => String(p.id || "").trim() === k ? Object.assign({}, p, { control_cantidad: desactivar ? "NO" : "SI" }) : p);
-        renderTablaProductosAdmin(state.adminData?.productos || []); sincronizarCatalogoDesdeAdmin();
-        mostrarMsg(msg, desactivar ? `Cantidad desactivada para "${target}" (se puede vender por encargo sin límite de stock).` : `Control de cantidad activado para "${target}".`, true);
-        try { await postAdmin({ action: "toggleProductQtyControl", id: target, control_cantidad: desactivar ? "NO" : "SI", desactivar_cantidad: Boolean(desactivar) }); } catch (_) {}
+      const esCat = kind === "cat", msg = $(esCat ? "msgAdminCat" : "msgAdminProd");
+      try {
+        const data = await postAdmin(esCat
+          ? { action: "toggleCategoryQtyControl", categoria: target, control_cantidad: desactivar ? "NO" : "SI", desactivar_cantidad: Boolean(desactivar) }
+          : { action: "toggleProductQtyControl", id: target, control_cantidad: desactivar ? "NO" : "SI", desactivar_cantidad: Boolean(desactivar) });
+        if (data && data.ok === false) return mostrarMsg(msg, data.error || "No se pudo guardar en Sheet.", false);
+        mostrarMsg(msg, desactivar ? `Control de cantidad desactivado en "${target}" (guardado en Sheet).` : `Control de cantidad activado en "${target}" (guardado en Sheet).`, true);
+        await refrescarAdminData();
+      } catch (err) {
+        mostrarMsg(msg, `Error al guardar en Sheet: ${err.message}`, false);
       }
     }
 
@@ -1225,7 +1240,7 @@
       try {
         const data = await postAdmin({ action: "addCategory", categoria: nombre });
         if (!data.ok) return mostrarMsg(msg, data.error || "No se pudo crear la categoría.", false);
-        inp.value = ""; mostrarMsg(msg, `Categoría "${data.categoria}" creada.`, true);
+        inp.value = ""; mostrarMsg(msg, `Categoría "${data.categoria}" creada en la Sheet.`, true);
         await refrescarAdminData(); if ($("prodCategoria")) $("prodCategoria").value = data.categoria;
       } catch (err) { mostrarMsg(msg, err.message || "Error al crear categoría.", false); }
       finally { btn.disabled = false; }
@@ -1243,16 +1258,12 @@
 
     async function toggleOcultarAdmin(kind, target, ocultar) {
       const esCat = kind === "cat", msg = $(esCat ? "msgAdminCat" : "msgAdminProd");
-      if (esCat && state.adminData?.categorias) {
-        state.adminData.categorias = state.adminData.categorias.map(c => String(c.categoria || "").trim().toLowerCase() === String(target || "").trim().toLowerCase() ? Object.assign({}, c, { oculta: ocultar ? "SI" : "NO" }) : c);
-        renderListaCategoriasAdmin(state.adminData.categorias); sincronizarCatalogoDesdeAdmin();
-      }
       try {
         const data = await postAdmin(esCat ? { action: "toggleCategoryHidden", categoria: target, oculta: ocultar ? "SI" : "NO" } : { action: "toggleProductHidden", id: target, activo: ocultar ? "NO" : "SI", oculta: ocultar ? "SI" : "NO" });
-        if (!data?.ok) { mostrarMsg(msg, data?.error || "No se pudo cambiar la visibilidad.", false); return await refrescarAdminData(); }
+        if (!data?.ok) return mostrarMsg(msg, data?.error || "No se pudo cambiar la visibilidad en la Sheet.", false);
         mostrarMsg(msg, ocultar ? `"${target}" oculto/a en el catálogo público.` : `"${target}" visible nuevamente en el catálogo público.`, true);
         await refrescarAdminData();
-      } catch (err) { mostrarMsg(msg, err.message || "Error al actualizar visibilidad.", false); await refrescarAdminData(); }
+      } catch (err) { mostrarMsg(msg, err.message || "Error al actualizar visibilidad.", false); }
     }
 
     async function eliminarItemAdmin(kind, target, nombreExtra) {
@@ -1280,13 +1291,16 @@
       renderListaMetodosPagoAdmin(cfg.metodos_pago || state.config.metodos_pago);
       $("btnEstadoTienda").textContent = `Estado: ${String(cfg.estado_servicio || "ACTIVO").toUpperCase()}`;
 
-      renderListaCategoriasAdmin((d.categorias || []).map(enriquecerCategoria));
-      renderTablaProductosAdmin((d.productos || []).map(enriquecerLibro));
+      renderListaCategoriasAdmin((d.categorias || []).map(normalizarCategoriaSheet));
+      renderTablaProductosAdmin((d.productos || []).map(normalizarLibroSheet));
       renderTablaPedidosAdmin(d.pedidos || [], cfg);
       $("adminMovsBody").innerHTML = (d.movimientos || []).map(m => `<tr><td>${escHtml(m.fecha)}</td><td>${escHtml(m.referencia)}</td><td><b>${escHtml(m.producto_id)}</b></td><td>${renderMovimientoBadge(m)}</td><td>${escHtml(m.cantidad)}</td><td>${escHtml(m.stock_anterior)} → ${escHtml(m.stock_nuevo)}</td><td>${escHtml(m.motivo)}</td></tr>`).join("");
     }
 
-    const postAdmin = async (payload) => (await fetch(API_URL, { method: "POST", body: JSON.stringify(Object.assign({ pin: state.adminPin }, payload)) })).json();
+    const postAdmin = async (payload) => {
+      const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(Object.assign({ pin: state.adminPin }, payload)) });
+      return res.json();
+    };
 
     async function guardarConfigAdmin() {
       const data = await postAdmin({
@@ -1299,7 +1313,7 @@
           portada_url: $("cfgPortadaUrl").value.trim(), metodos_pago: $("cfgMetodosPago")?.value || "Pago Móvil|Divisas|PayPal"
         }
       });
-      if (data.ok) { mostrarMsg($("msgAdminCfg"), "Configuración, métodos de pago y tasa BCV guardados.", true); await refrescarAdminData(); }
+      if (data.ok) { mostrarMsg($("msgAdminCfg"), "Configuración, métodos de pago y tasa BCV guardados en la Sheet.", true); await refrescarAdminData(); }
       else mostrarMsg($("msgAdminCfg"), data.error || "Error al guardar", false);
     }
 
@@ -1310,7 +1324,7 @@
     }
 
     function editarProductoPorId(prodId) {
-      const p = enriquecerLibro((state.adminData?.productos || []).find(x => String(x.id) === String(prodId)));
+      const p = normalizarLibroSheet((state.adminData?.productos || []).find(x => String(x.id) === String(prodId)));
       if (!p) return;
       for (const [elId, prop, def] of PROD_FIELDS) $(elId).value = p[prop] ?? def;
       if ($("prodFotoFile")) $("prodFotoFile").value = "";
@@ -1336,8 +1350,7 @@
       });
       if (data.ok) {
         const savedId = data.id || idActual;
-        if (savedId) guardarMetaLibroLocal(savedId, edVal, descVal);
-        mostrarMsg($("msgAdminProd"), `Libro guardado (${savedId || "OK"}).`, true);
+        mostrarMsg($("msgAdminProd"), `Libro guardado en la Sheet (${savedId || "OK"}).`, true);
         limpiarFormProducto(); await refrescarAdminData();
       } else mostrarMsg($("msgAdminProd"), data.error || "Error al guardar libro", false);
     }
