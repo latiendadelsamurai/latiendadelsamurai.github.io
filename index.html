@@ -148,7 +148,7 @@
     }
     .cat-chip.active { background: var(--primario); color: var(--blanco); border-color: var(--primario); box-shadow: inset 0 -2px 0 var(--acento); }
 
-    /* Carrusel visual de categorías (sólo si hay categorías y con respaldo limpio si no tienen imagen) */
+    /* Carrusel visual de categorías (con respaldo limpio si no tienen imagen) */
     .cat-showcase {
       background: var(--blanco);
       border: 1px solid var(--borde);
@@ -618,9 +618,9 @@
     }
     .cat-media-editor {
       background: var(--blanco);
-      border: 1px solid var(--borde);
-      border-radius: 10px;
-      padding: 10px 12px;
+      border: 1.5px solid var(--acento);
+      border-radius: 12px;
+      padding: 12px;
       margin-bottom: 10px;
       display: flex;
       align-items: center;
@@ -629,8 +629,8 @@
       flex-wrap: wrap;
     }
     .cat-media-preview {
-      width: 48px;
-      height: 62px;
+      width: 54px;
+      height: 70px;
       border-radius: 8px;
       border: 1px solid var(--borde);
       background: #F5F2ED;
@@ -670,7 +670,7 @@
     }
     .cat-badge-img {
       font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 999px;
-      background: #EEF2FF; color: #3730A3; border: 1px solid #C7D2FE;
+      background: #E7F7EF; color: var(--exito); border: 1px solid #A7DEC4;
     }
     .cat-order-actions { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .prod-row-hidden { opacity: 0.72; background: #FAF8F5; }
@@ -1030,12 +1030,12 @@
                 <div style="font-size: 12.5px; font-weight: 800; margin-bottom: 4px;">
                   Imagen de categoría: <span id="catMediaNombreLbl" style="color: var(--acento);"></span>
                 </div>
-                <input type="text" id="catMediaUrlInput" placeholder="URL de imagen (opcional — si queda vacío se ve limpio)" style="padding: 6px 9px; font-size: 12px;" oninput="actualizarPreviewCategoriaAdmin()" />
+                <input type="text" id="catMediaUrlInput" placeholder="URL de imagen o adjunta una foto (se guarda automáticamente)" style="padding: 6px 9px; font-size: 12px;" oninput="actualizarPreviewCategoriaAdmin()" />
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
               <label class="btn btn-soft btn-sm" style="cursor: pointer; margin: 0;">
-                Subir foto
+                Adjuntar foto
                 <input type="file" accept="image/*" style="display: none;" onchange="subirFotoCategoriaAdmin(this)" />
               </label>
               <button class="btn btn-primary btn-sm" type="button" onclick="guardarImagenCategoriaAdmin()">Guardar foto</button>
@@ -1132,7 +1132,7 @@
     const INSTAGRAM_URL = "https://www.instagram.com/latiendadelsamurai/";
     const INSTAGRAM_HANDLE = "@latiendadelsamurai";
     const DEV_WA_URL = "https://wa.me/584241913036?text=Hola%20Kevin%2C%20vi%20la%20p%C3%A1gina%20de%20Tienda%20del%20Samurai%20y%20me%20gustar%C3%ADa%20cotizar%20una%20web%20para%20mi%20negocio.";
-    const CACHE_KEY = "tienda_del_samurai_catalog_v6";
+    const CACHE_KEY = "tienda_del_samurai_catalog_v7";
     const QTY_OVERRIDE_KEY = "tienda_del_samurai_qty_overrides_v1";
     const CAT_IMG_OVERRIDE_KEY = "tienda_del_samurai_cat_imgs_v1";
     const BOOK_META_OVERRIDE_KEY = "tienda_del_samurai_book_meta_v1";
@@ -1242,10 +1242,14 @@
       const overrides = leerJsonStorage(CAT_IMG_OVERRIDE_KEY, {});
       const key = String(categoria || "").trim().toLowerCase();
       if (!key) return;
-      const limpio = String(url || "").trim();
-      if (limpio) overrides[key] = limpio;
-      else overrides[key] = "";
+      overrides[key] = String(url || "").trim();
       guardarJsonStorage(CAT_IMG_OVERRIDE_KEY, overrides);
+    }
+
+    function enriquecerCategoriaConImagen(catObj) {
+      if (!catObj) return catObj;
+      const imgUrl = obtenerImagenCategoria(catObj);
+      return Object.assign({}, catObj, { imagen_url: imgUrl });
     }
 
     function enriquecerLibroConMeta(prodObj) {
@@ -1304,7 +1308,8 @@
     document.addEventListener("DOMContentLoaded", () => {
       try {
         ["paos_world_catalog_v1", "tienda_del_samurai_catalog_v1", "tienda_del_samurai_catalog_v2",
-         "tienda_del_samurai_catalog_v3", "tienda_del_samurai_catalog_v4", "tienda_del_samurai_catalog_v5"]
+         "tienda_del_samurai_catalog_v3", "tienda_del_samurai_catalog_v4", "tienda_del_samurai_catalog_v5",
+         "tienda_del_samurai_catalog_v6"]
           .forEach(k => sessionStorage.removeItem(k));
       } catch (_) {}
       iniciarSecuenciaMarcaAgua();
@@ -1497,7 +1502,9 @@
 
     function aplicarDatosCatalogo(data) {
       Object.assign(state.config, data.config || {});
-      state.categorias = (data.categorias || []).filter(c => String(c.oculta || "NO").toUpperCase() !== "SI");
+      state.categorias = (data.categorias || [])
+        .map(enriquecerCategoriaConImagen)
+        .filter(c => String(c.oculta || "NO").toUpperCase() !== "SI");
       state.productos = (data.productos || []).map(enriquecerLibroConMeta);
       state.prodMap = new Map(state.productos.map(p => [String(p.id), p]));
       if (state.categoriaActiva !== "TODAS" && !state.categorias.some(c => c.categoria === state.categoriaActiva)) {
@@ -1511,7 +1518,9 @@
 
     function sincronizarCatalogoDesdeAdmin() {
       if (!state.adminData) return;
-      const catsVisibles = (state.adminData.categorias || []).filter(c => String(c.oculta || "NO").toUpperCase() !== "SI");
+      const catsVisibles = (state.adminData.categorias || [])
+        .map(enriquecerCategoriaConImagen)
+        .filter(c => String(c.oculta || "NO").toUpperCase() !== "SI");
       const prodsActivos = (state.adminData.productos || []).filter(p => String(p.activo || "SI").toUpperCase() === "SI");
       aplicarDatosCatalogo({
         config: state.adminData.config || state.config,
@@ -1612,10 +1621,12 @@
 
     function renderCategorias() {
       const hiddenSet = obtenerCategoriasOcultasSet();
-      const catsVisibles = (state.categorias || []).filter(c =>
-        String(c.oculta || "NO").toUpperCase() !== "SI" &&
-        !hiddenSet.has(String(c.categoria || "").trim().toLowerCase())
-      );
+      const catsVisibles = (state.categorias || [])
+        .map(enriquecerCategoriaConImagen)
+        .filter(c =>
+          String(c.oculta || "NO").toUpperCase() !== "SI" &&
+          !hiddenSet.has(String(c.categoria || "").trim().toLowerCase())
+        );
       const prodsVisibles = (state.productos || []).filter(p =>
         !hiddenSet.has(String(p.categoria || "").trim().toLowerCase())
       );
@@ -2099,8 +2110,8 @@
     function construirDatosAdminLocales() {
       return {
         config: Object.assign({}, state.config),
-        categorias: state.categorias.slice(),
-        productos: state.productos.slice(),
+        categorias: state.categorias.slice().map(enriquecerCategoriaConImagen),
+        productos: state.productos.slice().map(enriquecerLibroConMeta),
         pedidos: state.adminData?.pedidos || [],
         movimientos: state.adminData?.movimientos || []
       };
@@ -2142,6 +2153,8 @@
           throw new Error((data && data.error) || "PIN incorrecto");
         }
 
+        data.categorias = (data.categorias || []).map(enriquecerCategoriaConImagen);
+        data.productos = (data.productos || []).map(enriquecerLibroConMeta);
         state.adminPin = pin;
         state.adminData = data;
         cerrarModal("modalPin");
@@ -2171,6 +2184,8 @@
         const res = await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(state.adminPin)}`);
         const data = await res.json();
         if (data && data.ok) {
+          data.categorias = (data.categorias || []).map(enriquecerCategoriaConImagen);
+          data.productos = (data.productos || []).map(enriquecerLibroConMeta);
           state.adminData = data;
           poblarPanelAdmin();
         }
@@ -2362,6 +2377,7 @@
       $("catMediaUrlInput").value = obtenerImagenCategoria(catObj);
       $("catMediaEditor").style.display = "flex";
       actualizarPreviewCategoriaAdmin();
+      $("catMediaUrlInput")?.focus();
     }
 
     function cerrarEditorImagenCategoria() {
@@ -2384,56 +2400,85 @@
     async function subirFotoCategoriaAdmin(input) {
       const file = input.files?.[0];
       if (!file) return;
+      const categoriaActual = state.catEditandoNombre;
+      const msg = $("msgAdminCat");
+      if (!categoriaActual) return;
+
+      mostrarMsg(msg, `Subiendo foto para "${categoriaActual}"...`, true);
       const url = await subirBase64Drive(file);
+      input.value = "";
+
       if (url) {
         $("catMediaUrlInput").value = url;
         actualizarPreviewCategoriaAdmin();
+        await aplicarYGuardarImagenCategoria(categoriaActual, url, true);
+      } else {
+        mostrarMsg(msg, `No se pudo subir la imagen de "${categoriaActual}". Revisa la conexión o pega la URL de la imagen.`, false);
       }
-      input.value = "";
+    }
+
+    async function aplicarYGuardarImagenCategoria(categoria, url, desdeAdjunto = false) {
+      const msg = $("msgAdminCat");
+      const limpio = String(url || "").trim();
+      const catKey = String(categoria || "").trim().toLowerCase();
+
+      guardarImagenCategoriaLocal(categoria, limpio);
+
+      if (state.adminData?.categorias) {
+        state.adminData.categorias = state.adminData.categorias.map(c =>
+          String(c.categoria || "").trim().toLowerCase() === catKey
+            ? Object.assign({}, c, { imagen_url: limpio, imagen: limpio })
+            : c
+        );
+        renderListaCategoriasAdmin(state.adminData.categorias);
+      }
+      sincronizarCatalogoDesdeAdmin();
+
+      try {
+        const data = await postAdmin({
+          action: "updateCategoryImage",
+          categoria: categoria,
+          imagen_url: limpio,
+          imagen: limpio
+        });
+        if (data && data.ok === false) {
+          mostrarMsg(
+            msg,
+            `Foto guardada localmente para "${categoria}" (aviso del servidor: ${data.error || "sin cambio en hoja"}).`,
+            true
+          );
+          return;
+        }
+      } catch (_) {}
+
+      mostrarMsg(
+        msg,
+        limpio
+          ? (desdeAdjunto
+              ? `Foto adjuntada y guardada para "${categoria}".`
+              : `Imagen guardada para la categoría "${categoria}".`)
+          : `Se quitó la imagen de "${categoria}" (se mostrará respaldo limpio).`,
+        true
+      );
     }
 
     async function guardarImagenCategoriaAdmin() {
       const categoria = state.catEditandoNombre;
       if (!categoria) return;
       const url = String($("catMediaUrlInput")?.value || "").trim();
-      const msg = $("msgAdminCat");
-
-      guardarImagenCategoriaLocal(categoria, url);
-      if (state.adminData?.categorias) {
-        state.adminData.categorias = state.adminData.categorias.map(c =>
-          String(c.categoria || "").trim().toLowerCase() === categoria.toLowerCase()
-            ? Object.assign({}, c, { imagen_url: url })
-            : c
-        );
-        renderListaCategoriasAdmin(state.adminData.categorias);
-        sincronizarCatalogoDesdeAdmin();
-      }
-
-      mostrarMsg(
-        msg,
-        url
-          ? `Imagen actualizada para la categoría "${categoria}".`
-          : `Se quitó la imagen de "${categoria}" (se mostrará respaldo limpio).`,
-        true
-      );
-
-      try {
-        await postAdmin({
-          action: "updateCategoryImage",
-          categoria: categoria,
-          imagen_url: url
-        });
-      } catch (_) {}
+      await aplicarYGuardarImagenCategoria(categoria, url, false);
     }
 
     async function quitarImagenCategoriaAdmin() {
+      const categoria = state.catEditandoNombre;
+      if (!categoria) return;
       if ($("catMediaUrlInput")) $("catMediaUrlInput").value = "";
       actualizarPreviewCategoriaAdmin();
-      await guardarImagenCategoriaAdmin();
+      await aplicarYGuardarImagenCategoria(categoria, "", false);
     }
 
     function renderListaCategoriasAdmin(categorias, categoriaSeleccionadaActual) {
-      const todasCats = Array.isArray(categorias) ? categorias : [];
+      const todasCats = (Array.isArray(categorias) ? categorias : []).map(enriquecerCategoriaConImagen);
       const selectEl = $("prodCategoria");
       if (selectEl) {
         const prevVal = categoriaSeleccionadaActual || selectEl.value;
@@ -2464,10 +2509,14 @@
         const esUltimo = idx >= todasCats.length - 1;
         const estaOculta = String(c.oculta || "NO").toUpperCase() === "SI";
         const qtyDesactivada = esCantidadDesactivadaCategoria(c);
-        const tieneImg = Boolean(obtenerImagenCategoria(c));
+        const imgUrl = obtenerImagenCategoria(c);
+        const tieneImg = Boolean(imgUrl);
         const badgeOculta = estaOculta ? `<span class="cat-badge-hidden">OCULTA</span>` : "";
         const badgeQty = qtyDesactivada ? `<span class="cat-badge-qty-off">CANT. OFF</span>` : "";
-        const badgeImg = tieneImg ? `<span class="cat-badge-img">FOTO</span>` : "";
+        const badgeImg = tieneImg ? `<span class="cat-badge-img">FOTO OK</span>` : "";
+        const miniThumb = tieneImg
+          ? `<img src="${escAttr(imgUrl)}" alt="${escAttr(c.categoria)}" style="width:24px;height:30px;object-fit:cover;border-radius:4px;border:1px solid var(--borde);" />`
+          : "";
         const eyeIcon = estaOculta ? "#ico-eye" : "#ico-eye-off";
         const eyeTitle = estaOculta ? "Mostrar categoría en catálogo" : "Ocultar categoría en catálogo";
         const qtyTitle = qtyDesactivada
@@ -2477,7 +2526,7 @@
 
         return `
           <div class="cat-order-item ${estaOculta ? "is-hidden" : ""}">
-            <span class="cat-order-name">${idx + 1}. ${escHtml(c.categoria)} ${badgeImg} ${badgeQty} ${badgeOculta}</span>
+            <span class="cat-order-name">${miniThumb}<span>${idx + 1}. ${escHtml(c.categoria)}</span> ${badgeImg} ${badgeQty} ${badgeOculta}</span>
             <div class="cat-order-actions">
               <button class="btn btn-soft btn-sm" type="button" title="Imagen de categoría" aria-label="Imagen de categoría" onclick="abrirEditorImagenCategoria('${escAttr(c.categoria)}')"><svg width="14" height="14" aria-hidden="true"><use href="#ico-img"></use></svg><span>Foto</span></button>
               <button class="btn btn-soft btn-sm" type="button" title="Ascender categoría" ${esPrimero ? "disabled" : ""} onclick="moverCategoriaAdmin('${escAttr(c.categoria)}', 'up')">↑</button>
@@ -2825,7 +2874,7 @@
       const est = String(cfg.estado_servicio || "ACTIVO").toUpperCase();
       $("btnEstadoTienda").textContent = `Estado: ${est}`;
 
-      renderListaCategoriasAdmin(d.categorias || []);
+      renderListaCategoriasAdmin((d.categorias || []).map(enriquecerCategoriaConImagen));
       renderTablaProductosAdmin((d.productos || []).map(enriquecerLibroConMeta));
       renderTablaPedidosAdmin(d.pedidos || [], cfg);
 
@@ -2965,15 +3014,20 @@
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = async () => {
-          const base64 = String(reader.result).split(",")[1] || "";
-          const data = await postAdmin({
-            action: "uploadMedia",
-            fileName: file.name,
-            mimeType: file.type || "image/jpeg",
-            base64
-          });
-          resolve(data.ok ? data.url : "");
+          try {
+            const base64 = String(reader.result).split(",")[1] || "";
+            const data = await postAdmin({
+              action: "uploadMedia",
+              fileName: file.name,
+              mimeType: file.type || "image/jpeg",
+              base64
+            });
+            resolve(data && data.ok ? (data.url || data.imagen_url || "") : "");
+          } catch (_) {
+            resolve("");
+          }
         };
+        reader.onerror = () => resolve("");
         reader.readAsDataURL(file);
       });
     }
