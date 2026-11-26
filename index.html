@@ -114,18 +114,26 @@
       .modal-box.wide { width: 92vw; max-width: 92vw; padding: 14px; }
     }
 
-    .lightbox-box { max-width: 620px; text-align: left; }
-    .lightbox-img-wrap { width: 100%; padding: 16px; background: #F8F5F0; border-radius: 14px; overflow: hidden; margin-bottom: 14px; border: 1px solid var(--borde); display: flex; justify-content: center; }
-    .lightbox-img-wrap img { max-width: 100%; max-height: 58vh; object-fit: contain; display: block; border-radius: 8px; box-shadow: 0 8px 20px rgba(23, 23, 26, 0.15); }
-    .lb-meta-below { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: #FAF8F5; border: 1px solid var(--borde); border-radius: 12px; margin-bottom: 14px; }
-    .lb-editorial-row { font-size: 13.5px; font-weight: 800; color: var(--primario); }
+    /* Ficha de libro: portada a la izquierda y detalles + botones de compra siempre visibles a la derecha */
+    .lightbox-box { max-width: 780px; text-align: left; }
+    .book-sheet-body { display: grid; grid-template-columns: 235px 1fr; gap: 18px; align-items: start; }
+    .lightbox-img-wrap { width: 100%; padding: 12px; background: #F8F5F0; border-radius: 14px; overflow: hidden; border: 1px solid var(--borde); display: flex; justify-content: center; align-items: center; }
+    .lightbox-img-wrap img { max-width: 100%; max-height: 280px; object-fit: contain; display: block; border-radius: 8px; box-shadow: 0 8px 20px rgba(23, 23, 26, 0.15); }
+    .book-sheet-info { display: flex; flex-direction: column; gap: 12px; }
+    .lb-meta-below { display: flex; flex-direction: column; gap: 6px; padding: 11px 13px; background: #FAF8F5; border: 1px solid var(--borde); border-radius: 12px; }
+    .lb-editorial-row { font-size: 13px; font-weight: 800; color: var(--primario); }
     .lb-editorial-row span { color: var(--acento); }
-    .lb-desc-text { font-size: 13.5px; line-height: 1.5; color: var(--texto-suave); white-space: pre-line; }
-    .lb-purchase-bar { display: flex; flex-direction: column; gap: 10px; }
+    .lb-desc-text { font-size: 13px; line-height: 1.45; color: var(--texto-suave); white-space: pre-line; max-height: 125px; overflow-y: auto; }
+    .lb-purchase-bar { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
     .lb-price-qty-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
     .lb-qty-box { display: inline-flex; align-items: center; gap: 10px; border: 1.5px solid var(--borde); border-radius: 999px; padding: 4px 10px; background: #FAF8F5; }
     .lb-qty-btn { width: 28px; height: 28px; border-radius: 50%; border: none; background: var(--blanco); color: var(--texto); font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
     .lb-actions-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 640px) {
+      .book-sheet-body { grid-template-columns: 1fr; gap: 12px; }
+      .lightbox-img-wrap { padding: 10px; }
+      .lightbox-img-wrap img { max-height: 195px; }
+    }
     @media (max-width: 480px) { .lb-actions-row { grid-template-columns: 1fr; } }
 
     .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--borde); gap: 10px; text-align: left; }
@@ -288,27 +296,31 @@
         <div><h3 id="lbTitulo"></h3><small style="color:var(--texto-suave);" id="lbDetalle"></small></div>
         <button class="btn btn-soft" type="button" onclick="cerrarModal('modalLightbox')">✕</button>
       </div>
-      <div class="lightbox-img-wrap"><img id="lbImg" src="" alt="" /></div>
-      <div class="lb-meta-below">
-        <div class="lb-editorial-row">Editorial: <span id="lbEditorial"></span></div>
-        <div class="lb-desc-text" id="lbDescripcion"></div>
-      </div>
-      <div class="lb-purchase-bar">
-        <div class="lb-price-qty-row">
-          <div>
-            <div class="price-usd" id="lbPrecioUsd"></div>
-            <div class="price-bs" id="lbPrecioBs"></div>
-            <div class="stock-txt" id="lbStockTxt" style="margin-bottom:0;margin-top:2px;"></div>
+      <div class="book-sheet-body">
+        <div class="lightbox-img-wrap"><img id="lbImg" src="" alt="" /></div>
+        <div class="book-sheet-info">
+          <div class="lb-meta-below">
+            <div class="lb-editorial-row">Editorial: <span id="lbEditorial"></span></div>
+            <div class="lb-desc-text" id="lbDescripcion"></div>
           </div>
-          <div class="lb-qty-box" aria-label="Cantidad">
-            <button class="lb-qty-btn" type="button" onclick="ajustarCantidadLightbox(-1)">−</button>
-            <span id="lbQtyValue" style="font-weight:800;min-width:22px;text-align:center;">1</span>
-            <button class="lb-qty-btn" type="button" onclick="ajustarCantidadLightbox(1)">+</button>
+          <div class="lb-purchase-bar">
+            <div class="lb-price-qty-row">
+              <div>
+                <div class="price-usd" id="lbPrecioUsd"></div>
+                <div class="price-bs" id="lbPrecioBs"></div>
+                <div class="stock-txt" id="lbStockTxt" style="margin-bottom:0;margin-top:2px;"></div>
+              </div>
+              <div class="lb-qty-box" aria-label="Cantidad">
+                <button class="lb-qty-btn" type="button" onclick="ajustarCantidadLightbox(-1)">−</button>
+                <span id="lbQtyValue" style="font-weight:800;min-width:22px;text-align:center;">1</span>
+                <button class="lb-qty-btn" type="button" onclick="ajustarCantidadLightbox(1)">+</button>
+              </div>
+            </div>
+            <div class="lb-actions-row">
+              <button class="btn btn-outline" type="button" id="lbBtnAgregar">Añadir al carrito</button>
+              <button class="btn btn-primary" type="button" id="lbBtnComprar">Comprar ahora</button>
+            </div>
           </div>
-        </div>
-        <div class="lb-actions-row">
-          <button class="btn btn-outline" type="button" id="lbBtnAgregar">Añadir al carrito</button>
-          <button class="btn btn-primary" type="button" id="lbBtnComprar">Comprar ahora</button>
         </div>
       </div>
     </div>
@@ -338,7 +350,7 @@
           <div class="field">
             <label>Modalidad de Entrega *</label>
             <select id="cliEntrega" required>
-              <option value="Entrega en Candelaria - Panadería San Bernardino">Entrega en Candelaria - Panadería San Bernardino</option>
+              <option value="Entrega en Candelaria • Farmatodo Av.Urdaneta">Entrega en Candelaria • Farmatodo Av.Urdaneta</option>
               <option value="Envío nacional">Envío nacional</option>
             </select>
           </div>
@@ -562,7 +574,6 @@
       } catch (_) {}
     }
 
-    // Lee directamente la URL de imagen guardada en la Sheet / backend
     function obtenerImagenCategoria(catObj) {
       if (!catObj) return "";
       return String(
@@ -1111,7 +1122,6 @@
       box.innerHTML = url ? `<img src="${escAttr(url)}" alt="Vista categoría" onerror="this.parentElement.textContent='${init}'" />` : init;
     }
 
-    // Sube la imagen a Google Drive y guarda la URL en Google Sheets (no en localStorage)
     async function subirFotoCategoriaAdmin(input) {
       const file = input.files?.[0]; if (!file) return;
       const cat = state.catEditandoNombre, msg = $("msgAdminCat"); if (!cat) return;
