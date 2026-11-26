@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pao's World — Catálogo</title>
+  <title>Tienda del Samurai — Catálogo de Libros</title>
   <style>
     :root {
       --primario: #A99BE8;
@@ -203,8 +203,6 @@
       text-decoration: none; z-index: 45; transition: transform 0.15s ease, filter 0.15s ease, background-color 0.15s ease;
     }
     .fab-social:hover { transform: scale(1.05); }
-    .fab-tt { bottom: 210px; background: #111111; box-shadow: 0 8px 20px rgba(17, 17, 17, 0.32); }
-    .fab-tt:hover { filter: brightness(1.12); }
     .fab-ig { bottom: 146px; background: linear-gradient(45deg, #F58529, #DD2A7B, #8134AF, #515BD4); box-shadow: 0 8px 20px rgba(129, 52, 175, 0.35); }
     .fab-ig:hover { filter: brightness(1.06); }
     .fab-wa { bottom: 82px; background-color: #25D366; box-shadow: 0 8px 20px rgba(37, 211, 102, 0.35); }
@@ -256,6 +254,18 @@
     .qty-controls { display: flex; align-items: center; gap: 6px; }
     .qty-btn { width: 26px; height: 26px; border-radius: 7px; border: 1px solid var(--borde); background: var(--fondo); font-weight: 800; cursor: pointer; }
     .promo-note { font-size: 12px; color: var(--exito); font-weight: 700; margin-top: 6px; }
+    .paypal-note {
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #F4F1FF;
+      border: 1px solid #D3C8F7;
+      color: #3D2E7C;
+      font-size: 12.5px;
+      font-weight: 700;
+      line-height: 1.4;
+      display: none;
+    }
 
     .order-desc-box {
       margin-top: 12px;
@@ -284,7 +294,12 @@
       color: var(--texto);
       border-top: 1px dashed var(--borde);
       padding-top: 8px;
-      line-height: 1.45;
+      line-height: 1.5;
+    }
+    .order-desc-sub {
+      font-size: 12px;
+      color: var(--texto-suave);
+      font-weight: 600;
     }
     .order-desc-bs {
       color: var(--acento);
@@ -359,9 +374,6 @@
 <body>
 
   <svg width="0" height="0" style="position:absolute;visibility:hidden;" aria-hidden="true">
-    <symbol id="ico-tt" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.26 8.26 0 0 0 4.83 1.56V6.79a4.85 4.85 0 0 1-1.06-.1z"/>
-    </symbol>
     <symbol id="ico-ig" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
       <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
@@ -388,23 +400,19 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <div class="brand-logo" id="brandLogo">PW</div>
+        <div class="brand-logo" id="brandLogo">TS</div>
         <div>
-          <div class="brand-title" id="brandTitle" role="button" tabindex="0" onclick="abrirModalPin()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirModalPin();}">Pao's World</div>
-          <div class="brand-sub" id="brandSub">The World of Princess • Caracas, Venezuela</div>
+          <div class="brand-title" id="brandTitle" role="button" tabindex="0" onclick="abrirModalPin()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirModalPin();}">Tienda del Samurai</div>
+          <div class="brand-sub" id="brandSub">Tienda de libros • Caracas, Venezuela</div>
         </div>
       </div>
 
       <div class="top-actions">
-        <a id="headerTikTok" class="top-pill" href="https://www.tiktok.com/@.paos.world" target="_blank" rel="noopener noreferrer" aria-label="Visitar TikTok de Pao's World" title="Síguenos en TikTok @.paos.world">
-          <svg width="15" height="15" aria-hidden="true"><use href="#ico-tt"></use></svg>
-          <span id="headerTtText">@.paos.world</span>
-        </a>
-        <a id="headerInstagram" class="top-pill" href="https://www.instagram.com/paos.world/" target="_blank" rel="noopener noreferrer" aria-label="Visitar Instagram de Pao's World" title="Síguenos en Instagram @paos.world">
+        <a id="headerInstagram" class="top-pill" href="https://www.instagram.com/latiendadelsamurai/" target="_blank" rel="noopener noreferrer" aria-label="Visitar Instagram de Tienda del Samurai" title="Síguenos en Instagram @latiendadelsamurai">
           <svg width="16" height="16" aria-hidden="true"><use href="#ico-ig"></use></svg>
-          <span id="headerIgText">@paos.world</span>
+          <span id="headerIgText">@latiendadelsamurai</span>
         </a>
-        <a id="headerWhatsApp" class="top-pill" href="https://wa.me/584242855733" target="_blank" rel="noopener noreferrer" aria-label="Escribir por WhatsApp a Pao's World" title="Escríbenos por WhatsApp">
+        <a id="headerWhatsApp" class="top-pill" href="https://wa.me/584242855733" target="_blank" rel="noopener noreferrer" aria-label="Escribir por WhatsApp a Tienda del Samurai" title="Escríbenos por WhatsApp">
           <svg width="16" height="16" aria-hidden="true"><use href="#ico-wa"></use></svg>
           <span id="headerWaText">+58 424-2855733</span>
         </a>
@@ -415,11 +423,11 @@
 
   <main class="container">
     <div class="banner-pausa" id="bannerPausa">
-      La tienda se encuentra temporalmente pausada. Puedes explorar el catálogo o escribirnos por WhatsApp.
+      La tienda se encuentra temporalmente pausada. Puedes explorar el catálogo de libros o escribirnos por WhatsApp.
     </div>
 
     <div class="portada-box" id="portadaBox">
-      <img id="portadaImg" src="" alt="Portada Pao's World" />
+      <img id="portadaImg" src="" alt="Portada Tienda del Samurai" />
     </div>
 
     <section class="entregas-card" aria-label="Información de entregas">
@@ -438,12 +446,12 @@
     </section>
 
     <section class="controls-bar">
-      <input type="text" id="searchInput" class="search-input" placeholder="Buscar maquillaje, skincare, uñas, serums, papelería, navidad..." oninput="renderCatalogo()" />
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar libros, novelas, manga, filosofía, historia, ciencia ficción..." oninput="renderCatalogo()" />
       <div class="cats-row" id="catsRow"></div>
     </section>
 
     <section class="grid-productos" id="gridProductos">
-      <p style="color: var(--texto-suave);">Cargando catálogo de Pao's World...</p>
+      <p style="color: var(--texto-suave);">Cargando catálogo de Tienda del Samurai...</p>
     </section>
   </main>
 
@@ -451,15 +459,11 @@
     <span class="type-text" id="devWatermarkType"></span><span class="type-cursor" id="devWatermarkCursor" aria-hidden="true"></span>
   </div>
 
-  <a id="fabTikTok" class="fab-social fab-tt" href="https://www.tiktok.com/@.paos.world" target="_blank" rel="noopener noreferrer" aria-label="Visitar TikTok de Pao's World" title="Visitar TikTok de Pao's World">
-    <svg width="24" height="24" aria-hidden="true"><use href="#ico-tt"></use></svg>
-  </a>
-
-  <a id="fabInstagram" class="fab-social fab-ig" href="https://www.instagram.com/paos.world/" target="_blank" rel="noopener noreferrer" aria-label="Visitar Instagram de Pao's World" title="Visitar Instagram de Pao's World">
+  <a id="fabInstagram" class="fab-social fab-ig" href="https://www.instagram.com/latiendadelsamurai/" target="_blank" rel="noopener noreferrer" aria-label="Visitar Instagram de Tienda del Samurai" title="Visitar Instagram de Tienda del Samurai">
     <svg width="26" height="26" aria-hidden="true"><use href="#ico-ig"></use></svg>
   </a>
 
-  <a id="fabWhatsApp" class="fab-social fab-wa" href="https://wa.me/584242855733" target="_blank" rel="noopener noreferrer" aria-label="Chatear por WhatsApp con Paola" title="Chatear por WhatsApp con Paola">
+  <a id="fabWhatsApp" class="fab-social fab-wa" href="https://wa.me/584242855733" target="_blank" rel="noopener noreferrer" aria-label="Chatear por WhatsApp con Tienda del Samurai" title="Chatear por WhatsApp con Tienda del Samurai">
     <svg width="28" height="28" aria-hidden="true"><use href="#ico-wa"></use></svg>
   </a>
 
@@ -495,11 +499,14 @@
   <div class="modal-backdrop" id="modalCarrito">
     <div class="modal-box">
       <div class="modal-head">
-        <h3>Tu Pedido en Pao's World</h3>
+        <h3>Tu Pedido en Tienda del Samurai</h3>
         <button class="btn btn-soft" type="button" onclick="cerrarModal('modalCarrito')">✕</button>
       </div>
       <div id="cartItemsList"></div>
       <div class="promo-note" id="cartPromoNote"></div>
+      <div class="paypal-note" id="paypalAvisoBox">
+        Recuerde que usted asume la comisión de envío.
+      </div>
       <div id="orderDescriptionBox"></div>
 
       <form id="formPedido" style="margin-top: 14px;" onsubmit="enviarPedido(event)">
@@ -558,7 +565,7 @@
   <div class="modal-backdrop" id="modalAdmin">
     <div class="modal-box wide">
       <div class="modal-head">
-        <h3>Panel Administrativo — Pao's World</h3>
+        <h3>Panel Administrativo — Tienda del Samurai</h3>
         <div style="display: flex; gap: 8px;">
           <button class="btn btn-soft" type="button" onclick="toggleEstadoTiendaAdmin()" id="btnEstadoTienda">Estado: ACTIVO</button>
           <button class="btn btn-danger" type="button" onclick="cerrarModal('modalAdmin')">Cerrar</button>
@@ -567,7 +574,7 @@
 
       <div class="admin-tabs">
         <button class="btn btn-primary" type="button" onclick="cambiarTabAdmin('tabTasa', this)">Tasa BCV y Ajustes</button>
-        <button class="btn btn-soft" type="button" id="btnTabProductos" onclick="cambiarTabAdmin('tabProductos', this)">Productos</button>
+        <button class="btn btn-soft" type="button" id="btnTabProductos" onclick="cambiarTabAdmin('tabProductos', this)">Libros</button>
         <button class="btn btn-soft" type="button" onclick="cambiarTabAdmin('tabPedidos', this)">Pedidos</button>
         <button class="btn btn-soft" type="button" onclick="cambiarTabAdmin('tabMovs', this)">Movimientos DEBE/HABER</button>
       </div>
@@ -590,6 +597,14 @@
           <div class="field">
             <label>WhatsApp (ej. 584242855733)</label>
             <input type="text" id="cfgWhatsapp" />
+          </div>
+          <div class="field">
+            <label>Comisión PayPal (%)</label>
+            <input type="number" step="0.01" min="0" id="cfgPaypalPct" />
+          </div>
+          <div class="field">
+            <label>Comisión PayPal Fija (USD)</label>
+            <input type="number" step="0.01" min="0" id="cfgPaypalFija" />
           </div>
           <div class="field">
             <label>Subir Logo (se guarda en Google Drive)</label>
@@ -618,13 +633,13 @@
       <div class="admin-panel" id="tabProductos">
         <div class="admin-quick-search">
           <svg width="18" height="18" style="color: var(--acento); flex-shrink: 0;" aria-hidden="true"><use href="#ico-search"></use></svg>
-          <input type="search" id="adminSearchInput" placeholder="Buscar rápido categoría o producto (nombre, ID, variante)..." oninput="filtrarAdminCatalogo()" />
+          <input type="search" id="adminSearchInput" placeholder="Buscar rápido categoría o libro (título, ID, edición)..." oninput="filtrarAdminCatalogo()" />
           <button class="btn btn-soft btn-sm" type="button" id="btnLimpiarAdminSearch" onclick="limpiarBusquedaAdmin()" style="display: none;">Limpiar</button>
         </div>
 
         <div class="cat-manager-box">
           <div class="cat-manager-head">
-            <div class="cat-manager-title">Categorías del Catálogo (Crear, Ordenar, Ocultar o Eliminar)</div>
+            <div class="cat-manager-title">Categorías de Libros (Crear, Ordenar, Ocultar o Eliminar)</div>
             <div class="cat-create-row">
               <input type="text" id="nuevaCategoriaInput" placeholder="Nueva categoría (ej. Novelas, Ciencia Ficción...)" onkeydown="if(event.key==='Enter'){event.preventDefault();crearCategoriaAdmin();}" />
               <button class="btn btn-primary btn-sm" type="button" id="btnCrearCategoria" onclick="crearCategoriaAdmin()">+ Crear</button>
@@ -637,18 +652,18 @@
         <div class="admin-grid-2" style="margin-bottom: 14px; background: #FAF9FE; padding: 12px; border-radius: 12px; border: 1px solid var(--borde);">
           <div class="field"><label>ID (vacío para crear nuevo)</label><input type="text" id="prodId" placeholder="Ej. libros1 o vacío" /></div>
           <div class="field"><label>Categoría</label><select id="prodCategoria"></select></div>
-          <div class="field"><label>Nombre del Producto *</label><input type="text" id="prodNombre" /></div>
-          <div class="field"><label>Detalle / Variante</label><input type="text" id="prodDetalle" /></div>
+          <div class="field"><label>Título del Libro *</label><input type="text" id="prodNombre" /></div>
+          <div class="field"><label>Detalle / Edición / Autor</label><input type="text" id="prodDetalle" /></div>
           <div class="field"><label>Precio BCV (USD) *</label><input type="number" step="0.01" id="prodPrecioUsd" /></div>
           <div class="field"><label>Precio Promo Divisas (opcional)</label><input type="number" step="0.01" id="prodPromoUsd" /></div>
           <div class="field"><label>Stock</label><input type="number" step="1" id="prodStock" value="5" /></div>
           <div class="field">
-            <label>Foto del Producto (Drive)</label>
+            <label>Foto del Libro (Drive)</label>
             <input type="file" accept="image/*" onchange="subirFotoProducto(this)" />
             <input type="text" id="prodImagenUrl" placeholder="URL de imagen" style="margin-top: 6px;" />
           </div>
           <div style="display: flex; align-items: flex-end; gap: 8px; margin-bottom: 12px;">
-            <button class="btn btn-primary" type="button" onclick="guardarProductoAdmin()">Guardar Producto</button>
+            <button class="btn btn-primary" type="button" onclick="guardarProductoAdmin()">Guardar Libro</button>
             <button class="btn btn-soft" type="button" onclick="limpiarFormProducto()">Limpiar</button>
           </div>
         </div>
@@ -657,7 +672,7 @@
         <div class="table-wrap" style="margin-top: 12px;">
           <table>
             <thead>
-              <tr><th>ID</th><th>Categoría</th><th>Nombre</th><th>USD</th><th>Promo Div.</th><th>Stock</th><th>Acciones</th></tr>
+              <tr><th>ID</th><th>Categoría</th><th>Libro</th><th>USD</th><th>Promo Div.</th><th>Stock</th><th>Acciones</th></tr>
             </thead>
             <tbody id="adminProdBody"></tbody>
           </table>
@@ -667,7 +682,7 @@
       <div class="admin-panel" id="tabPedidos">
         <div class="admin-quick-search">
           <svg width="18" height="18" style="color: var(--acento); flex-shrink: 0;" aria-hidden="true"><use href="#ico-search"></use></svg>
-          <input type="search" id="pedidosSearchInput" placeholder="Buscar pedido por ID, cliente, teléfono, producto, estado..." oninput="filtrarPedidosAdmin()" />
+          <input type="search" id="pedidosSearchInput" placeholder="Buscar pedido por ID, cliente, teléfono, libro, estado..." oninput="filtrarPedidosAdmin()" />
           <button class="btn btn-soft btn-sm" type="button" id="btnLimpiarPedidosSearch" onclick="limpiarBusquedaPedidos()" style="display: none;">Limpiar</button>
         </div>
 
@@ -685,7 +700,7 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>Fecha</th><th>Ref</th><th>Producto</th><th>Tipo</th><th>Cant.</th><th>Stock Ant. → Nuevo</th><th>Motivo</th></tr>
+              <tr><th>Fecha</th><th>Ref</th><th>Libro (ID)</th><th>Tipo</th><th>Cant.</th><th>Stock Ant. → Nuevo</th><th>Motivo</th></tr>
             </thead>
             <tbody id="adminMovsBody"></tbody>
           </table>
@@ -696,12 +711,12 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyivH9o3icH1xoEcg0KKAD5ADEp-GTyrGf4sRuQqsg1JeoRsoLQqM3vFLFrsJ1ySpl3-w/exec";
-    const TIKTOK_URL = "https://www.tiktok.com/@.paos.world";
-    const DEV_WA_URL = "https://wa.me/584241913036?text=Hola%20Kevin%2C%20vi%20la%20p%C3%A1gina%20de%20Pao%27s%20World%20y%20me%20gustar%C3%ADa%20cotizar%20una%20web%20para%20mi%20negocio.";
-    const CACHE_KEY = "paos_world_catalog_v1";
+    const INSTAGRAM_URL = "https://www.instagram.com/latiendadelsamurai/";
+    const DEV_WA_URL = "https://wa.me/584241913036?text=Hola%20Kevin%2C%20vi%20la%20p%C3%A1gina%20de%20Tienda%20del%20Samurai%20y%20me%20gustar%C3%ADa%20cotizar%20una%20web%20para%20mi%20negocio.";
+    const CACHE_KEY = "tienda_del_samurai_catalog_v1";
 
     // PIN por defecto si no has guardado otro en la hoja Config
-    const ADMIN_PIN_PRUEBAS = "paosworld#20200";
+    const ADMIN_PIN_PRUEBAS = "samurai#20200";
 
     const PAISES = [
       ["58", "+58 (VE)"], ["57", "+57 (CO)"], ["1", "+1 (US/CA)"],
@@ -732,12 +747,13 @@
         tasa_bcv: 890,
         bcv_ultima_actualizacion: "",
         horas_expiracion_carrito: 2,
-        nombre_tienda: "Pao's World",
-        subtitulo_tienda: "The World of Princess • Caracas, Venezuela",
+        nombre_tienda: "Tienda del Samurai",
+        subtitulo_tienda: "Tienda de libros • Caracas, Venezuela",
         whatsapp: "584242855733",
-        instagram: "@paos.world",
-        tiktok: "@.paos.world",
+        instagram: "@latiendadelsamurai",
         metodos_pago: "Pago Móvil|Divisas|PayPal",
+        paypal_comision_pct: 5.4,
+        paypal_comision_fija: 0.30,
         color_primario: "#A99BE8",
         color_fondo: "#F4F2FC",
         color_acento: "#8575D4",
@@ -887,6 +903,27 @@
       renderModalCarrito();
     }
 
+    function esMetodoPayPal(metodoPago) {
+      return /paypal/i.test(String(metodoPago || "").trim());
+    }
+
+    function calcularComisionPayPal(netoUsd) {
+      const neto = Number(netoUsd) || 0;
+      if (neto <= 0) return { comisionUsd: 0, totalEnviarUsd: 0, pct: 5.4, fija: 0.30 };
+
+      const pctRaw = parseFloat(state.config.paypal_comision_pct);
+      const fijaRaw = parseFloat(state.config.paypal_comision_fija);
+      const pct = !isNaN(pctRaw) && pctRaw >= 0 && pctRaw < 100 ? pctRaw : 5.4;
+      const fija = !isNaN(fijaRaw) && fijaRaw >= 0 ? fijaRaw : 0.30;
+
+      const tasaDecimal = pct / 100;
+      const brutoExacto = (neto + fija) / (1 - tasaDecimal);
+      const totalEnviarUsd = Number(brutoExacto.toFixed(2));
+      const comisionUsd = Number(Math.max(0, totalEnviarUsd - neto).toFixed(2));
+
+      return { comisionUsd, totalEnviarUsd, pct, fija };
+    }
+
     function obtenerCategoriasOcultasSet() {
       const hidden = new Set();
       for (const c of (state.categorias || [])) {
@@ -967,18 +1004,15 @@
       root.setProperty("--fondo", c.color_fondo || "#F4F2FC");
       root.setProperty("--acento", c.color_acento || "#8575D4");
 
-      $("brandTitle").textContent = c.nombre_tienda || "Pao's World";
-      $("brandSub").textContent = c.subtitulo_tienda || "The World of Princess • Caracas, Venezuela";
-      document.title = `${c.nombre_tienda || "Pao's World"} — Catálogo`;
+      $("brandTitle").textContent = c.nombre_tienda || "Tienda del Samurai";
+      $("brandSub").textContent = c.subtitulo_tienda || "Tienda de libros • Caracas, Venezuela";
+      document.title = `${c.nombre_tienda || "Tienda del Samurai"} — Catálogo de Libros`;
 
-      const ttHandle = String(c.tiktok || "@.paos.world").trim() || "@.paos.world";
-      $("headerTikTok").href = TIKTOK_URL;
-      $("fabTikTok").href = TIKTOK_URL;
-      $("headerTtText").textContent = ttHandle;
-
-      const igHandle = String(c.instagram || "@paos.world").trim();
-      const igUser = igHandle.replace(/^@/, "") || "paos.world";
-      const igUrl = `https://www.instagram.com/${encodeURIComponent(igUser)}/`;
+      const igHandle = String(c.instagram || "@latiendadelsamurai").trim();
+      const igUser = igHandle.replace(/^@/, "") || "latiendadelsamurai";
+      const igUrl = igUser === "latiendadelsamurai"
+        ? INSTAGRAM_URL
+        : `https://www.instagram.com/${encodeURIComponent(igUser)}/`;
       $("headerInstagram").href = igUrl;
       $("fabInstagram").href = igUrl;
       $("headerIgText").textContent = igHandle.startsWith("@") ? igHandle : `@${igHandle}`;
@@ -993,8 +1027,8 @@
       $("bannerPausa").style.display = String(c.estado_servicio).toUpperCase() === "ACTIVO" ? "none" : "block";
 
       $("brandLogo").innerHTML = c.logo_url
-        ? `<img src="${escAttr(c.logo_url)}" alt="Logo Pao's World" />`
-        : "PW";
+        ? `<img src="${escAttr(c.logo_url)}" alt="Logo Tienda del Samurai" />`
+        : "TS";
 
       const portadaBox = $("portadaBox");
       if (c.portada_url) {
@@ -1046,7 +1080,7 @@
 
       const grid = $("gridProductos");
       if (!filtrados.length) {
-        grid.innerHTML = `<p style="color: var(--texto-suave);">No se encontraron productos con ese filtro.</p>`;
+        grid.innerHTML = `<p style="color: var(--texto-suave);">No se encontraron libros con ese filtro.</p>`;
         return;
       }
 
@@ -1062,7 +1096,7 @@
           ? `<img src="${escAttr(p.imagen_url)}" alt="${escAttr(p.nombre)}" loading="lazy" decoding="async" />`
           : `<span style="font-size: 28px; font-weight: 800; color: var(--acento); opacity: 0.45;">${escHtml(p.categoria.slice(0, 2).toUpperCase())}</span>`;
         const clickAttrs = tieneFoto
-          ? `class="card-img clickable" onclick="abrirLightbox('${escAttr(p.id)}')" title="Ver foto ampliada"`
+          ? `class="card-img clickable" onclick="abrirLightbox('${escAttr(p.id)}')" title="Ver portada ampliada"`
           : `class="card-img"`;
 
         return `
@@ -1104,7 +1138,7 @@
       $("lbTitulo").textContent = prod.nombre || "";
       $("lbDetalle").textContent = [prod.categoria, prod.detalle_variante].filter(Boolean).join(" • ");
       $("lbImg").src = prod.imagen_url;
-      $("lbImg").alt = prod.nombre || "Producto";
+      $("lbImg").alt = prod.nombre || "Libro";
       $("lbPrecioUsd").textContent = `$${precioUsd.toFixed(2)}`;
       $("lbPrecioBs").textContent = `Bs. ${fmtBs(precioUsd * tasa)}`;
 
@@ -1134,7 +1168,7 @@
     }
 
     function calcularTotalesCarrito(metodoPago) {
-      let totalUsd = 0;
+      let subtotalUsd = 0;
       let totalUnidades = 0;
       let ahorroPromo = 0;
 
@@ -1142,11 +1176,25 @@
         const base = Number(it.precio_usd) || 0;
         const unit = precioUnitarioSegunPago(it, metodoPago);
         totalUnidades += it.cantidad;
-        totalUsd += it.cantidad * unit;
+        subtotalUsd += it.cantidad * unit;
         if (unit < base) ahorroPromo += it.cantidad * (base - unit);
       }
 
-      return { totalUsd, totalUnidades, ahorroPromo };
+      const usaPayPal = esMetodoPayPal(metodoPago) && subtotalUsd > 0;
+      const pp = usaPayPal
+        ? calcularComisionPayPal(subtotalUsd)
+        : { comisionUsd: 0, totalEnviarUsd: subtotalUsd, pct: 5.4, fija: 0.30 };
+
+      return {
+        subtotalUsd: Number(subtotalUsd.toFixed(2)),
+        comisionPayPalUsd: pp.comisionUsd,
+        totalUsd: usaPayPal ? pp.totalEnviarUsd : Number(subtotalUsd.toFixed(2)),
+        paypalPct: pp.pct,
+        paypalFija: pp.fija,
+        usaPayPal,
+        totalUnidades,
+        ahorroPromo
+      };
     }
 
     function agregarAlCarrito(prodId) {
@@ -1202,6 +1250,7 @@
       const list = $("cartItemsList");
       const descBox = $("orderDescriptionBox");
       const promoNote = $("cartPromoNote");
+      const paypalAviso = $("paypalAvisoBox");
       const metodoPago = $("cliPago")?.value || "Pago Móvil";
       const esPagoMovil = /m[oó]vil|transferencia/i.test(metodoPago);
       const tasa = parseFloat(state.config.tasa_bcv) || 890;
@@ -1209,6 +1258,7 @@
       if (!state.carrito.length) {
         list.innerHTML = `<p style="color: var(--texto-suave); padding: 12px 0;">Tu carrito está vacío.</p>`;
         promoNote.textContent = "";
+        if (paypalAviso) paypalAviso.style.display = "none";
         descBox.innerHTML = "";
         actualizarBadgeCarrito();
         return;
@@ -1234,10 +1284,28 @@
         `;
       }).join("");
 
-      const { totalUsd, ahorroPromo } = calcularTotalesCarrito(metodoPago);
+      const {
+        subtotalUsd,
+        comisionPayPalUsd,
+        totalUsd,
+        paypalPct,
+        paypalFija,
+        usaPayPal,
+        ahorroPromo
+      } = calcularTotalesCarrito(metodoPago);
+
       promoNote.textContent = ahorroPromo > 0
         ? `¡Promoción aplicada! Ahorras $${ahorroPromo.toFixed(2)} en este pedido.`
         : "";
+
+      if (paypalAviso) {
+        if (esMetodoPayPal(metodoPago)) {
+          paypalAviso.textContent = `Recuerde que usted asume la comisión de envío. Cálculo PayPal (${paypalPct}% + $${paypalFija.toFixed(2)}): comisión estimada $${comisionPayPalUsd.toFixed(2)} USD.`;
+          paypalAviso.style.display = "block";
+        } else {
+          paypalAviso.style.display = "none";
+        }
+      }
 
       const detalleItemsHtml = state.carrito.map(it => {
         const unit = precioUnitarioSegunPago(it, metodoPago);
@@ -1247,6 +1315,12 @@
 
       const totalBsFmt = fmtBs(totalUsd * tasa);
       const tasaFmt = fmtBs(tasa);
+      const desglosePayPalHtml = usaPayPal
+        ? `
+          <div class="order-desc-sub">Subtotal libros: $${subtotalUsd.toFixed(2)} USD</div>
+          <div class="order-desc-sub">Comisión PayPal (${paypalPct}% + $${paypalFija.toFixed(2)}): +$${comisionPayPalUsd.toFixed(2)} USD</div>
+        `
+        : "";
       const pagoMovilHtml = esPagoMovil
         ? `<div class="order-desc-bs">Son $${totalUsd.toFixed(2)} de tu carrito • Total en Bs.: Bs. ${totalBsFmt} (Tasa BCV: Bs. ${tasaFmt})</div>`
         : "";
@@ -1256,7 +1330,8 @@
           <div class="order-desc-title">Descripción del pedido</div>
           <ul class="order-desc-list">${detalleItemsHtml}</ul>
           <div class="order-desc-total">
-            Total del carrito: $${totalUsd.toFixed(2)} USD
+            ${desglosePayPalHtml}
+            Total ${usaPayPal ? "a enviar por PayPal" : "del carrito"}: $${totalUsd.toFixed(2)} USD
             ${pagoMovilHtml}
           </div>
         </div>
@@ -1280,7 +1355,7 @@
       msg.style.display = "none";
 
       if (!state.carrito.length) {
-        mostrarMsg(msg, "Agrega al menos un producto al carrito.", false);
+        mostrarMsg(msg, "Agrega al menos un libro al carrito.", false);
         return;
       }
 
@@ -1292,7 +1367,26 @@
 
       const metodoPago = $("cliPago").value;
       const tasa = parseFloat(state.config.tasa_bcv) || 890;
-      const { totalUsd } = calcularTotalesCarrito(metodoPago);
+      const { totalUsd, comisionPayPalUsd, usaPayPal } = calcularTotalesCarrito(metodoPago);
+
+      const itemsPayload = state.carrito.map(it => {
+        const unit = precioUnitarioSegunPago(it, metodoPago);
+        return {
+          id: it.id,
+          nombre: it.nombre,
+          cantidad: it.cantidad,
+          precio_usd: Number(unit.toFixed(2))
+        };
+      });
+
+      if (usaPayPal && comisionPayPalUsd > 0) {
+        itemsPayload.push({
+          id: "COM-PAYPAL",
+          nombre: `Comisión PayPal (${state.config.paypal_comision_pct || 5.4}% + $${Number(state.config.paypal_comision_fija || 0.30).toFixed(2)})`,
+          cantidad: 1,
+          precio_usd: Number(comisionPayPalUsd.toFixed(2))
+        });
+      }
 
       const payload = {
         action: "createOrder",
@@ -1302,15 +1396,7 @@
         metodo_pago: metodoPago,
         total_usd: Number(totalUsd.toFixed(2)),
         total_bs: Number((totalUsd * tasa).toFixed(2)),
-        items: state.carrito.map(it => {
-          const unit = precioUnitarioSegunPago(it, metodoPago);
-          return {
-            id: it.id,
-            nombre: it.nombre,
-            cantidad: it.cantidad,
-            precio_usd: Number(unit.toFixed(2))
-          };
-        })
+        items: itemsPayload
       };
 
       const btn = $("btnConfirmarPedido");
@@ -1506,7 +1592,7 @@
         const metodoPagoStr = String(ped.metodo_pago || "").trim();
         const esPagoMovil = /m[oó]vil|transferencia/i.test(metodoPagoStr);
         const nombreCliente = String(ped.cliente || "").trim();
-        const tiendaStr = String(cfg?.nombre_tienda || "Pao's World").trim();
+        const tiendaStr = String(cfg?.nombre_tienda || "Tienda del Samurai").trim();
         const detalleLineas = formatearDetalleParaWhatsApp(ped.detalle_items);
 
         const cabecera = [
@@ -1610,7 +1696,7 @@
       const filtrados = filtrarListaProductosAdmin(todos);
 
       if (!filtrados.length) {
-        $("adminProdBody").innerHTML = `<tr><td colspan="7" style="color: var(--texto-suave);">No se encontraron productos con ese filtro.</td></tr>`;
+        $("adminProdBody").innerHTML = `<tr><td colspan="7" style="color: var(--texto-suave);">No se encontraron libros con ese filtro.</td></tr>`;
         return;
       }
 
@@ -1622,7 +1708,7 @@
         const promo = parseFloat(p.precio_promo_divisas);
         const badgeOculto = estaOculto ? ` <span class="cat-badge-hidden">OCULTO</span>` : "";
         const eyeIcon = estaOculto ? "#ico-eye" : "#ico-eye-off";
-        const eyeTitle = estaOculto ? "Mostrar producto en catálogo" : "Ocultar producto en catálogo";
+        const eyeTitle = estaOculto ? "Mostrar libro en catálogo" : "Ocultar libro en catálogo";
 
         return `
           <tr class="${estaOculto ? "prod-row-hidden" : ""}">
@@ -1635,10 +1721,10 @@
             <td>
               <div class="prod-actions-cell">
                 <button class="btn btn-soft btn-sm" type="button" onclick="editarProductoPorId('${escAttr(p.id)}')">Editar</button>
-                <button class="btn btn-soft btn-sm" type="button" title="Ascender producto" ${esPrimero ? "disabled" : ""} onclick="moverProductoAdmin('${escAttr(p.id)}', 'up')">↑</button>
-                <button class="btn btn-soft btn-sm" type="button" title="Descender producto" ${esUltimo ? "disabled" : ""} onclick="moverProductoAdmin('${escAttr(p.id)}', 'down')">↓</button>
+                <button class="btn btn-soft btn-sm" type="button" title="Ascender libro" ${esPrimero ? "disabled" : ""} onclick="moverProductoAdmin('${escAttr(p.id)}', 'up')">↑</button>
+                <button class="btn btn-soft btn-sm" type="button" title="Descender libro" ${esUltimo ? "disabled" : ""} onclick="moverProductoAdmin('${escAttr(p.id)}', 'down')">↓</button>
                 <button class="btn btn-soft btn-sm" type="button" title="${eyeTitle}" aria-label="${eyeTitle}" onclick="toggleOcultarProductoAdmin('${escAttr(p.id)}', ${!estaOculto})"><svg width="14" height="14" aria-hidden="true"><use href="${eyeIcon}"></use></svg></button>
-                <button class="btn btn-danger btn-sm" type="button" title="Eliminar producto" aria-label="Eliminar producto" onclick="eliminarProductoAdmin('${escAttr(p.id)}', '${escAttr(p.nombre)}')">✕</button>
+                <button class="btn btn-danger btn-sm" type="button" title="Eliminar libro" aria-label="Eliminar libro" onclick="eliminarProductoAdmin('${escAttr(p.id)}', '${escAttr(p.nombre)}')">✕</button>
               </div>
             </td>
           </tr>
@@ -1771,21 +1857,21 @@
           direction: direction
         });
         if (!data || !data.ok) {
-          mostrarMsg(msg, (data && data.error) || "No se pudo cambiar el orden del producto.", false);
+          mostrarMsg(msg, (data && data.error) || "No se pudo cambiar el orden del libro.", false);
           return;
         }
         mostrarMsg(
           msg,
           data.moved === false
-            ? `El producto "${prodId}" ya está en el límite del orden.`
+            ? `El libro "${prodId}" ya está en el límite del orden.`
             : direction === "up"
-              ? `Producto "${prodId}" ascendió en el orden.`
-              : `Producto "${prodId}" descendió en el orden.`,
+              ? `Libro "${prodId}" ascendió en el orden.`
+              : `Libro "${prodId}" descendió en el orden.`,
           true
         );
         await refrescarAdminData();
       } catch (err) {
-        mostrarMsg(msg, err.message || "Error al reordenar producto.", false);
+        mostrarMsg(msg, err.message || "Error al reordenar libro.", false);
       }
     }
 
@@ -1800,25 +1886,25 @@
           oculta: ocultar ? "SI" : "NO"
         });
         if (!data || !data.ok) {
-          mostrarMsg(msg, (data && data.error) || "No se pudo cambiar la visibilidad del producto.", false);
+          mostrarMsg(msg, (data && data.error) || "No se pudo cambiar la visibilidad del libro.", false);
           return;
         }
         mostrarMsg(
           msg,
           ocultar
-            ? `Producto "${prodId}" oculto del catálogo público.`
-            : `Producto "${prodId}" visible nuevamente en el catálogo público.`,
+            ? `Libro "${prodId}" oculto del catálogo público.`
+            : `Libro "${prodId}" visible nuevamente en el catálogo público.`,
           true
         );
         await refrescarAdminData();
       } catch (err) {
-        mostrarMsg(msg, err.message || "Error al cambiar visibilidad del producto.", false);
+        mostrarMsg(msg, err.message || "Error al cambiar visibilidad del libro.", false);
       }
     }
 
     async function eliminarProductoAdmin(prodId, nombreProd) {
       const msg = $("msgAdminProd");
-      const okConfirm = confirm(`¿Eliminar el producto "${nombreProd || prodId}" (${prodId})?`);
+      const okConfirm = confirm(`¿Eliminar el libro "${nombreProd || prodId}" (${prodId})?`);
       if (!okConfirm) return;
 
       try {
@@ -1827,13 +1913,13 @@
           id: prodId
         });
         if (!data || !data.ok) {
-          mostrarMsg(msg, (data && data.error) || "No se pudo eliminar el producto.", false);
+          mostrarMsg(msg, (data && data.error) || "No se pudo eliminar el libro.", false);
           return;
         }
-        mostrarMsg(msg, `Producto "${prodId}" eliminado.`, true);
+        mostrarMsg(msg, `Libro "${prodId}" eliminado.`, true);
         await refrescarAdminData();
       } catch (err) {
-        mostrarMsg(msg, err.message || "Error al eliminar producto.", false);
+        mostrarMsg(msg, err.message || "Error al eliminar libro.", false);
       }
     }
 
@@ -1845,8 +1931,10 @@
         ? `Última actualización: ${cfg.bcv_ultima_actualizacion}`
         : "Sin fecha registrada aún";
       $("cfgHorasExp").value = cfg.horas_expiracion_carrito || "2";
-      $("cfgNombreTienda").value = cfg.nombre_tienda || "Pao's World";
+      $("cfgNombreTienda").value = cfg.nombre_tienda || "Tienda del Samurai";
       $("cfgWhatsapp").value = cfg.whatsapp || "";
+      $("cfgPaypalPct").value = cfg.paypal_comision_pct ?? state.config.paypal_comision_pct ?? "5.4";
+      $("cfgPaypalFija").value = cfg.paypal_comision_fija ?? state.config.paypal_comision_fija ?? "0.30";
       $("cfgLogoUrl").value = cfg.logo_url || "";
       $("cfgPortadaUrl").value = cfg.portada_url || "";
       renderListaMetodosPagoAdmin(cfg.metodos_pago || state.config.metodos_pago);
@@ -1888,6 +1976,8 @@
           horas_expiracion_carrito: $("cfgHorasExp").value.trim(),
           nombre_tienda: $("cfgNombreTienda").value.trim(),
           whatsapp: $("cfgWhatsapp").value.trim(),
+          paypal_comision_pct: $("cfgPaypalPct")?.value.trim() || "5.4",
+          paypal_comision_fija: $("cfgPaypalFija")?.value.trim() || "0.30",
           logo_url: $("cfgLogoUrl").value.trim(),
           portada_url: $("cfgPortadaUrl").value.trim(),
           metodos_pago: $("cfgMetodosPago")?.value || "Pago Móvil|Divisas|PayPal"
@@ -1944,11 +2034,11 @@
         }
       });
       if (data.ok) {
-        mostrarMsg(msg, `Producto guardado (${data.id}).`, true);
+        mostrarMsg(msg, `Libro guardado (${data.id}).`, true);
         limpiarFormProducto();
         await refrescarAdminData();
       } else {
-        mostrarMsg(msg, data.error || "Error al guardar producto", false);
+        mostrarMsg(msg, data.error || "Error al guardar libro", false);
       }
     }
 
