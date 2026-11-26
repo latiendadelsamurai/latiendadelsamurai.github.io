@@ -6,48 +6,80 @@
   <title>Tienda del Samurai — Catálogo de Libros</title>
   <style>
     :root {
-      --primario: #A99BE8;
-      --fondo: #F4F2FC;
-      --acento: #8575D4;
-      --texto: #231E33;
-      --texto-suave: #665E80;
+      --primario: #17171A;
+      --fondo: #F7F5F2;
+      --acento: #A61C1C;
+      --acento-oscuro: #7E1212;
+      --texto: #17171A;
+      --texto-suave: #59535A;
       --blanco: #FFFFFF;
-      --borde: #E2DCF5;
+      --borde: #E3DDD5;
       --exito: #1F8A5B;
-      --peligro: #C63D5A;
+      --peligro: #C62828;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     body { background: var(--fondo); color: var(--texto); min-height: 100vh; padding-bottom: 255px; }
+
     .topbar {
-      background: linear-gradient(135deg, var(--primario), var(--acento));
+      background: linear-gradient(135deg, #141417 0%, #24171A 65%, var(--acento) 135%);
       color: var(--blanco);
-      padding: 12px 18px;
+      padding: 14px 20px;
       position: sticky;
       top: 0;
       z-index: 40;
-      box-shadow: 0 4px 18px rgba(105, 88, 175, 0.22);
+      box-shadow: 0 4px 20px rgba(20, 20, 23, 0.25);
     }
-    .topbar-inner { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .brand { display: flex; align-items: center; gap: 12px; }
+    .topbar-inner { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .brand { display: flex; align-items: center; gap: 16px; }
+
+    /* Logo escalado al 170% (+70% respecto al tamaño base) */
+    .brand-logo-wrap {
+      width: 96px;
+      height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: visible;
+    }
     .brand-logo {
-      min-width: 50px; max-width: 155px; height: 48px; padding: 4px 8px; border-radius: 12px;
-      background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.55);
-      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; overflow: hidden; flex-shrink: 0;
+      width: 56px;
+      height: 48px;
+      transform: scale(1.7);
+      transform-origin: center center;
+      border-radius: 10px;
+      background: #FFFFFF;
+      border: 1.5px solid rgba(255, 255, 255, 0.75);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--primario);
+      overflow: hidden;
     }
-    .brand-logo img { width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 8px; }
-    .brand-title { font-size: 19px; font-weight: 800; letter-spacing: 0.2px; cursor: pointer; }
-    .brand-sub { font-size: 12px; opacity: 0.92; }
+    .brand-logo img,
+    .brand-logo svg {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .brand-title { font-size: 20px; font-weight: 800; letter-spacing: 0.2px; cursor: pointer; }
+    .brand-sub { font-size: 12.5px; opacity: 0.92; color: #F4EFEA; }
 
     .top-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .top-pill {
-      background: rgba(255,255,255,0.22); backdrop-filter: blur(6px);
-      border: 1px solid rgba(255,255,255,0.45); color: var(--blanco);
+      background: rgba(255,255,255,0.14); backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.35); color: var(--blanco);
       padding: 7px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 700;
       text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
-      transition: transform 0.12s ease, background 0.15s ease;
+      transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
     }
-    a.top-pill:hover { background: rgba(255,255,255,0.34); transform: scale(1.03); }
+    a.top-pill:hover { background: rgba(166, 28, 28, 0.72); border-color: rgba(255,255,255,0.65); transform: scale(1.03); }
 
     .btn {
       border: none; border-radius: 10px; padding: 9px 14px; font-size: 13px; font-weight: 700;
@@ -59,7 +91,11 @@
     .btn-sm { padding: 5px 9px; font-size: 12px; border-radius: 8px; }
     .btn-white { background: var(--blanco); color: var(--acento); }
     .btn-primary { background: var(--acento); color: var(--blanco); }
-    .btn-soft { background: #ECE7FA; color: var(--texto); }
+    .btn-primary:hover { background: var(--acento-oscuro); }
+    .btn-soft { background: #EFEAE3; color: var(--texto); }
+    .btn-soft:hover { background: #E4DDD3; }
+    .btn-qty-off { background: #FFF4E5; color: #8A4B08; border: 1px solid #F2C98A; }
+    .btn-qty-on { background: #E7F7EF; color: var(--exito); border: 1px solid #A7DEC4; }
     .btn-danger { background: #FDECEF; color: var(--peligro); }
     .btn-wa-mini {
       background: #25D366; color: #FFFFFF; padding: 5px 10px; font-size: 11.5px;
@@ -75,18 +111,19 @@
     }
     .portada-box {
       width: 100%; border-radius: 16px; overflow: hidden; margin-bottom: 16px;
-      border: 1px solid var(--borde); background: linear-gradient(135deg, var(--primario), var(--acento)); display: none;
+      border: 1px solid var(--borde); background: linear-gradient(135deg, #17171A, #2E1A1D); display: none;
     }
     .portada-box img { width: 100%; max-height: 260px; object-fit: contain; display: block; margin: 0 auto; }
 
     .entregas-card {
       background: var(--blanco); border: 1px solid var(--borde); border-radius: 16px;
-      padding: 16px 18px; margin-bottom: 16px; text-align: center; box-shadow: 0 4px 14px rgba(85, 68, 150, 0.05);
+      padding: 16px 18px; margin-bottom: 16px; text-align: center; box-shadow: 0 4px 14px rgba(23, 23, 26, 0.05);
     }
     .entregas-icon { display: inline-flex; color: var(--acento); margin-bottom: 6px; }
     .entregas-badge {
-      display: inline-block; background: var(--acento); color: var(--blanco);
+      display: inline-block; background: var(--primario); color: var(--blanco);
       font-size: 12px; font-weight: 800; letter-spacing: 1.6px; padding: 5px 14px; border-radius: 6px; margin-bottom: 8px;
+      border-bottom: 2.5px solid var(--acento);
     }
     .entregas-linea { font-size: 14px; font-weight: 700; color: var(--texto); line-height: 1.45; }
     .entregas-acuerdo { font-size: 12.5px; font-weight: 700; color: var(--texto-suave); margin-top: 2px; }
@@ -95,34 +132,44 @@
     .controls-bar {
       background: var(--blanco); border: 1px solid var(--borde); border-radius: 16px;
       padding: 14px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px;
-      box-shadow: 0 4px 14px rgba(85, 68, 150, 0.05);
+      box-shadow: 0 4px 14px rgba(23, 23, 26, 0.05);
     }
     .search-input {
       width: 100%; padding: 11px 14px; border-radius: 11px; border: 1.5px solid var(--borde);
-      font-size: 14px; color: var(--texto); background: #FAF9FE; outline: none;
+      font-size: 14px; color: var(--texto); background: #FAF8F5; outline: none;
     }
     .search-input:focus { border-color: var(--acento); background: var(--blanco); }
     .cats-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
     .cat-chip {
       padding: 7px 14px; border-radius: 999px; border: 1px solid var(--borde);
-      background: #FAF9FE; color: var(--texto-suave); font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;
+      background: #FAF8F5; color: var(--texto-suave); font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap;
     }
-    .cat-chip.active { background: var(--acento); color: var(--blanco); border-color: var(--acento); }
+    .cat-chip.active { background: var(--primario); color: var(--blanco); border-color: var(--primario); box-shadow: inset 0 -2px 0 var(--acento); }
 
-    .grid-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+    /* Tarjetas y fotos optimizadas para portadas de libros */
+    .grid-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(235px, 1fr)); gap: 18px; }
     .card {
       background: var(--blanco); border: 1px solid var(--borde); border-radius: 16px; overflow: hidden;
-      display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 14px rgba(85, 68, 150, 0.05);
+      display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 14px rgba(23, 23, 26, 0.06);
     }
     .card-img {
-      height: 175px; background: linear-gradient(135deg, #EFEBFB, #E4DDF8);
+      height: 235px;
+      padding: 10px;
+      background: linear-gradient(180deg, #F8F5F0 0%, #EFEAE2 100%);
+      border-bottom: 1px solid var(--borde);
       display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;
     }
     .card-img.clickable { cursor: zoom-in; }
-    .card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s ease; }
+    .card-img img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      border-radius: 6px;
+      box-shadow: 0 6px 14px rgba(23, 23, 26, 0.14);
+      transition: transform 0.2s ease;
+    }
     .card-img.clickable:hover img { transform: scale(1.03); }
     .card-badge {
-      position: absolute; top: 10px; left: 10px; background: rgba(35, 30, 51, 0.72);
+      position: absolute; top: 10px; left: 10px; background: rgba(23, 23, 26, 0.86);
       color: var(--blanco); font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 999px; pointer-events: none;
     }
     .card-body { padding: 13px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
@@ -134,6 +181,7 @@
     .price-bs { font-size: 12.5px; color: var(--texto-suave); font-weight: 600; }
     .card-footer { padding: 0 13px 13px; }
     .stock-txt { font-size: 11.5px; margin-bottom: 8px; font-weight: 700; color: var(--texto-suave); }
+    .stock-preventa { color: #8A4B08; }
     .stock-out { color: var(--peligro); }
 
     .dev-watermark {
@@ -141,7 +189,7 @@
       bottom: 20px;
       left: 20px;
       z-index: 44;
-      background: rgba(255, 255, 255, 0.86);
+      background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       border: 1px solid var(--borde);
@@ -149,7 +197,7 @@
       padding: 7px 13px;
       font-size: 11.5px;
       color: var(--texto-suave);
-      box-shadow: 0 4px 14px rgba(35, 30, 51, 0.08);
+      box-shadow: 0 4px 14px rgba(23, 23, 26, 0.08);
       display: inline-flex;
       align-items: center;
       gap: 4px;
@@ -158,7 +206,7 @@
     .dev-watermark:hover {
       background: rgba(255, 255, 255, 0.98);
       transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(133, 117, 212, 0.18);
+      box-shadow: 0 6px 18px rgba(166, 28, 28, 0.16);
     }
     .dev-watermark .type-text {
       display: inline-flex;
@@ -210,18 +258,18 @@
     .fab-cart {
       position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, var(--primario), var(--acento));
       color: var(--blanco); border: none; border-radius: 999px; padding: 14px 20px;
-      font-size: 14px; font-weight: 800; box-shadow: 0 8px 24px rgba(96, 75, 175, 0.35);
+      font-size: 14px; font-weight: 800; box-shadow: 0 8px 24px rgba(23, 23, 26, 0.35);
       cursor: pointer; z-index: 45; display: flex; align-items: center; gap: 8px;
     }
 
     .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(24, 19, 43, 0.52);
+      position: fixed; inset: 0; background: rgba(20, 18, 24, 0.56);
       display: none; align-items: center; justify-content: center; padding: 14px; z-index: 60; overflow-y: auto;
     }
     .modal-backdrop.open { display: flex; }
     .modal-box {
       background: var(--blanco); border-radius: 18px; width: 100%; max-width: 540px;
-      max-height: 90vh; overflow-y: auto; padding: 20px; box-shadow: 0 18px 40px rgba(25, 18, 52, 0.25);
+      max-height: 90vh; overflow-y: auto; padding: 20px; box-shadow: 0 18px 40px rgba(20, 18, 24, 0.28);
     }
     .modal-box.wide {
       width: 92vw;
@@ -232,8 +280,8 @@
       .modal-box.wide { width: 92vw; max-width: 92vw; padding: 14px; }
     }
     .lightbox-box { max-width: 680px; text-align: center; }
-    .lightbox-img-wrap { width: 100%; background: #F6F4FD; border-radius: 14px; overflow: hidden; margin-bottom: 14px; border: 1px solid var(--borde); }
-    .lightbox-img-wrap img { width: 100%; max-height: 65vh; object-fit: cover; display: block; }
+    .lightbox-img-wrap { width: 100%; padding: 14px; background: #F8F5F0; border-radius: 14px; overflow: hidden; margin-bottom: 14px; border: 1px solid var(--borde); display: flex; justify-content: center; }
+    .lightbox-img-wrap img { max-width: 100%; max-height: 70vh; object-fit: contain; display: block; border-radius: 8px; }
     .modal-head {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--borde); gap: 10px; text-align: left;
@@ -244,7 +292,7 @@
     .field label { display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 5px; color: var(--texto-suave); }
     .field input, .field select, .field textarea {
       width: 100%; padding: 9px 12px; border-radius: 10px; border: 1.5px solid var(--borde);
-      font-size: 13.5px; color: var(--texto); background: #FAF9FE;
+      font-size: 13.5px; color: var(--texto); background: #FAF8F5;
     }
     .phone-split { display: flex; gap: 8px; align-items: stretch; }
     .phone-split select { width: 148px; flex-shrink: 0; }
@@ -258,9 +306,9 @@
       margin-top: 8px;
       padding: 10px 12px;
       border-radius: 10px;
-      background: #F4F1FF;
-      border: 1px solid #D3C8F7;
-      color: #3D2E7C;
+      background: #FDF3F3;
+      border: 1px solid #E8B4B4;
+      color: #7E1212;
       font-size: 12.5px;
       font-weight: 700;
       line-height: 1.4;
@@ -271,7 +319,7 @@
       margin-top: 12px;
       padding: 12px;
       border-radius: 12px;
-      background: #FAF9FE;
+      background: #FAF8F5;
       border: 1px solid var(--borde);
       font-size: 12.5px;
     }
@@ -311,6 +359,59 @@
     .admin-panel { display: none; }
     .admin-panel.active { display: block; }
     .admin-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+
+    /* Distribución mejorada para alta/edición de libros y su portada */
+    .book-form-card {
+      background: #FAF8F5;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--borde);
+      margin-bottom: 14px;
+      display: grid;
+      grid-template-columns: minmax(155px, 190px) 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 720px) {
+      .book-form-card { grid-template-columns: 1fr; }
+    }
+    .book-photo-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: var(--blanco);
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .book-photo-preview {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      border-radius: 8px;
+      background: #F4F1EC;
+      border: 1px dashed var(--borde);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      text-align: center;
+      padding: 6px;
+      color: var(--texto-suave);
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+    .book-photo-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    .book-fields-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+    }
+
     .admin-quick-search {
       display: flex; align-items: center; gap: 8px;
       background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 12px;
@@ -322,7 +423,7 @@
       font-size: 13.5px; color: var(--texto);
     }
     .cat-manager-box {
-      background: #FAF9FE; border: 1px solid var(--borde); border-radius: 12px;
+      background: #FAF8F5; border: 1px solid var(--borde); border-radius: 12px;
       padding: 12px; margin-bottom: 14px;
     }
     .cat-manager-head {
@@ -350,8 +451,12 @@
       font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 999px;
       background: #FFF3CD; color: #6B4E00; border: 1px solid #F2D388;
     }
+    .cat-badge-qty-off {
+      font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 999px;
+      background: #FFF4E5; color: #8A4B08; border: 1px solid #F2C98A;
+    }
     .cat-order-actions { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-    .prod-row-hidden { opacity: 0.72; background: #FAF9FE; }
+    .prod-row-hidden { opacity: 0.72; background: #FAF8F5; }
     .prod-actions-cell { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 
     .mov-badge {
@@ -364,7 +469,7 @@
     .table-wrap { overflow-x: auto; border: 1px solid var(--borde); border-radius: 12px; }
     table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
     th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--borde); }
-    th { background: #F5F2FC; font-weight: 800; color: var(--texto); }
+    th { background: #F3EFE9; font-weight: 800; color: var(--texto); }
 
     .status-msg { padding: 10px 12px; border-radius: 10px; font-size: 13px; font-weight: 700; margin-top: 10px; display: none; }
     .status-msg.ok { display: block; background: #E7F7EF; color: var(--exito); }
@@ -395,12 +500,36 @@
       <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.16 3.19"></path>
       <line x1="1" y1="1" x2="23" y2="23"></line>
     </symbol>
+    <symbol id="ico-qty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="4" y1="9" x2="20" y2="9"></line>
+      <line x1="4" y1="15" x2="20" y2="15"></line>
+      <line x1="10" y1="3" x2="8" y2="21"></line>
+      <line x1="16" y1="3" x2="14" y2="21"></line>
+    </symbol>
+    <symbol id="ico-samurai-book" viewBox="0 0 120 110">
+      <circle cx="60" cy="48" r="34" fill="#141417" />
+      <path d="M26 42 C14 34, 16 20, 29 24 C32 16, 44 18, 42 29" fill="#A61C1C" stroke="#141417" stroke-width="2" />
+      <path d="M94 42 C106 34, 104 20, 91 24 C88 16, 76 18, 78 29" fill="#A61C1C" stroke="#141417" stroke-width="2" />
+      <path d="M40 28 L60 19 L80 28 L72 34 L48 34 Z" fill="#FFFFFF" stroke="#141417" stroke-width="1.5" />
+      <rect x="48" y="34" width="24" height="14" rx="3" fill="#FFFFFF" />
+      <line x1="52" y1="39" x2="68" y2="39" stroke="#141417" stroke-width="1.8" />
+      <line x1="52" y1="43" x2="68" y2="43" stroke="#141417" stroke-width="1.8" />
+      <path d="M38 66 L60 58 L82 66 L82 75 L60 67 L38 75 Z" fill="#FFFFFF" />
+      <path d="M36 74 L60 66 L84 74 L84 82 L60 74 L36 82 Z" fill="#FFFFFF" />
+      <rect x="12" y="88" width="96" height="4" rx="2" fill="#141417" />
+      <rect x="86" y="88" width="22" height="4" fill="#D5D8DE" />
+      <text x="60" y="104" text-anchor="middle" font-size="11" font-weight="900" fill="#141417" letter-spacing="0.8">SAMURAI</text>
+    </symbol>
   </svg>
 
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <div class="brand-logo" id="brandLogo">TS</div>
+        <div class="brand-logo-wrap">
+          <div class="brand-logo" id="brandLogo">
+            <svg aria-hidden="true"><use href="#ico-samurai-book"></use></svg>
+          </div>
+        </div>
         <div>
           <div class="brand-title" id="brandTitle" role="button" tabindex="0" onclick="abrirModalPin()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirModalPin();}">Tienda del Samurai</div>
           <div class="brand-sub" id="brandSub">Tienda de libros • Caracas, Venezuela</div>
@@ -639,7 +768,7 @@
 
         <div class="cat-manager-box">
           <div class="cat-manager-head">
-            <div class="cat-manager-title">Categorías de Libros (Crear, Ordenar, Ocultar o Eliminar)</div>
+            <div class="cat-manager-title">Categorías de Libros (Crear, Ordenar, Control de Cantidad, Ocultar o Eliminar)</div>
             <div class="cat-create-row">
               <input type="text" id="nuevaCategoriaInput" placeholder="Nueva categoría (ej. Novelas, Ciencia Ficción...)" onkeydown="if(event.key==='Enter'){event.preventDefault();crearCategoriaAdmin();}" />
               <button class="btn btn-primary btn-sm" type="button" id="btnCrearCategoria" onclick="crearCategoriaAdmin()">+ Crear</button>
@@ -649,22 +778,36 @@
           <div class="status-msg" id="msgAdminCat"></div>
         </div>
 
-        <div class="admin-grid-2" style="margin-bottom: 14px; background: #FAF9FE; padding: 12px; border-radius: 12px; border: 1px solid var(--borde);">
-          <div class="field"><label>ID (vacío para crear nuevo)</label><input type="text" id="prodId" placeholder="Ej. libros1 o vacío" /></div>
-          <div class="field"><label>Categoría</label><select id="prodCategoria"></select></div>
-          <div class="field"><label>Título del Libro *</label><input type="text" id="prodNombre" /></div>
-          <div class="field"><label>Detalle / Edición / Autor</label><input type="text" id="prodDetalle" /></div>
-          <div class="field"><label>Precio BCV (USD) *</label><input type="number" step="0.01" id="prodPrecioUsd" /></div>
-          <div class="field"><label>Precio Promo Divisas (opcional)</label><input type="number" step="0.01" id="prodPromoUsd" /></div>
-          <div class="field"><label>Stock</label><input type="number" step="1" id="prodStock" value="5" /></div>
-          <div class="field">
-            <label>Foto del Libro (Drive)</label>
-            <input type="file" accept="image/*" onchange="subirFotoProducto(this)" />
-            <input type="text" id="prodImagenUrl" placeholder="URL de imagen" style="margin-top: 6px;" />
+        <div class="book-form-card">
+          <div class="book-photo-panel">
+            <div class="book-photo-preview" id="prodPreviewBox">
+              <span id="prodPreviewPlaceholder">Portada del libro</span>
+              <img id="prodPreviewImg" src="" alt="Vista previa de portada" style="display: none;" />
+            </div>
+            <div class="field" style="margin-bottom: 0;">
+              <label for="prodFotoFile">Subir portada (Drive)</label>
+              <input id="prodFotoFile" type="file" accept="image/*" onchange="subirFotoProducto(this)" style="padding: 6px; font-size: 12px;" />
+            </div>
+            <div class="field" style="margin-bottom: 0;">
+              <label for="prodImagenUrl">URL de imagen</label>
+              <input type="text" id="prodImagenUrl" placeholder="https://..." oninput="actualizarPreviewLibro()" style="padding: 7px 9px; font-size: 12px;" />
+            </div>
           </div>
-          <div style="display: flex; align-items: flex-end; gap: 8px; margin-bottom: 12px;">
-            <button class="btn btn-primary" type="button" onclick="guardarProductoAdmin()">Guardar Libro</button>
-            <button class="btn btn-soft" type="button" onclick="limpiarFormProducto()">Limpiar</button>
+
+          <div>
+            <div class="book-fields-grid">
+              <div class="field"><label>ID (vacío para crear nuevo)</label><input type="text" id="prodId" placeholder="Ej. libros1 o vacío" /></div>
+              <div class="field"><label>Categoría</label><select id="prodCategoria"></select></div>
+              <div class="field"><label>Título del Libro *</label><input type="text" id="prodNombre" placeholder="Ej. El Arte de la Guerra" /></div>
+              <div class="field"><label>Detalle / Edición / Autor</label><input type="text" id="prodDetalle" placeholder="Ej. Tapa blanda • Sun Tzu" /></div>
+              <div class="field"><label>Precio BCV (USD) *</label><input type="number" step="0.01" id="prodPrecioUsd" /></div>
+              <div class="field"><label>Precio Promo Divisas (opcional)</label><input type="number" step="0.01" id="prodPromoUsd" /></div>
+              <div class="field"><label>Stock (ejemplares)</label><input type="number" step="1" id="prodStock" value="5" /></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
+              <button class="btn btn-primary" type="button" onclick="guardarProductoAdmin()">Guardar Libro</button>
+              <button class="btn btn-soft" type="button" onclick="limpiarFormProducto()">Limpiar</button>
+            </div>
           </div>
         </div>
         <div class="status-msg" id="msgAdminProd"></div>
@@ -714,7 +857,8 @@
     const INSTAGRAM_URL = "https://www.instagram.com/latiendadelsamurai/";
     const INSTAGRAM_HANDLE = "@latiendadelsamurai";
     const DEV_WA_URL = "https://wa.me/584241913036?text=Hola%20Kevin%2C%20vi%20la%20p%C3%A1gina%20de%20Tienda%20del%20Samurai%20y%20me%20gustar%C3%ADa%20cotizar%20una%20web%20para%20mi%20negocio.";
-    const CACHE_KEY = "tienda_del_samurai_catalog_v2";
+    const CACHE_KEY = "tienda_del_samurai_catalog_v4";
+    const QTY_OVERRIDE_KEY = "tienda_del_samurai_qty_overrides_v1";
 
     // PIN por defecto si no has guardado otro en la hoja Config
     const ADMIN_PIN_PRUEBAS = "samurai#20200";
@@ -755,9 +899,9 @@
         metodos_pago: "Pago Móvil|Divisas|PayPal",
         paypal_comision_pct: 5.4,
         paypal_comision_fija: 0.30,
-        color_primario: "#A99BE8",
-        color_fondo: "#F4F2FC",
-        color_acento: "#8575D4",
+        color_primario: "#17171A",
+        color_fondo: "#F7F5F2",
+        color_acento: "#A61C1C",
         logo_url: "",
         portada_url: ""
       },
@@ -773,19 +917,91 @@
     const $ = (id) => document.getElementById(id);
     const fmtBs = (val) => (Number(val) || 0).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+    function cargarOverridesCantidad() {
+      try {
+        const raw = localStorage.getItem(QTY_OVERRIDE_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return {
+          categorias: parsed.categorias || {},
+          productos: parsed.productos || {}
+        };
+      } catch (_) {
+        return { categorias: {}, productos: {} };
+      }
+    }
+
+    function guardarOverridesCantidad(overrides) {
+      try {
+        localStorage.setItem(QTY_OVERRIDE_KEY, JSON.stringify({
+          categorias: overrides.categorias || {},
+          productos: overrides.productos || {}
+        }));
+      } catch (_) {}
+    }
+
+    function esCantidadDesactivadaCategoria(catObj) {
+      const overrides = cargarOverridesCantidad();
+      const key = String(catObj?.categoria || "").trim().toLowerCase();
+      if (key && Object.prototype.hasOwnProperty.call(overrides.categorias, key)) {
+        return Boolean(overrides.categorias[key]);
+      }
+      const val = String(catObj?.control_cantidad ?? catObj?.cantidad_activa ?? "").trim().toUpperCase();
+      return val === "NO" || val === "DESACTIVADA" || val === "OFF" || val === "FALSE" || val === "0";
+    }
+
+    function esCantidadDesactivadaProducto(prodObj, listaCategorias) {
+      const overrides = cargarOverridesCantidad();
+      const prodKey = String(prodObj?.id || "").trim();
+      const catKey = String(prodObj?.categoria || "").trim().toLowerCase();
+
+      if (prodKey && Object.prototype.hasOwnProperty.call(overrides.productos, prodKey)) {
+        return Boolean(overrides.productos[prodKey]);
+      }
+      const valProd = String(prodObj?.control_cantidad ?? prodObj?.cantidad_activa ?? "").trim().toUpperCase();
+      if (valProd) {
+        return valProd === "NO" || valProd === "DESACTIVADA" || valProd === "OFF" || valProd === "FALSE" || valProd === "0";
+      }
+      if (catKey && Object.prototype.hasOwnProperty.call(overrides.categorias, catKey)) {
+        return Boolean(overrides.categorias[catKey]);
+      }
+      const catFound = (listaCategorias || state.categorias || []).find(
+        c => String(c.categoria || "").trim().toLowerCase() === catKey
+      );
+      return catFound ? esCantidadDesactivadaCategoria(catFound) : false;
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       try {
         sessionStorage.removeItem("paos_world_catalog_v1");
         sessionStorage.removeItem("tienda_del_samurai_catalog_v1");
+        sessionStorage.removeItem("tienda_del_samurai_catalog_v2");
+        sessionStorage.removeItem("tienda_del_samurai_catalog_v3");
       } catch (_) {}
       iniciarSecuenciaMarcaAgua();
       poblarPaises();
       poblarSelectorMetodosPago();
+      actualizarPreviewLibro();
       cargarCatalogo();
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") cerrarModal("modalLightbox");
       });
     });
+
+    function actualizarPreviewLibro() {
+      const url = String($("prodImagenUrl")?.value || "").trim();
+      const img = $("prodPreviewImg");
+      const ph = $("prodPreviewPlaceholder");
+      if (!img || !ph) return;
+      if (url) {
+        img.src = url;
+        img.style.display = "block";
+        ph.style.display = "none";
+      } else {
+        img.src = "";
+        img.style.display = "none";
+        ph.style.display = "block";
+      }
+    }
 
     function iniciarSecuenciaMarcaAgua() {
       const box = $("devWatermarkType");
@@ -867,7 +1083,7 @@
       if (!box) return;
 
       box.innerHTML = metodos.map((m, idx) => `
-        <span style="display: inline-flex; align-items: center; gap: 6px; background: #ECE7FA; color: var(--texto); padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;">
+        <span style="display: inline-flex; align-items: center; gap: 6px; background: #EFEAE3; color: var(--texto); padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;">
           <span>${escHtml(m)}</span>
           <button type="button" title="Quitar método" style="border: none; background: transparent; color: var(--peligro); font-weight: 800; cursor: pointer; padding: 0 2px;" onclick="quitarMetodoPagoAdmin(${idx})">✕</button>
         </span>
@@ -1013,9 +1229,10 @@
     function aplicarTemaYMarca() {
       const c = state.config;
       const root = document.documentElement.style;
-      root.setProperty("--primario", c.color_primario || "#A99BE8");
-      root.setProperty("--fondo", c.color_fondo || "#F4F2FC");
-      root.setProperty("--acento", c.color_acento || "#8575D4");
+      const esColorLilaViejo = (hex) => /^#(A99BE8|F4F2FC|8575D4)$/i.test(String(hex || "").trim());
+      root.setProperty("--primario", (!c.color_primario || esColorLilaViejo(c.color_primario)) ? "#17171A" : c.color_primario);
+      root.setProperty("--fondo", (!c.color_fondo || esColorLilaViejo(c.color_fondo)) ? "#F7F5F2" : c.color_fondo);
+      root.setProperty("--acento", (!c.color_acento || esColorLilaViejo(c.color_acento)) ? "#A61C1C" : c.color_acento);
 
       const nombreRaw = String(c.nombre_tienda || "").trim();
       const nombreTienda = (!nombreRaw || /pao'?s?\s*world/i.test(nombreRaw))
@@ -1047,7 +1264,7 @@
 
       $("brandLogo").innerHTML = c.logo_url
         ? `<img src="${escAttr(c.logo_url)}" alt="Logo Tienda del Samurai" />`
-        : "TS";
+        : `<svg aria-hidden="true"><use href="#ico-samurai-book"></use></svg>`;
 
       const portadaBox = $("portadaBox");
       if (c.portada_url) {
@@ -1108,7 +1325,13 @@
         const promoNum = parseFloat(p.precio_promo_divisas);
         const tienePromo = !isNaN(promoNum) && promoNum > 0;
         const stock = Number(p.stock) || 0;
-        const sinStock = stock <= 0;
+        const qtySinControl = esCantidadDesactivadaProducto(p, state.categorias);
+        const sinStock = !qtySinControl && stock <= 0;
+        const stockTexto = qtySinControl
+          ? "Disponible • Encargo / Preventa"
+          : (sinStock ? "Agotado por ahora" : `Disponible: ${stock} und.`);
+        const stockClase = qtySinControl ? "stock-preventa" : (sinStock ? "stock-out" : "");
+        const btnTexto = sinStock ? "Sin stock" : (qtySinControl ? "Pedir por encargo" : "Agregar al carrito");
         const promoHtml = tienePromo ? `<div class="price-promo">Promo divisas: $${promoNum.toFixed(2)}</div>` : "";
         const tieneFoto = Boolean(p.imagen_url);
         const imgHtml = tieneFoto
@@ -1134,11 +1357,9 @@
               </div>
             </div>
             <div class="card-footer">
-              <div class="stock-txt ${sinStock ? "stock-out" : ""}">
-                ${sinStock ? "Agotado por ahora" : `Disponible: ${stock} und.`}
-              </div>
+              <div class="stock-txt ${stockClase}">${stockTexto}</div>
               <button class="btn btn-primary" style="width: 100%;" type="button" ${sinStock ? "disabled" : ""} onclick="agregarAlCarrito('${escAttr(p.id)}')">
-                ${sinStock ? "Sin stock" : "Agregar al carrito"}
+                ${btnTexto}
               </button>
             </div>
           </article>
@@ -1153,6 +1374,8 @@
       const tasa = parseFloat(state.config.tasa_bcv) || 890;
       const precioUsd = Number(prod.precio_bcv_usd) || 0;
       const stock = Number(prod.stock) || 0;
+      const qtySinControl = esCantidadDesactivadaProducto(prod, state.categorias);
+      const sinStock = !qtySinControl && stock <= 0;
 
       $("lbTitulo").textContent = prod.nombre || "";
       $("lbDetalle").textContent = [prod.categoria, prod.detalle_variante].filter(Boolean).join(" • ");
@@ -1162,8 +1385,8 @@
       $("lbPrecioBs").textContent = `Bs. ${fmtBs(precioUsd * tasa)}`;
 
       const btnAdd = $("lbBtnAgregar");
-      btnAdd.disabled = stock <= 0;
-      btnAdd.textContent = stock <= 0 ? "Sin stock" : "Agregar al carrito";
+      btnAdd.disabled = sinStock;
+      btnAdd.textContent = sinStock ? "Sin stock" : (qtySinControl ? "Pedir por encargo" : "Agregar al carrito");
       btnAdd.onclick = () => {
         agregarAlCarrito(prod.id);
         cerrarModal("modalLightbox");
@@ -1219,11 +1442,14 @@
     function agregarAlCarrito(prodId) {
       const prod = state.prodMap.get(String(prodId));
       const stock = Number(prod?.stock) || 0;
-      if (!prod || stock <= 0) return;
+      const qtySinControl = prod ? esCantidadDesactivadaProducto(prod, state.categorias) : false;
+      if (!prod || (!qtySinControl && stock <= 0)) return;
 
       const existente = state.carrito.find(x => String(x.id) === String(prodId));
       if (existente) {
-        if (existente.cantidad + 1 > stock) {
+        existente.qtySinControl = qtySinControl;
+        existente.maxStock = qtySinControl ? Infinity : stock;
+        if (!qtySinControl && existente.cantidad + 1 > stock) {
           alert(`Solo quedan ${stock} unidades disponibles de "${prod.nombre}".`);
           return;
         }
@@ -1236,7 +1462,8 @@
           precio_usd: Number(prod.precio_bcv_usd) || 0,
           promo_divisas: !isNaN(promoNum) && promoNum > 0 ? promoNum : null,
           cantidad: 1,
-          maxStock: stock
+          qtySinControl: qtySinControl,
+          maxStock: qtySinControl ? Infinity : stock
         });
       }
       actualizarBadgeCarrito();
@@ -1248,7 +1475,7 @@
       const item = state.carrito[idx];
       const nuevaCant = item.cantidad + delta;
       if (nuevaCant <= 0) state.carrito.splice(idx, 1);
-      else if (nuevaCant <= item.maxStock) item.cantidad = nuevaCant;
+      else if (item.qtySinControl || nuevaCant <= item.maxStock) item.cantidad = nuevaCant;
       actualizarBadgeCarrito();
       renderModalCarrito();
     }
@@ -1286,12 +1513,13 @@
       list.innerHTML = state.carrito.map(it => {
         const unit = precioUnitarioSegunPago(it, metodoPago);
         const aplicaPromo = unit < (Number(it.precio_usd) || 0);
+        const encargoTag = it.qtySinControl ? ` • <span style="color:#8A4B08;font-weight:700;">Encargo</span>` : "";
         return `
           <div class="cart-item">
             <div>
               <div style="font-weight: 700;">${escHtml(it.nombre)}</div>
               <div style="font-size: 12px; color: ${aplicaPromo ? "var(--exito)" : "var(--texto-suave)"}; font-weight: ${aplicaPromo ? "700" : "400"};">
-                $${unit.toFixed(2)} c/u ${aplicaPromo ? `(Promo • antes $${Number(it.precio_usd).toFixed(2)})` : ""}
+                $${unit.toFixed(2)} c/u ${aplicaPromo ? `(Promo • antes $${Number(it.precio_usd).toFixed(2)})` : ""}${encargoTag}
               </div>
             </div>
             <div class="qty-controls">
@@ -1329,7 +1557,8 @@
       const detalleItemsHtml = state.carrito.map(it => {
         const unit = precioUnitarioSegunPago(it, metodoPago);
         const subUsd = unit * it.cantidad;
-        return `<li>• ${it.cantidad}x ${escHtml(it.nombre)} — $${unit.toFixed(2)} c/u (<b>$${subUsd.toFixed(2)}</b>)</li>`;
+        const encargoSuffix = it.qtySinControl ? " (Encargo/Preventa)" : "";
+        return `<li>• ${it.cantidad}x ${escHtml(it.nombre)}${encargoSuffix} — $${unit.toFixed(2)} c/u (<b>$${subUsd.toFixed(2)}</b>)</li>`;
       }).join("");
 
       const totalBsFmt = fmtBs(totalUsd * tasa);
@@ -1394,7 +1623,8 @@
           id: it.id,
           nombre: it.nombre,
           cantidad: it.cantidad,
-          precio_usd: Number(unit.toFixed(2))
+          precio_usd: Number(unit.toFixed(2)),
+          sin_control_cantidad: Boolean(it.qtySinControl)
         };
       });
 
@@ -1692,16 +1922,23 @@
         const esPrimero = idx <= 0;
         const esUltimo = idx >= todasCats.length - 1;
         const estaOculta = String(c.oculta || "NO").toUpperCase() === "SI";
+        const qtyDesactivada = esCantidadDesactivadaCategoria(c);
         const badgeOculta = estaOculta ? `<span class="cat-badge-hidden">OCULTA</span>` : "";
+        const badgeQty = qtyDesactivada ? `<span class="cat-badge-qty-off">CANT. OFF</span>` : "";
         const eyeIcon = estaOculta ? "#ico-eye" : "#ico-eye-off";
         const eyeTitle = estaOculta ? "Mostrar categoría en catálogo" : "Ocultar categoría en catálogo";
+        const qtyTitle = qtyDesactivada
+          ? "Cantidad desactivada en categoría (clic para activar control de cantidad)"
+          : "Cantidad activa en categoría (clic para desactivar cantidad / preventa)";
+        const qtyBtnClass = qtyDesactivada ? "btn-qty-off" : "btn-qty-on";
 
         return `
           <div class="cat-order-item ${estaOculta ? "is-hidden" : ""}">
-            <span class="cat-order-name">${idx + 1}. ${escHtml(c.categoria)} ${badgeOculta}</span>
+            <span class="cat-order-name">${idx + 1}. ${escHtml(c.categoria)} ${badgeQty} ${badgeOculta}</span>
             <div class="cat-order-actions">
               <button class="btn btn-soft btn-sm" type="button" title="Ascender categoría" ${esPrimero ? "disabled" : ""} onclick="moverCategoriaAdmin('${escAttr(c.categoria)}', 'up')">↑</button>
               <button class="btn btn-soft btn-sm" type="button" title="Descender categoría" ${esUltimo ? "disabled" : ""} onclick="moverCategoriaAdmin('${escAttr(c.categoria)}', 'down')">↓</button>
+              <button class="btn ${qtyBtnClass} btn-sm" type="button" title="${qtyTitle}" aria-label="${qtyTitle}" onclick="toggleCantidadCategoriaAdmin('${escAttr(c.categoria)}', ${!qtyDesactivada})"><svg width="14" height="14" aria-hidden="true"><use href="#ico-qty"></use></svg><span>${qtyDesactivada ? "Cant. OFF" : "Cant. ON"}</span></button>
               <button class="btn btn-soft btn-sm" type="button" title="${eyeTitle}" aria-label="${eyeTitle}" onclick="toggleOcultarCategoriaAdmin('${escAttr(c.categoria)}', ${!estaOculta})"><svg width="14" height="14" aria-hidden="true"><use href="${eyeIcon}"></use></svg></button>
               <button class="btn btn-danger btn-sm" type="button" title="Eliminar categoría" aria-label="Eliminar categoría" onclick="eliminarCategoriaAdmin('${escAttr(c.categoria)}')">✕</button>
             </div>
@@ -1719,29 +1956,38 @@
         return;
       }
 
+      const catsRef = state.adminData?.categorias || state.categorias || [];
+
       $("adminProdBody").innerHTML = filtrados.map(p => {
         const idx = todos.findIndex(item => String(item.id) === String(p.id));
         const esPrimero = idx <= 0;
         const esUltimo = idx >= todos.length - 1;
         const estaOculto = String(p.activo || "SI").toUpperCase() !== "SI";
+        const qtyDesactivada = esCantidadDesactivadaProducto(p, catsRef);
         const promo = parseFloat(p.precio_promo_divisas);
         const badgeOculto = estaOculto ? ` <span class="cat-badge-hidden">OCULTO</span>` : "";
+        const badgeQty = qtyDesactivada ? ` <span class="cat-badge-qty-off">CANT. OFF</span>` : "";
         const eyeIcon = estaOculto ? "#ico-eye" : "#ico-eye-off";
         const eyeTitle = estaOculto ? "Mostrar libro en catálogo" : "Ocultar libro en catálogo";
+        const qtyTitle = qtyDesactivada
+          ? "Cantidad desactivada / Preventa (clic para activar control de cantidad)"
+          : "Cantidad activa (clic para desactivar cantidad / preventa)";
+        const qtyBtnClass = qtyDesactivada ? "btn-qty-off" : "btn-qty-on";
 
         return `
           <tr class="${estaOculto ? "prod-row-hidden" : ""}">
             <td><b>${escHtml(p.id)}</b></td>
             <td>${escHtml(p.categoria)}</td>
-            <td>${escHtml(p.nombre)}${badgeOculto}</td>
+            <td>${escHtml(p.nombre)}${badgeQty}${badgeOculto}</td>
             <td>$${Number(p.precio_bcv_usd || 0).toFixed(2)}</td>
             <td>${!isNaN(promo) && promo > 0 ? `$${promo.toFixed(2)}` : "-"}</td>
-            <td>${Number(p.stock || 0)}</td>
+            <td>${qtyDesactivada ? `${Number(p.stock || 0)} (Libre)` : Number(p.stock || 0)}</td>
             <td>
               <div class="prod-actions-cell">
                 <button class="btn btn-soft btn-sm" type="button" onclick="editarProductoPorId('${escAttr(p.id)}')">Editar</button>
                 <button class="btn btn-soft btn-sm" type="button" title="Ascender libro" ${esPrimero ? "disabled" : ""} onclick="moverProductoAdmin('${escAttr(p.id)}', 'up')">↑</button>
                 <button class="btn btn-soft btn-sm" type="button" title="Descender libro" ${esUltimo ? "disabled" : ""} onclick="moverProductoAdmin('${escAttr(p.id)}', 'down')">↓</button>
+                <button class="btn ${qtyBtnClass} btn-sm" type="button" title="${qtyTitle}" aria-label="${qtyTitle}" onclick="toggleCantidadProductoAdmin('${escAttr(p.id)}', ${!qtyDesactivada})"><svg width="14" height="14" aria-hidden="true"><use href="#ico-qty"></use></svg><span>${qtyDesactivada ? "Cant. OFF" : "Cant. ON"}</span></button>
                 <button class="btn btn-soft btn-sm" type="button" title="${eyeTitle}" aria-label="${eyeTitle}" onclick="toggleOcultarProductoAdmin('${escAttr(p.id)}', ${!estaOculto})"><svg width="14" height="14" aria-hidden="true"><use href="${eyeIcon}"></use></svg></button>
                 <button class="btn btn-danger btn-sm" type="button" title="Eliminar libro" aria-label="Eliminar libro" onclick="eliminarProductoAdmin('${escAttr(p.id)}', '${escAttr(p.nombre)}')">✕</button>
               </div>
@@ -1749,6 +1995,77 @@
           </tr>
         `;
       }).join("");
+    }
+
+    async function toggleCantidadCategoriaAdmin(categoria, desactivarCantidad) {
+      const msg = $("msgAdminCat");
+      const catKey = String(categoria || "").trim().toLowerCase();
+      const overrides = cargarOverridesCantidad();
+      overrides.categorias[catKey] = Boolean(desactivarCantidad);
+      guardarOverridesCantidad(overrides);
+
+      if (state.adminData?.categorias) {
+        state.adminData.categorias = state.adminData.categorias.map(c =>
+          String(c.categoria || "").trim().toLowerCase() === catKey
+            ? Object.assign({}, c, { control_cantidad: desactivarCantidad ? "NO" : "SI" })
+            : c
+        );
+        renderListaCategoriasAdmin(state.adminData.categorias);
+        renderTablaProductosAdmin(state.adminData.productos || []);
+        sincronizarCatalogoDesdeAdmin();
+      }
+
+      mostrarMsg(
+        msg,
+        desactivarCantidad
+          ? `Control de cantidad desactivado en "${categoria}" (modo encargo/preventa).`
+          : `Control de cantidad activado en "${categoria}".`,
+        true
+      );
+
+      try {
+        await postAdmin({
+          action: "toggleCategoryQtyControl",
+          categoria: categoria,
+          control_cantidad: desactivarCantidad ? "NO" : "SI",
+          desactivar_cantidad: Boolean(desactivarCantidad)
+        });
+      } catch (_) {}
+    }
+
+    async function toggleCantidadProductoAdmin(prodId, desactivarCantidad) {
+      const msg = $("msgAdminProd");
+      const key = String(prodId || "").trim();
+      const overrides = cargarOverridesCantidad();
+      overrides.productos[key] = Boolean(desactivarCantidad);
+      guardarOverridesCantidad(overrides);
+
+      if (state.adminData?.productos) {
+        state.adminData.productos = state.adminData.productos.map(p =>
+          String(p.id || "").trim() === key
+            ? Object.assign({}, p, { control_cantidad: desactivarCantidad ? "NO" : "SI" })
+            : p
+        );
+        renderTablaProductosAdmin(state.adminData.productos);
+        sincronizarCatalogoDesdeAdmin();
+      }
+
+      mostrarMsg(
+        msg,
+        desactivarCantidad
+          ? `Cantidad desactivada para "${prodId}" (se puede vender por encargo sin límite de stock).`
+          : `Control de cantidad activado para "${prodId}".`,
+        true
+      );
+
+      try {
+        await postAdmin({
+          action: "toggleProductQtyControl",
+          id: prodId,
+          control_cantidad: desactivarCantidad ? "NO" : "SI",
+          desactivar_cantidad: Boolean(desactivarCantidad)
+        });
+      } catch (_) {}
     }
 
     async function crearCategoriaAdmin() {
@@ -2026,13 +2343,17 @@
       for (const [elId, prop, defVal] of PROD_FIELDS) {
         $(elId).value = p[prop] ?? defVal;
       }
+      if ($("prodFotoFile")) $("prodFotoFile").value = "";
+      actualizarPreviewLibro();
     }
 
     function limpiarFormProducto() {
       for (const [elId, , defVal] of PROD_FIELDS) {
         $(elId).value = defVal;
       }
+      if ($("prodFotoFile")) $("prodFotoFile").value = "";
       $("prodStock").value = "5";
+      actualizarPreviewLibro();
     }
 
     async function guardarProductoAdmin() {
@@ -2081,7 +2402,10 @@
       const file = input.files?.[0];
       if (!file) return;
       const url = await subirBase64Drive(file);
-      if (url) $("prodImagenUrl").value = url;
+      if (url) {
+        $("prodImagenUrl").value = url;
+        actualizarPreviewLibro();
+      }
     }
 
     function subirBase64Drive(file) {
