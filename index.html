@@ -712,8 +712,9 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyivH9o3icH1xoEcg0KKAD5ADEp-GTyrGf4sRuQqsg1JeoRsoLQqM3vFLFrsJ1ySpl3-w/exec";
     const INSTAGRAM_URL = "https://www.instagram.com/latiendadelsamurai/";
+    const INSTAGRAM_HANDLE = "@latiendadelsamurai";
     const DEV_WA_URL = "https://wa.me/584241913036?text=Hola%20Kevin%2C%20vi%20la%20p%C3%A1gina%20de%20Tienda%20del%20Samurai%20y%20me%20gustar%C3%ADa%20cotizar%20una%20web%20para%20mi%20negocio.";
-    const CACHE_KEY = "tienda_del_samurai_catalog_v1";
+    const CACHE_KEY = "tienda_del_samurai_catalog_v2";
 
     // PIN por defecto si no has guardado otro en la hoja Config
     const ADMIN_PIN_PRUEBAS = "samurai#20200";
@@ -750,7 +751,7 @@
         nombre_tienda: "Tienda del Samurai",
         subtitulo_tienda: "Tienda de libros • Caracas, Venezuela",
         whatsapp: "584242855733",
-        instagram: "@latiendadelsamurai",
+        instagram: INSTAGRAM_HANDLE,
         metodos_pago: "Pago Móvil|Divisas|PayPal",
         paypal_comision_pct: 5.4,
         paypal_comision_fija: 0.30,
@@ -773,6 +774,10 @@
     const fmtBs = (val) => (Number(val) || 0).toLocaleString("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     document.addEventListener("DOMContentLoaded", () => {
+      try {
+        sessionStorage.removeItem("paos_world_catalog_v1");
+        sessionStorage.removeItem("tienda_del_samurai_catalog_v1");
+      } catch (_) {}
       iniciarSecuenciaMarcaAgua();
       poblarPaises();
       poblarSelectorMetodosPago();
@@ -997,6 +1002,14 @@
       return `+${digits}`;
     }
 
+    function normalizarHandleInstagram(raw) {
+      const limpio = String(raw || "").trim().replace(/^@+/, "");
+      if (!limpio || /paos\.world/i.test(limpio)) {
+        return INSTAGRAM_HANDLE;
+      }
+      return `@${limpio}`;
+    }
+
     function aplicarTemaYMarca() {
       const c = state.config;
       const root = document.documentElement.style;
@@ -1004,18 +1017,24 @@
       root.setProperty("--fondo", c.color_fondo || "#F4F2FC");
       root.setProperty("--acento", c.color_acento || "#8575D4");
 
-      $("brandTitle").textContent = c.nombre_tienda || "Tienda del Samurai";
-      $("brandSub").textContent = c.subtitulo_tienda || "Tienda de libros • Caracas, Venezuela";
-      document.title = `${c.nombre_tienda || "Tienda del Samurai"} — Catálogo de Libros`;
+      const nombreRaw = String(c.nombre_tienda || "").trim();
+      const nombreTienda = (!nombreRaw || /pao'?s?\s*world/i.test(nombreRaw))
+        ? "Tienda del Samurai"
+        : nombreRaw;
 
-      const igHandle = String(c.instagram || "@latiendadelsamurai").trim();
-      const igUser = igHandle.replace(/^@/, "") || "latiendadelsamurai";
-      const igUrl = igUser === "latiendadelsamurai"
-        ? INSTAGRAM_URL
-        : `https://www.instagram.com/${encodeURIComponent(igUser)}/`;
-      $("headerInstagram").href = igUrl;
-      $("fabInstagram").href = igUrl;
-      $("headerIgText").textContent = igHandle.startsWith("@") ? igHandle : `@${igHandle}`;
+      const subRaw = String(c.subtitulo_tienda || "").trim();
+      const subtituloTienda = (!subRaw || /world of princess/i.test(subRaw))
+        ? "Tienda de libros • Caracas, Venezuela"
+        : subRaw;
+
+      $("brandTitle").textContent = nombreTienda;
+      $("brandSub").textContent = subtituloTienda;
+      document.title = `${nombreTienda} — Catálogo de Libros`;
+
+      const igHandle = normalizarHandleInstagram(c.instagram);
+      $("headerInstagram").href = INSTAGRAM_URL;
+      $("fabInstagram").href = INSTAGRAM_URL;
+      $("headerIgText").textContent = igHandle;
 
       const waNum = String(c.whatsapp || "584242855733").replace(/\D/g, "") || "584242855733";
       const waUrl = `https://wa.me/${waNum}`;
@@ -1931,7 +1950,10 @@
         ? `Última actualización: ${cfg.bcv_ultima_actualizacion}`
         : "Sin fecha registrada aún";
       $("cfgHorasExp").value = cfg.horas_expiracion_carrito || "2";
-      $("cfgNombreTienda").value = cfg.nombre_tienda || "Tienda del Samurai";
+      const nombreRaw = String(cfg.nombre_tienda || "").trim();
+      $("cfgNombreTienda").value = (!nombreRaw || /pao'?s?\s*world/i.test(nombreRaw))
+        ? "Tienda del Samurai"
+        : nombreRaw;
       $("cfgWhatsapp").value = cfg.whatsapp || "";
       $("cfgPaypalPct").value = cfg.paypal_comision_pct ?? state.config.paypal_comision_pct ?? "5.4";
       $("cfgPaypalFija").value = cfg.paypal_comision_fija ?? state.config.paypal_comision_fija ?? "0.30";
@@ -1974,8 +1996,9 @@
         patch: {
           tasa_bcv: $("cfgTasaBcv").value.trim(),
           horas_expiracion_carrito: $("cfgHorasExp").value.trim(),
-          nombre_tienda: $("cfgNombreTienda").value.trim(),
+          nombre_tienda: $("cfgNombreTienda").value.trim() || "Tienda del Samurai",
           whatsapp: $("cfgWhatsapp").value.trim(),
+          instagram: INSTAGRAM_HANDLE,
           paypal_comision_pct: $("cfgPaypalPct")?.value.trim() || "5.4",
           paypal_comision_fija: $("cfgPaypalFija")?.value.trim() || "0.30",
           logo_url: $("cfgLogoUrl").value.trim(),
