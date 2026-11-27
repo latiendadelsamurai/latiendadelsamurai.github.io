@@ -241,86 +241,157 @@
     .order-desc-sub { font-size: 12px; color: var(--texto-suave); font-weight: 600; }
     .order-desc-bs { color: var(--acento); font-weight: 800; margin-top: 3px; }
 
-    /* Reverencia fluida del samurái (ojigi) al concretar el pedido */
-    .ojigi-card {
+    /* Animación estilo Vector: poses de pelea con katana y reverencia final (ojigi) al cliente */
+    .vector-samurai-card {
       margin-top: 14px;
-      padding: 18px 16px;
+      padding: 16px;
       border-radius: 16px;
-      background: linear-gradient(165deg, #161619 0%, #241618 75%, #3C1414 135%);
+      background: linear-gradient(160deg, #121215 0%, #1F1517 75%, #381212 140%);
       color: var(--blanco);
       border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 12px 28px rgba(20, 20, 23, 0.22);
+      box-shadow: 0 12px 28px rgba(20, 20, 23, 0.24);
       display: none;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      gap: 10px;
+      gap: 8px;
     }
-    .ojigi-card.show {
+    .vector-samurai-card.show {
       display: flex;
-      animation: fadeOjigiCard 0.35s ease-out both;
+      animation: fadeVectorCard 0.3s ease-out both;
     }
-    @keyframes fadeOjigiCard {
+    @keyframes fadeVectorCard {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .samurai-ojigi-svg {
-      width: 148px;
-      height: 148px;
+    .vector-stage-svg {
+      width: 190px;
+      height: 136px;
       overflow: visible;
       display: block;
     }
-    .samurai-upper-body {
+    .vec-shadow {
       transform-box: fill-box;
-      transform-origin: 50% 92%;
-      animation: samuraiOjigiBow 2.8s cubic-bezier(0.37, 0, 0.2, 1) infinite;
+      transform-origin: center;
+      animation: vecShadowCycle 4.6s cubic-bezier(0.35, 0, 0.2, 1) infinite;
     }
-    .samurai-head-group {
+    @keyframes vecShadowCycle {
+      0%, 100% { transform: scaleX(1); opacity: 0.28; }
+      22% { transform: scaleX(1.24); opacity: 0.36; }
+      52% { transform: scaleX(1.32); opacity: 0.4; }
+      82% { transform: scaleX(0.95); opacity: 0.24; }
+    }
+
+    /* Rig articulado de silueta tipo Vector (torso, cabeza, brazo delantero/katana, pierna delantera/trasera) */
+    .vec-rig-root {
       transform-box: fill-box;
       transform-origin: 50% 85%;
-      animation: samuraiOjigiHead 2.8s cubic-bezier(0.37, 0, 0.2, 1) infinite;
+      animation: vecRootSequence 4.6s cubic-bezier(0.32, 0.04, 0.22, 1) infinite;
     }
-    .samurai-katana-group {
+    .vec-torso-group {
       transform-box: fill-box;
-      transform-origin: 35% 75%;
-      animation: samuraiKatanaBow 2.8s cubic-bezier(0.37, 0, 0.2, 1) infinite;
+      transform-origin: 48% 88%;
+      animation: vecTorsoSequence 4.6s cubic-bezier(0.32, 0.04, 0.22, 1) infinite;
     }
-    @keyframes samuraiOjigiBow {
-      0%, 14% { transform: rotate(0deg) translateY(0px); }
-      42%, 62% { transform: rotate(24deg) translateY(5px); }
-      88%, 100% { transform: rotate(0deg) translateY(0px); }
+    .vec-head-group {
+      transform-box: fill-box;
+      transform-origin: 45% 80%;
+      animation: vecHeadSequence 4.6s cubic-bezier(0.32, 0.04, 0.22, 1) infinite;
     }
-    @keyframes samuraiOjigiHead {
-      0%, 16% { transform: rotate(0deg) translateY(0px); }
-      44%, 64% { transform: rotate(12deg) translateY(3px); }
-      90%, 100% { transform: rotate(0deg) translateY(0px); }
+    .vec-sword-arm {
+      transform-box: fill-box;
+      transform-origin: 42% 48%;
+      animation: vecSwordSequence 4.6s cubic-bezier(0.32, 0.04, 0.22, 1) infinite;
     }
-    @keyframes samuraiKatanaBow {
-      0%, 14% { transform: rotate(0deg) translateY(0px); }
-      42%, 62% { transform: rotate(14deg) translateY(3px); }
-      88%, 100% { transform: rotate(0deg) translateY(0px); }
+    .vec-leg-front {
+      transform-box: fill-box;
+      transform-origin: 48% 18%;
+      animation: vecLegFrontSeq 4.6s cubic-bezier(0.32, 0.04, 0.22, 1) infinite;
     }
+    .vec-leg-back {
+      transform-box: fill-box;
+      transform-origin: 50% 18%;
+      animation: vecLegBackSeq 4.6s cubic-bezier(0.32, 0.04, 0.22, 1) infinite;
+    }
+    .vec-slash-arc {
+      transform-box: fill-box;
+      transform-origin: 55% 55%;
+      opacity: 0;
+      animation: vecSlashArcSeq 4.6s ease-out infinite;
+    }
+
+    /* 0-24%: Guardia baja de combate | 25-54%: Corte/pose dinámica de esgrima | 55-72%: Recuperación | 73-96%: Reverencia (ojigi) al cliente */
+    @keyframes vecRootSequence {
+      0%, 100% { transform: translate(0px, 0px); }
+      22% { transform: translate(6px, 5px); }
+      44% { transform: translate(16px, 7px); }
+      68% { transform: translate(0px, 0px); }
+      82%, 92% { transform: translate(2px, 4px); }
+    }
+    @keyframes vecTorsoSequence {
+      0%, 100% { transform: rotate(8deg); }
+      22% { transform: rotate(-10deg); }
+      44% { transform: rotate(22deg); }
+      68% { transform: rotate(4deg); }
+      82%, 92% { transform: rotate(34deg); }
+    }
+    @keyframes vecHeadSequence {
+      0%, 100% { transform: rotate(-4deg); }
+      22% { transform: rotate(8deg); }
+      44% { transform: rotate(-10deg); }
+      68% { transform: rotate(0deg); }
+      82%, 92% { transform: rotate(16deg); }
+    }
+    @keyframes vecSwordSequence {
+      0%, 100% { transform: rotate(14deg); }
+      22% { transform: rotate(-68deg); }
+      44% { transform: rotate(48deg); }
+      68% { transform: rotate(18deg); }
+      82%, 92% { transform: rotate(28deg); }
+    }
+    @keyframes vecLegFrontSeq {
+      0%, 100% { transform: rotate(18deg); }
+      22% { transform: rotate(28deg); }
+      44% { transform: rotate(36deg); }
+      68% { transform: rotate(10deg); }
+      82%, 92% { transform: rotate(4deg); }
+    }
+    @keyframes vecLegBackSeq {
+      0%, 100% { transform: rotate(-22deg); }
+      22% { transform: rotate(-30deg); }
+      44% { transform: rotate(-26deg); }
+      68% { transform: rotate(-10deg); }
+      82%, 92% { transform: rotate(-4deg); }
+    }
+    @keyframes vecSlashArcSeq {
+      0%, 38% { opacity: 0; transform: scale(0.75) rotate(-15deg); }
+      45% { opacity: 0.9; transform: scale(1.05) rotate(6deg); }
+      56%, 100% { opacity: 0; transform: scale(1.12) rotate(14deg); }
+    }
+
     @media (prefers-reduced-motion: reduce) {
-      .samurai-upper-body, .samurai-head-group, .samurai-katana-group {
+      .vec-shadow, .vec-rig-root, .vec-torso-group, .vec-head-group,
+      .vec-sword-arm, .vec-leg-front, .vec-leg-back, .vec-slash-arc {
         animation: none;
       }
     }
-    .ojigi-order-code {
+
+    .vector-order-code {
       font-size: 15px;
       font-weight: 900;
       letter-spacing: 0.2px;
       color: var(--blanco);
     }
-    .ojigi-jp-greeting {
-      font-size: 13px;
-      font-weight: 700;
-      color: #F4C7C3;
-      line-height: 1.4;
+    .vector-pose-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: #F4B8B4;
+      letter-spacing: 0.3px;
     }
-    .ojigi-sub-note {
+    .vector-sub-note {
       font-size: 12px;
       color: rgba(255, 255, 255, 0.86);
-      line-height: 1.4;
+      line-height: 1.35;
     }
 
     .admin-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -557,56 +628,61 @@
         <div class="status-msg" id="msgPedido"></div>
       </form>
 
-      <!-- Samurái con ojigi de respeto al concretarse el pedido -->
-      <div class="ojigi-card" id="samuraiOjigiCard" aria-live="polite">
-        <svg class="samurai-ojigi-svg" viewBox="0 0 140 140" aria-hidden="true">
-          <!-- Sombra sobria en el suelo -->
-          <ellipse cx="70" cy="126" rx="34" ry="6" fill="rgba(255,255,255,0.12)" />
+      <!-- Animación estilo Vector: poses de pelea con katana y reverencia final al cliente -->
+      <div class="vector-samurai-card" id="vectorSamuraiCard" aria-live="polite">
+        <svg class="vector-stage-svg" viewBox="0 0 200 130" aria-hidden="true">
+          <!-- Piso sutil -->
+          <line x1="20" y1="114" x2="180" y2="114" stroke="rgba(255,255,255,0.22)" stroke-width="1.5" />
+          <ellipse class="vec-shadow" cx="98" cy="114" rx="34" ry="4.5" fill="#FFFFFF" />
 
-          <!-- Piernas / hakama base -->
-          <path d="M52 88 L46 123 L64 123 L70 98 L76 123 L94 123 L88 88 Z" fill="#141417" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round" />
-          <line x1="70" y1="98" x2="70" y2="123" stroke="#A61C1C" stroke-width="2" />
+          <!-- Trazo limpio del corte en la pose de esgrima -->
+          <path class="vec-slash-arc" d="M114 26 Q152 46 138 86" fill="none" stroke="#A61C1C" stroke-width="3" stroke-linecap="round" />
 
-          <!-- Torso y cabeza articulados para el ojigi -->
-          <g class="samurai-upper-body">
-            <!-- Do (coraza oscura con detalle rojo) -->
-            <path d="M44 58 L96 58 L90 92 L50 92 Z" fill="#141417" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round" />
-            <path d="M52 66 L88 66 L86 73 L54 73 Z" fill="#A61C1C" />
-            <path d="M54 78 L86 78 L85 84 L55 84 Z" fill="#A61C1C" />
+          <!-- Silueta articulada estilo Vector -->
+          <g class="vec-rig-root">
+            <!-- Pierna trasera -->
+            <g class="vec-leg-back">
+              <path d="M92 74 L74 92 L64 112" fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
 
-            <!-- Hombreras (sode) -->
-            <path d="M36 60 L50 56 L47 74 L33 70 Z" fill="#141417" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round" />
-            <path d="M104 60 L90 56 L93 74 L107 70 Z" fill="#141417" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round" />
+            <!-- Pierna delantera -->
+            <g class="vec-leg-front">
+              <path d="M96 74 L116 92 L126 112" fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
 
-            <!-- Brazos en postura de respeto -->
-            <path d="M42 68 L54 84 L66 84" fill="none" stroke="#FFFFFF" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" />
-            <path d="M98 68 L84 82 L70 84" fill="none" stroke="#FFFFFF" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- Torso y cabeza -->
+            <g class="vec-torso-group">
+              <!-- Torso atlético de silueta -->
+              <path d="M87 44 L103 44 L98 76 L90 76 Z" fill="#FFFFFF" />
+              <!-- Faja carmesí del samurái -->
+              <rect x="89" y="67" width="10" height="4.5" rx="1.5" fill="#A61C1C" />
 
-            <!-- Cabeza y kabuto estilo logo -->
-            <g class="samurai-head-group">
-              <circle cx="70" cy="43" r="14" fill="#FFFFFF" stroke="#141417" stroke-width="1.6" />
-              <line x1="63" y1="42" x2="67" y2="42" stroke="#141417" stroke-width="2.2" stroke-linecap="round" />
-              <line x1="73" y1="42" x2="77" y2="42" stroke="#141417" stroke-width="2.2" stroke-linecap="round" />
-              <line x1="65" y1="49" x2="75" y2="49" stroke="#141417" stroke-width="1.8" stroke-linecap="round" />
+              <!-- Cabeza y casco kabuto -->
+              <g class="vec-head-group">
+                <circle cx="95" cy="34" r="7.5" fill="#FFFFFF" />
+                <!-- Media luna / cuerno frontal rojo -->
+                <path d="M97 27 L105 21 L101 29 Z" fill="#A61C1C" />
+                <!-- Ala trasera del casco -->
+                <path d="M88 31 L79 29 L82 36 L88 35 Z" fill="#FFFFFF" />
+                <!-- Cinta / pañuelo que fluye -->
+                <path d="M87 34 Q73 32 65 39" fill="none" stroke="#A61C1C" stroke-width="2.4" stroke-linecap="round" />
+              </g>
 
-              <!-- Alas laterales del casco y maedate rojo -->
-              <path d="M52 38 C40 32, 42 18, 55 22 C58 14, 68 16, 66 26" fill="#A61C1C" stroke="#141417" stroke-width="1.5" />
-              <path d="M88 38 C100 32, 98 18, 85 22 C82 14, 72 16, 74 26" fill="#A61C1C" stroke="#141417" stroke-width="1.5" />
-              <path d="M52 33 L70 23 L88 33 L80 39 L60 39 Z" fill="#141417" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round" />
-              <path d="M70 15 L66 25 L74 25 Z" fill="#A61C1C" />
+              <!-- Brazo con katana (solo katana, sin círculos de poder) -->
+              <g class="vec-sword-arm">
+                <path d="M97 48 L113 58 L124 52" fill="none" stroke="#FFFFFF" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" />
+                <!-- Empuñadura y tsuba -->
+                <line x1="120" y1="54" x2="132" y2="48" stroke="#A61C1C" stroke-width="3.6" stroke-linecap="round" />
+                <line x1="132" y1="44" x2="134" y2="52" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" />
+                <!-- Hoja de la katana -->
+                <path d="M133 48 Q154 38 172 28" fill="none" stroke="#FFFFFF" stroke-width="2.8" stroke-linecap="round" />
+              </g>
             </g>
           </g>
-
-          <!-- Katana envainada sin círculos de poder -->
-          <g class="samurai-katana-group">
-            <line x1="26" y1="104" x2="112" y2="74" stroke="#FFFFFF" stroke-width="4.2" stroke-linecap="round" />
-            <line x1="36" y1="100.5" x2="22" y2="105.5" stroke="#A61C1C" stroke-width="5" stroke-linecap="round" />
-            <line x1="38" y1="95" x2="41" y2="105" stroke="#A61C1C" stroke-width="2.4" stroke-linecap="round" />
-          </g>
         </svg>
-        <div class="ojigi-order-code" id="ojigiOrderCode">Orden confirmada</div>
-        <div class="ojigi-jp-greeting">お買い上げ、誠にありがとうございます。</div>
-        <div class="ojigi-sub-note">Okaiage, makoto ni arigatō gozaimasu • Tu pedido ha quedado registrado con respeto.</div>
+        <div class="vector-order-code" id="vectorOrderCode">Orden confirmada</div>
+        <div class="vector-pose-label" id="vectorPoseLabel">Guardia • Corte • Reverencia de respeto</div>
+        <div class="vector-sub-note">Tu pedido ha sido registrado. Gracias por confiar en Tienda del Samurai.</div>
       </div>
     </div>
   </div>
@@ -859,7 +935,7 @@
       osc2.stop(ahora + 0.25);
     }
 
-    // Agradecimiento samurái con cadencia de anciano: "Okaiage, makoto ni arigatō gozaimasu"
+    // Pulso instrumental sobrio al concretar pedido (sin voz)
     function samuraiAgradecimientoPedido() {
       if (audioCtx.state === "suspended") audioCtx.resume();
       const ahora = audioCtx.currentTime;
@@ -867,68 +943,17 @@
       const taiko = audioCtx.createOscillator();
       const taikoGain = audioCtx.createGain();
       taiko.type = "sine";
-      taiko.frequency.setValueAtTime(135, ahora);
-      taiko.frequency.exponentialRampToValueAtTime(58, ahora + 0.38);
+      taiko.frequency.setValueAtTime(145, ahora);
+      taiko.frequency.exponentialRampToValueAtTime(62, ahora + 0.34);
 
       taikoGain.gain.setValueAtTime(0.001, ahora);
-      taikoGain.gain.linearRampToValueAtTime(0.28, ahora + 0.02);
-      taikoGain.gain.exponentialRampToValueAtTime(0.0008, ahora + 0.45);
+      taikoGain.gain.linearRampToValueAtTime(0.24, ahora + 0.015);
+      taikoGain.gain.exponentialRampToValueAtTime(0.0008, ahora + 0.4);
 
       taiko.connect(taikoGain);
       taikoGain.connect(audioCtx.destination);
       taiko.start(ahora);
-      taiko.stop(ahora + 0.46);
-
-      const armonico = audioCtx.createOscillator();
-      const armonicoGain = audioCtx.createGain();
-      armonico.type = "triangle";
-      armonico.frequency.setValueAtTime(220, ahora + 0.06);
-
-      armonicoGain.gain.setValueAtTime(0.001, ahora + 0.06);
-      armonicoGain.gain.linearRampToValueAtTime(0.08, ahora + 0.14);
-      armonicoGain.gain.exponentialRampToValueAtTime(0.0008, ahora + 0.95);
-
-      armonico.connect(armonicoGain);
-      armonicoGain.connect(audioCtx.destination);
-      armonico.start(ahora + 0.06);
-      armonico.stop(ahora + 0.96);
-
-      if ("speechSynthesis" in window) {
-        const hablarComoAnciano = () => {
-          try {
-            window.speechSynthesis.cancel();
-            const texto = "お買い上げ、誠にありがとうございます。";
-            const utterance = new SpeechSynthesisUtterance(texto);
-            utterance.lang = "ja-JP";
-            utterance.rate = 0.8;
-            utterance.pitch = 0.72;
-            utterance.volume = 1.0;
-
-            const voices = window.speechSynthesis.getVoices() || [];
-            const jpVoices = voices.filter(v => /^ja(-|_|$)/i.test(v.lang));
-
-            const evitarJuveniles = /(haruka|ayumi|nanami|sayaka|kyoko|mizuki|mei|ao|female)/i;
-            const preferirGraves = /(male|ichiro|kenji|naoto|otoya|takumi|keita)/i;
-
-            const elegida =
-              jpVoices.find(v => preferirGraves.test(v.name)) ||
-              jpVoices.find(v => !evitarJuveniles.test(v.name)) ||
-              jpVoices[0] ||
-              null;
-
-            if (elegida) utterance.voice = elegida;
-            window.speechSynthesis.speak(utterance);
-          } catch (_) {}
-        };
-
-        const voicesActuales = window.speechSynthesis.getVoices();
-        if (voicesActuales && voicesActuales.length > 0) {
-          hablarComoAnciano();
-        } else {
-          window.speechSynthesis.addEventListener("voiceschanged", hablarComoAnciano, { once: true });
-          setTimeout(hablarComoAnciano, 180);
-        }
-      }
+      taiko.stop(ahora + 0.42);
     }
 
     const PAISES = [
@@ -955,7 +980,7 @@
       },
       categorias: [], productos: [], prodMap: new Map(), categoriaActiva: "TODAS",
       carrito: [], deseos: [], wishStats: {}, lightboxProdId: null, lightboxQty: 1,
-      catEditandoNombre: "", adminPin: "", adminData: null, toastTimer: null
+      catEditandoNombre: "", adminPin: "", adminData: null, toastTimer: null, poseLabelTimer: null
     };
 
     const $ = (id) => document.getElementById(id);
@@ -966,18 +991,54 @@
     const cerrarBackdrop = (ev, id) => { if (ev.target && ev.target.id === id) cerrarModal(id); };
     const mostrarMsg = (el, txt, ok) => { if (!el) return; el.textContent = txt; el.className = `status-msg ${ok ? "ok" : "err"}`; el.style.display = "block"; };
 
-    function ocultarOjigiPedido() {
-      const card = $("samuraiOjigiCard");
+    function detenerEtiquetasPose() {
+      if (state.poseLabelTimer) {
+        clearInterval(state.poseLabelTimer);
+        state.poseLabelTimer = null;
+      }
+    }
+
+    function ocultarAnimacionSamuraiVector() {
+      detenerEtiquetasPose();
+      const card = $("vectorSamuraiCard");
       if (card) card.classList.remove("show");
     }
 
-    function mostrarOjigiPedido(pedidoId) {
-      const card = $("samuraiOjigiCard"), codeEl = $("ojigiOrderCode");
+    function iniciarCicloEtiquetasPose() {
+      detenerEtiquetasPose();
+      const lbl = $("vectorPoseLabel");
+      if (!lbl) return;
+      const pasos = [
+        { delay: 0, texto: "Postura de guardia" },
+        { delay: 1000, texto: "Corte de katana" },
+        { delay: 2500, texto: "Recompostura" },
+        { delay: 3400, texto: "Reverencia de respeto al cliente" }
+      ];
+      const aplicarPaso = (t) => {
+        lbl.textContent = t;
+      };
+      aplicarPaso(pasos[0].texto);
+      const correrCiclo = () => {
+        setTimeout(() => { if ($("vectorSamuraiCard")?.classList.contains("show")) aplicarPaso(pasos[1].texto); }, 1000);
+        setTimeout(() => { if ($("vectorSamuraiCard")?.classList.contains("show")) aplicarPaso(pasos[2].texto); }, 2500);
+        setTimeout(() => { if ($("vectorSamuraiCard")?.classList.contains("show")) aplicarPaso(pasos[3].texto); }, 3400);
+      };
+      correrCiclo();
+      state.poseLabelTimer = setInterval(() => {
+        if (!$("vectorSamuraiCard")?.classList.contains("show")) return detenerEtiquetasPose();
+        aplicarPaso(pasos[0].texto);
+        correrCiclo();
+      }, 4600);
+    }
+
+    function mostrarAnimacionSamuraiVector(pedidoId) {
+      const card = $("vectorSamuraiCard"), codeEl = $("vectorOrderCode");
       if (!card) return;
       if (codeEl) codeEl.textContent = pedidoId ? `Orden ${pedidoId} confirmada` : "Orden confirmada";
       card.classList.remove("show");
       void card.offsetWidth;
       card.classList.add("show");
+      iniciarCicloEtiquetasPose();
     }
 
     function formatearFechaCorta(d = new Date()) {
@@ -1594,7 +1655,7 @@
       $("cartCountBadge").textContent = `(${totalUnidades})`; $("cartTotalUsdBadge").textContent = `$${totalUsd.toFixed(2)}`;
     }
     function abrirCarrito() {
-      if (state.carrito.length > 0) ocultarOjigiPedido();
+      if (state.carrito.length > 0) ocultarAnimacionSamuraiVector();
       renderModalCarrito();
       $("modalCarrito").classList.add("open");
     }
@@ -1636,7 +1697,7 @@
     async function enviarPedido(ev) {
       ev.preventDefault();
       const msg = $("msgPedido"); msg.className = "status-msg"; msg.style.display = "none";
-      ocultarOjigiPedido();
+      ocultarAnimacionSamuraiVector();
       if (!state.carrito.length) return mostrarMsg(msg, "Agrega al menos un producto al carrito.", false);
       const tel = construirTelefonoCompleto($("cliCodigoPais").value, $("cliTelefono").value.trim());
       if (!tel || tel.length < 8) return mostrarMsg(msg, "Ingresa un número de WhatsApp válido.", false);
@@ -1651,10 +1712,10 @@
         const data = await (await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createOrder", cliente: $("cliNombre").value.trim(), telefono: `+${tel}`, modalidad_entrega: $("cliEntrega").value, metodo_pago: metodoPago, total_usd: Number(totalUsd.toFixed(2)), total_bs: Number((totalUsd * tasa).toFixed(2)), items }) })).json();
         if (!data.ok) throw new Error(data.error || "No se pudo registrar el pedido");
         state.carrito = []; actualizarBadgeCarrito(); renderModalCarrito(); $("formPedido").reset(); $("cliCodigoPais").value = "58";
-        mostrarOjigiPedido(data.pedido_id);
+        mostrarAnimacionSamuraiVector(data.pedido_id);
         samuraiAgradecimientoPedido();
         await cargarCatalogo();
-        mostrarMsg(msg, `¡Listo! Tu pedido ${data.pedido_id} fue reservado con éxito. O-kaiage makoto ni arigatō gozaimasu.`, true);
+        mostrarMsg(msg, `¡Listo! Tu pedido ${data.pedido_id} fue reservado con éxito.`, true);
       } catch (err) { mostrarMsg(msg, err.message, false); }
       finally { btn.disabled = false; btn.textContent = "Confirmar y Reservar Pedido"; }
     }
