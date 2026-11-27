@@ -245,7 +245,8 @@
     .order-desc-bs { color: var(--acento); font-weight: 800; margin-top: 3px; }
 
     .cuotas-checklist-wrap { margin-top: 8px; padding: 7px 8px; border-radius: 10px; background: #FAF8F5; border: 1px solid var(--borde); }
-    .cuotas-checklist-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11px; font-weight: 800; color: var(--texto-suave); margin-bottom: 6px; }
+    .cuotas-checklist-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11px; font-weight: 800; color: var(--texto-suave); margin-bottom: 4px; }
+    .cuotas-monto-line { font-size: 11.5px; font-weight: 800; color: var(--primario); margin-bottom: 6px; line-height: 1.35; }
     .cuotas-check-grid { display: flex; flex-wrap: wrap; gap: 4px; }
     .cuota-check-btn { border: 1.5px solid var(--borde); background: var(--blanco); color: var(--texto); border-radius: 7px; padding: 3px 7px; font-size: 11px; font-weight: 800; cursor: pointer; transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease; }
     .cuota-check-btn:hover { border-color: var(--exito); }
@@ -525,6 +526,7 @@
         <button class="btn btn-primary" type="button" onclick="cambiarTabAdmin('tabTasa', this)">Tasa BCV y Ajustes</button>
         <button class="btn btn-soft" type="button" onclick="cambiarTabAdmin('tabProductos', this)">Libros y Accesorios</button>
         <button class="btn btn-soft" type="button" onclick="cambiarTabAdmin('tabPedidos', this)">Pedidos</button>
+        <button class="btn btn-soft" type="button" onclick="cambiarTabAdmin('tabCuotas', this)">Cuotas</button>
         <button class="btn btn-soft" type="button" onclick="cambiarTabAdmin('tabDeseos', this)">Lista de deseo</button>
         <button class="btn btn-soft" type="button" onclick="cambiarTabAdmin('tabMovs', this)">Movimientos DEBE/HABER</button>
       </div>
@@ -658,6 +660,20 @@
         </div>
       </div>
 
+      <div class="admin-panel" id="tabCuotas">
+        <div class="admin-quick-search">
+          <svg width="18" height="18" style="color:var(--acento);flex-shrink:0;" aria-hidden="true"><use href="#ico-search"></use></svg>
+          <input type="search" id="cuotasSearchInput" placeholder="Buscar solicitudes a cuotas por ID, cliente, teléfono, 5 quincenas o 10 semanas..." oninput="filtrarCuotasAdmin()" />
+          <button class="btn btn-soft btn-sm" type="button" id="btnLimpiarCuotasSearch" onclick="limpiarBusquedaCuotas()" style="display:none;">Limpiar</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Pedido</th><th>Fecha</th><th>Cliente / WhatsApp</th><th>Total / Monto Cuota</th><th>Detalle</th><th>Estado / Cuotas</th></tr></thead>
+            <tbody id="adminCuotasBody"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="admin-panel" id="tabDeseos">
         <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
           <div>
@@ -764,23 +780,44 @@
       } catch (_) {}
     }
 
-    function detectarPlanCuotasPedido(ped) {
+    function detectarPlanCuotasPedido(ped, tasa = 890) {
       const texto = `${ped?.metodo_pago || ""} ${ped?.detalle_items || ""}`.toLowerCase();
       if (!/cuota|quincena|semana/i.test(texto)) return null;
-      if (/10\s*semana/i.test(texto)) return { total: 10, prefijo: "S", etiqueta: "10 semanas" };
-      if (/5\s*quincena/i.test(texto)) return { total: 5, prefijo: "Q", etiqueta: "5 quincenas" };
-      return { total: 5, prefijo: "Q", etiqueta: "5 quincenas" };
+      const esSemanal = /10\s*semana/i.test(texto);
+      const totalCuotas = esSemanal ? 10 : 5;
+      const prefijo = esSemanal ? "S" : "Q";
+      const unidadSingular = esSemanal ? "semanal" : "quincenal";
+      const etiqueta = esSemanal ? "10 semanas" : "5 quincenas";
+
+      const totalUsd = Number(ped?.total_usd) || 0;
+      const inicialUsd = Number((totalUsd * 0.10).toFixed(2));
+      const restanteUsd = Number(Math.max(0, totalUsd - inicialUsd).toFixed(2));
+      const montoCuotaUsd = Number((restanteUsd / totalCuotas).toFixed(2));
+      const montoCuotaBs = montoCuotaUsd * (Number(tasa) || 890);
+
+      return {
+        total: totalCuotas,
+        prefijo,
+        unidadSingular,
+        etiqueta,
+        inicialUsd,
+        restanteUsd,
+        montoCuotaUsd,
+        montoCuotaBs
+      };
     }
 
-    function renderChecklistCuotasAdmin(ped) {
-      const plan = detectarPlanCuotasPedido(ped);
+    function renderChecklistCuotasAdmin(ped, tasa = 890) {
+      const plan = detectarPlanCuotasPedido(ped, tasa);
       if (!plan) return "";
       const pedidoId = String(ped.pedido_id || "");
       const marcadas = Array.isArray(state.cuotasChecks[pedidoId]) ? state.cuotasChecks[pedidoId].map(Number) : [];
+      const montoTexto = `$${plan.montoCuotaUsd.toFixed(2)} (Bs. ${fmtBs(plan.montoCuotaBs)})`;
       const botones = [];
       for (let i = 1; i <= plan.total; i++) {
         const activa = marcadas.includes(i);
-        botones.push(`<button type="button" class="cuota-check-btn ${activa ? "pagada" : ""}" title="${activa ? "Marcar cuota como pendiente" : "Marcar cuota como pagada"}" onclick="toggleCuotaPedido('${escAttr(pedidoId)}', ${i}, ${plan.total})">${activa ? "✓" : "○"} ${plan.prefijo}${i}</button>`);
+        const titulo = `Cuota ${plan.prefijo}${i} (${plan.unidadSingular}): ${montoTexto} — ${activa ? "Pagada (clic para desmarcar)" : "Pendiente (clic para marcar en verde)"}`;
+        botones.push(`<button type="button" class="cuota-check-btn ${activa ? "pagada" : ""}" title="${escAttr(titulo)}" onclick="toggleCuotaPedido('${escAttr(pedidoId)}', ${i}, ${plan.total})">${activa ? "✓" : "○"} ${plan.prefijo}${i}</button>`);
       }
       return `
         <div class="cuotas-checklist-wrap">
@@ -788,6 +825,7 @@
             <span>${escHtml(plan.etiqueta)}</span>
             <span style="color:${marcadas.length === plan.total ? "var(--exito)" : "var(--texto-suave)"};">${marcadas.length}/${plan.total}</span>
           </div>
+          <div class="cuotas-monto-line">Cuota ${escHtml(plan.unidadSingular)}: $${plan.montoCuotaUsd.toFixed(2)} • Bs. ${fmtBs(plan.montoCuotaBs)}</div>
           <div class="cuotas-check-grid">${botones.join("")}</div>
         </div>`;
     }
@@ -803,7 +841,9 @@
       guardarCuotasChecksLocales();
 
       if (state.adminData?.pedidos) {
-        renderTablaPedidosAdmin(state.adminData.pedidos, state.adminData.config || {});
+        const cfg = state.adminData.config || state.config;
+        renderTablaPedidosAdmin(state.adminData.pedidos, cfg);
+        renderTablaCuotasAdmin(state.adminData.pedidos, cfg);
       }
 
       if (lista.length === totalCuotas) {
@@ -1749,6 +1789,14 @@
       renderTablaPedidosAdmin(state.adminData.pedidos || [], state.adminData.config || {});
     }
     const limpiarBusquedaPedidos = () => { if ($("pedidosSearchInput")) $("pedidosSearchInput").value = ""; filtrarPedidosAdmin(); };
+    const obtenerFiltroCuotas = () => String($("cuotasSearchInput")?.value || "").trim().toLowerCase();
+    function filtrarCuotasAdmin() {
+      const q = obtenerFiltroCuotas();
+      if ($("btnLimpiarCuotasSearch")) $("btnLimpiarCuotasSearch").style.display = q ? "inline-flex" : "none";
+      if (!state.adminData) return;
+      renderTablaCuotasAdmin(state.adminData.pedidos || [], state.adminData.config || {});
+    }
+    const limpiarBusquedaCuotas = () => { if ($("cuotasSearchInput")) $("cuotasSearchInput").value = ""; filtrarCuotasAdmin(); };
 
     function renderMovimientoBadge(m) {
       const t = String(m.tipo || "").trim().toUpperCase(), ref = String(m.referencia || "").trim().toUpperCase(), mot = String(m.motivo || "").trim().toLowerCase();
@@ -1763,34 +1811,54 @@
       return `<b>${escHtml(m.tipo || "")}</b>`;
     }
 
+    function construirFilaPedidoHtml(ped, cfg, incluirChecklistEnFila = true) {
+      const tasa = parseFloat(cfg?.tasa_bcv) || 890, tasaFmt = fmtBs(tasa);
+      const wa = normalizarWhatsAppAdmin(ped.telefono), usd = Number(ped.total_usd || 0), met = String(ped.metodo_pago || "").trim();
+      const esMovil = /m[oó]vil|transferencia/i.test(met), cli = String(ped.cliente || "").trim(), tienda = String(cfg?.nombre_tienda || "Tienda del Samurai").trim();
+      const detLines = String(ped.detalle_items || "").split(/\s*(?:\||;|\n)\s*/).map(s => s.replace(/^\s*\[[^\]]+\]\s*/g, "").replace(/\s*\[[^\]]+\]\s*/g, " ").trim()).filter(Boolean).map(s => `- ${s}`).join("\n");
+      const cab = [cli ? `Hola ${cli}, te escribimos de ${tienda}` : `Te escribimos de ${tienda}`, ped.pedido_id ? `respecto a tu orden ${ped.pedido_id}.` : ".", `Total: $${usd.toFixed(2)}`, met ? `Método de pago: ${met}.` : "", ped.modalidad_entrega ? `Entrega: ${ped.modalidad_entrega}.` : ""].filter(Boolean).join(" ").replace(" .", ".");
+      const cuerpo = [cab, "", "detalle de la orden", detLines, esMovil ? `\nEl monto al día de hoy para Pago Móvil es Bs. ${fmtBs(usd * tasa)} (Tasa BCV: Bs. ${tasaFmt}).` : ""].join("\n").trim();
+      const estadoActual = String(ped.estado || "EN_PROCESO");
+      const opcionesEstado = ESTADOS_PEDIDO.includes(estadoActual) ? ESTADOS_PEDIDO : [estadoActual, ...ESTADOS_PEDIDO];
+      const plan = detectarPlanCuotasPedido(ped, tasa);
+      const checklistHtml = incluirChecklistEnFila ? renderChecklistCuotasAdmin(ped, tasa) : "";
+      const montoColHtml = plan
+        ? `$${usd.toFixed(2)}<br><small style="color:var(--acento);font-weight:800;">Cuota: $${plan.montoCuotaUsd.toFixed(2)} (Bs. ${fmtBs(plan.montoCuotaBs)})</small>`
+        : `$${usd.toFixed(2)}<br><small>Bs. ${Number(ped.total_bs || 0).toFixed(2)}</small>`;
+
+      return `
+        <tr>
+          <td><b>${escHtml(ped.pedido_id)}</b></td>
+          <td>${escHtml(ped.fecha)}</td>
+          <td><b>${escHtml(ped.cliente)}</b><br><small>${escHtml(ped.telefono)}</small>${wa ? `<br><a class="btn-wa-mini" href="https://wa.me/${wa}?text=${encodeURIComponent(cuerpo)}" target="_blank" rel="noopener noreferrer">WhatsApp (+${wa})</a>` : ""}</td>
+          <td>${montoColHtml}</td>
+          <td><small>${escHtml(ped.detalle_items)}</small></td>
+          <td>
+            <select onchange="cambiarEstadoPedido('${escAttr(ped.pedido_id)}',this.value)">${opcionesEstado.map(st => `<option value="${escAttr(st)}" ${estadoActual === st ? "selected" : ""}>${escHtml(st)}</option>`).join("")}</select>
+            ${checklistHtml}
+          </td>
+        </tr>`;
+    }
+
     function renderTablaPedidosAdmin(pedidos, cfg) {
       const q = obtenerFiltroPedidos();
       const list = q ? (pedidos || []).filter(p => [p.pedido_id,p.fecha,p.cliente,p.telefono,p.modalidad_entrega,p.metodo_pago,p.total_usd,p.total_bs,p.detalle_items,p.estado].join(" ").toLowerCase().includes(q)) : (pedidos || []);
       if (!list.length) { $("adminPedidosBody").innerHTML = `<tr><td colspan="6" style="color:var(--texto-suave);">${q ? "No se encontraron pedidos con ese filtro." : "No hay pedidos registrados."}</td></tr>`; return; }
-      const tasa = parseFloat(cfg?.tasa_bcv) || 890, tasaFmt = fmtBs(tasa);
+      $("adminPedidosBody").innerHTML = list.map(ped => construirFilaPedidoHtml(ped, cfg, false)).join("");
+    }
 
-      $("adminPedidosBody").innerHTML = list.map(ped => {
-        const wa = normalizarWhatsAppAdmin(ped.telefono), usd = Number(ped.total_usd || 0), met = String(ped.metodo_pago || "").trim();
-        const esMovil = /m[oó]vil|transferencia/i.test(met), cli = String(ped.cliente || "").trim(), tienda = String(cfg?.nombre_tienda || "Tienda del Samurai").trim();
-        const detLines = String(ped.detalle_items || "").split(/\s*(?:\||;|\n)\s*/).map(s => s.replace(/^\s*\[[^\]]+\]\s*/g, "").replace(/\s*\[[^\]]+\]\s*/g, " ").trim()).filter(Boolean).map(s => `- ${s}`).join("\n");
-        const cab = [cli ? `Hola ${cli}, te escribimos de ${tienda}` : `Te escribimos de ${tienda}`, ped.pedido_id ? `respecto a tu orden ${ped.pedido_id}.` : ".", `Total: $${usd.toFixed(2)}`, met ? `Método de pago: ${met}.` : "", ped.modalidad_entrega ? `Entrega: ${ped.modalidad_entrega}.` : ""].filter(Boolean).join(" ").replace(" .", ".");
-        const cuerpo = [cab, "", "detalle de la orden", detLines, esMovil ? `\nEl monto al día de hoy para Pago Móvil es Bs. ${fmtBs(usd * tasa)} (Tasa BCV: Bs. ${tasaFmt}).` : ""].join("\n").trim();
-        const estadoActual = String(ped.estado || "EN_PROCESO");
-        const opcionesEstado = ESTADOS_PEDIDO.includes(estadoActual) ? ESTADOS_PEDIDO : [estadoActual, ...ESTADOS_PEDIDO];
-        const checklistHtml = renderChecklistCuotasAdmin(ped);
-        return `
-          <tr>
-            <td><b>${escHtml(ped.pedido_id)}</b></td>
-            <td>${escHtml(ped.fecha)}</td>
-            <td><b>${escHtml(ped.cliente)}</b><br><small>${escHtml(ped.telefono)}</small>${wa ? `<br><a class="btn-wa-mini" href="https://wa.me/${wa}?text=${encodeURIComponent(cuerpo)}" target="_blank" rel="noopener noreferrer">WhatsApp (+${wa})</a>` : ""}</td>
-            <td>$${usd.toFixed(2)}<br><small>Bs. ${Number(ped.total_bs || 0).toFixed(2)}</small></td>
-            <td><small>${escHtml(ped.detalle_items)}</small></td>
-            <td>
-              <select onchange="cambiarEstadoPedido('${escAttr(ped.pedido_id)}',this.value)">${opcionesEstado.map(st => `<option value="${escAttr(st)}" ${estadoActual === st ? "selected" : ""}>${escHtml(st)}</option>`).join("")}</select>
-              ${checklistHtml}
-            </td>
-          </tr>`;
-      }).join("");
+    function renderTablaCuotasAdmin(pedidos, cfg) {
+      const tbody = $("adminCuotasBody");
+      if (!tbody) return;
+      const tasa = parseFloat(cfg?.tasa_bcv) || 890;
+      const soloCuotas = (pedidos || []).filter(p => Boolean(detectarPlanCuotasPedido(p, tasa)));
+      const q = obtenerFiltroCuotas();
+      const list = q ? soloCuotas.filter(p => [p.pedido_id,p.fecha,p.cliente,p.telefono,p.modalidad_entrega,p.metodo_pago,p.total_usd,p.total_bs,p.detalle_items,p.estado].join(" ").toLowerCase().includes(q)) : soloCuotas;
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="color:var(--texto-suave);">${q ? "No se encontraron solicitudes a cuotas con ese filtro." : "No hay pedidos solicitados a cuotas todavía."}</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = list.map(ped => construirFilaPedidoHtml(ped, cfg, true)).join("");
     }
 
     function renderTablaDeseosAdmin(deseos) {
@@ -2042,6 +2110,7 @@
       renderListaCategoriasAdmin((d.categorias || []).map(normalizarCategoriaSheet));
       renderTablaProductosAdmin((d.productos || []).map(normalizarLibroSheet));
       renderTablaPedidosAdmin(d.pedidos || [], cfg);
+      renderTablaCuotasAdmin(d.pedidos || [], cfg);
       renderTablaDeseosAdmin(d.deseos || []);
       $("adminMovsBody").innerHTML = (d.movimientos || []).map(m => `<tr><td>${escHtml(m.fecha)}</td><td>${escHtml(m.referencia)}</td><td><b>${escHtml(m.producto_id)}</b></td><td>${renderMovimientoBadge(m)}</td><td>${escHtml(m.cantidad)}</td><td>${escHtml(m.stock_anterior)} → ${escHtml(m.stock_nuevo)}</td><td>${escHtml(m.motivo)}</td></tr>`).join("");
     }
@@ -2180,6 +2249,7 @@
       document.querySelectorAll(".admin-panel").forEach(p => p.classList.remove("active")); $(tabId).classList.add("active");
       document.querySelectorAll(".admin-tabs .btn").forEach(b => { b.classList.remove("btn-primary"); b.classList.add("btn-soft"); });
       if (btnEl) { btnEl.classList.remove("btn-soft"); btnEl.classList.add("btn-primary"); }
+      if (tabId === "tabCuotas" && state.adminData) renderTablaCuotasAdmin(state.adminData.pedidos || [], state.adminData.config || {});
       if (tabId === "tabDeseos") renderTablaDeseosAdmin(state.adminData?.deseos || []);
     }
   </script>
