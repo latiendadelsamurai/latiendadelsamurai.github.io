@@ -241,6 +241,88 @@
     .order-desc-sub { font-size: 12px; color: var(--texto-suave); font-weight: 600; }
     .order-desc-bs { color: var(--acento); font-weight: 800; margin-top: 3px; }
 
+    /* Reverencia fluida del samurái (ojigi) al concretar el pedido */
+    .ojigi-card {
+      margin-top: 14px;
+      padding: 18px 16px;
+      border-radius: 16px;
+      background: linear-gradient(165deg, #161619 0%, #241618 75%, #3C1414 135%);
+      color: var(--blanco);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 12px 28px rgba(20, 20, 23, 0.22);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+    }
+    .ojigi-card.show {
+      display: flex;
+      animation: fadeOjigiCard 0.35s ease-out both;
+    }
+    @keyframes fadeOjigiCard {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .samurai-ojigi-svg {
+      width: 148px;
+      height: 148px;
+      overflow: visible;
+      display: block;
+    }
+    .samurai-upper-body {
+      transform-box: fill-box;
+      transform-origin: 50% 92%;
+      animation: samuraiOjigiBow 2.8s cubic-bezier(0.37, 0, 0.2, 1) infinite;
+    }
+    .samurai-head-group {
+      transform-box: fill-box;
+      transform-origin: 50% 85%;
+      animation: samuraiOjigiHead 2.8s cubic-bezier(0.37, 0, 0.2, 1) infinite;
+    }
+    .samurai-katana-group {
+      transform-box: fill-box;
+      transform-origin: 35% 75%;
+      animation: samuraiKatanaBow 2.8s cubic-bezier(0.37, 0, 0.2, 1) infinite;
+    }
+    @keyframes samuraiOjigiBow {
+      0%, 14% { transform: rotate(0deg) translateY(0px); }
+      42%, 62% { transform: rotate(24deg) translateY(5px); }
+      88%, 100% { transform: rotate(0deg) translateY(0px); }
+    }
+    @keyframes samuraiOjigiHead {
+      0%, 16% { transform: rotate(0deg) translateY(0px); }
+      44%, 64% { transform: rotate(12deg) translateY(3px); }
+      90%, 100% { transform: rotate(0deg) translateY(0px); }
+    }
+    @keyframes samuraiKatanaBow {
+      0%, 14% { transform: rotate(0deg) translateY(0px); }
+      42%, 62% { transform: rotate(14deg) translateY(3px); }
+      88%, 100% { transform: rotate(0deg) translateY(0px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .samurai-upper-body, .samurai-head-group, .samurai-katana-group {
+        animation: none;
+      }
+    }
+    .ojigi-order-code {
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 0.2px;
+      color: var(--blanco);
+    }
+    .ojigi-jp-greeting {
+      font-size: 13px;
+      font-weight: 700;
+      color: #F4C7C3;
+      line-height: 1.4;
+    }
+    .ojigi-sub-note {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.86);
+      line-height: 1.4;
+    }
+
     .admin-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
     .admin-panel { display: none; }
     .admin-panel.active { display: block; }
@@ -474,6 +556,58 @@
         <button class="btn btn-primary" style="width:100%;padding:12px;" type="submit" id="btnConfirmarPedido">Confirmar y Reservar Pedido</button>
         <div class="status-msg" id="msgPedido"></div>
       </form>
+
+      <!-- Samurái con ojigi de respeto al concretarse el pedido -->
+      <div class="ojigi-card" id="samuraiOjigiCard" aria-live="polite">
+        <svg class="samurai-ojigi-svg" viewBox="0 0 140 140" aria-hidden="true">
+          <!-- Sombra sobria en el suelo -->
+          <ellipse cx="70" cy="126" rx="34" ry="6" fill="rgba(255,255,255,0.12)" />
+
+          <!-- Piernas / hakama base -->
+          <path d="M52 88 L46 123 L64 123 L70 98 L76 123 L94 123 L88 88 Z" fill="#141417" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round" />
+          <line x1="70" y1="98" x2="70" y2="123" stroke="#A61C1C" stroke-width="2" />
+
+          <!-- Torso y cabeza articulados para el ojigi -->
+          <g class="samurai-upper-body">
+            <!-- Do (coraza oscura con detalle rojo) -->
+            <path d="M44 58 L96 58 L90 92 L50 92 Z" fill="#141417" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round" />
+            <path d="M52 66 L88 66 L86 73 L54 73 Z" fill="#A61C1C" />
+            <path d="M54 78 L86 78 L85 84 L55 84 Z" fill="#A61C1C" />
+
+            <!-- Hombreras (sode) -->
+            <path d="M36 60 L50 56 L47 74 L33 70 Z" fill="#141417" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round" />
+            <path d="M104 60 L90 56 L93 74 L107 70 Z" fill="#141417" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round" />
+
+            <!-- Brazos en postura de respeto -->
+            <path d="M42 68 L54 84 L66 84" fill="none" stroke="#FFFFFF" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M98 68 L84 82 L70 84" fill="none" stroke="#FFFFFF" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" />
+
+            <!-- Cabeza y kabuto estilo logo -->
+            <g class="samurai-head-group">
+              <circle cx="70" cy="43" r="14" fill="#FFFFFF" stroke="#141417" stroke-width="1.6" />
+              <line x1="63" y1="42" x2="67" y2="42" stroke="#141417" stroke-width="2.2" stroke-linecap="round" />
+              <line x1="73" y1="42" x2="77" y2="42" stroke="#141417" stroke-width="2.2" stroke-linecap="round" />
+              <line x1="65" y1="49" x2="75" y2="49" stroke="#141417" stroke-width="1.8" stroke-linecap="round" />
+
+              <!-- Alas laterales del casco y maedate rojo -->
+              <path d="M52 38 C40 32, 42 18, 55 22 C58 14, 68 16, 66 26" fill="#A61C1C" stroke="#141417" stroke-width="1.5" />
+              <path d="M88 38 C100 32, 98 18, 85 22 C82 14, 72 16, 74 26" fill="#A61C1C" stroke="#141417" stroke-width="1.5" />
+              <path d="M52 33 L70 23 L88 33 L80 39 L60 39 Z" fill="#141417" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round" />
+              <path d="M70 15 L66 25 L74 25 Z" fill="#A61C1C" />
+            </g>
+          </g>
+
+          <!-- Katana envainada sin círculos de poder -->
+          <g class="samurai-katana-group">
+            <line x1="26" y1="104" x2="112" y2="74" stroke="#FFFFFF" stroke-width="4.2" stroke-linecap="round" />
+            <line x1="36" y1="100.5" x2="22" y2="105.5" stroke="#A61C1C" stroke-width="5" stroke-linecap="round" />
+            <line x1="38" y1="95" x2="41" y2="105" stroke="#A61C1C" stroke-width="2.4" stroke-linecap="round" />
+          </g>
+        </svg>
+        <div class="ojigi-order-code" id="ojigiOrderCode">Orden confirmada</div>
+        <div class="ojigi-jp-greeting">お買い上げ、誠にありがとうございます。</div>
+        <div class="ojigi-sub-note">Okaiage, makoto ni arigatō gozaimasu • Tu pedido ha quedado registrado con respeto.</div>
+      </div>
     </div>
   </div>
 
@@ -670,7 +804,7 @@
     function samuraiDeseos() {
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const ahora = audioCtx.currentTime;
-      const notas = [587.33, 783.99]; // Re5 y Sol5
+      const notas = [587.33, 783.99];
 
       notas.forEach((freq, idx) => {
         const osc = audioCtx.createOscillator();
@@ -714,7 +848,7 @@
       const osc2 = audioCtx.createOscillator();
       const gain2 = audioCtx.createGain();
       osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(880, ahora + 0.06); // La5
+      osc2.frequency.setValueAtTime(880, ahora + 0.06);
 
       gain2.gain.setValueAtTime(0.14, ahora + 0.06);
       gain2.gain.exponentialRampToValueAtTime(0.001, ahora + 0.24);
@@ -831,6 +965,20 @@
     const cerrarModal = (id) => $(id)?.classList.remove("open");
     const cerrarBackdrop = (ev, id) => { if (ev.target && ev.target.id === id) cerrarModal(id); };
     const mostrarMsg = (el, txt, ok) => { if (!el) return; el.textContent = txt; el.className = `status-msg ${ok ? "ok" : "err"}`; el.style.display = "block"; };
+
+    function ocultarOjigiPedido() {
+      const card = $("samuraiOjigiCard");
+      if (card) card.classList.remove("show");
+    }
+
+    function mostrarOjigiPedido(pedidoId) {
+      const card = $("samuraiOjigiCard"), codeEl = $("ojigiOrderCode");
+      if (!card) return;
+      if (codeEl) codeEl.textContent = pedidoId ? `Orden ${pedidoId} confirmada` : "Orden confirmada";
+      card.classList.remove("show");
+      void card.offsetWidth;
+      card.classList.add("show");
+    }
 
     function formatearFechaCorta(d = new Date()) {
       return d.toLocaleString("es-VE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -1445,7 +1593,11 @@
       const { totalUsd, totalUnidades } = calcularTotalesCarrito($("cliPago")?.value || "Pago Móvil");
       $("cartCountBadge").textContent = `(${totalUnidades})`; $("cartTotalUsdBadge").textContent = `$${totalUsd.toFixed(2)}`;
     }
-    function abrirCarrito() { renderModalCarrito(); $("modalCarrito").classList.add("open"); }
+    function abrirCarrito() {
+      if (state.carrito.length > 0) ocultarOjigiPedido();
+      renderModalCarrito();
+      $("modalCarrito").classList.add("open");
+    }
 
     function renderModalCarrito() {
       const list = $("cartItemsList"), descBox = $("orderDescriptionBox"), promoNote = $("cartPromoNote"), paypalAviso = $("paypalAvisoBox");
@@ -1484,6 +1636,7 @@
     async function enviarPedido(ev) {
       ev.preventDefault();
       const msg = $("msgPedido"); msg.className = "status-msg"; msg.style.display = "none";
+      ocultarOjigiPedido();
       if (!state.carrito.length) return mostrarMsg(msg, "Agrega al menos un producto al carrito.", false);
       const tel = construirTelefonoCompleto($("cliCodigoPais").value, $("cliTelefono").value.trim());
       if (!tel || tel.length < 8) return mostrarMsg(msg, "Ingresa un número de WhatsApp válido.", false);
@@ -1498,6 +1651,7 @@
         const data = await (await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createOrder", cliente: $("cliNombre").value.trim(), telefono: `+${tel}`, modalidad_entrega: $("cliEntrega").value, metodo_pago: metodoPago, total_usd: Number(totalUsd.toFixed(2)), total_bs: Number((totalUsd * tasa).toFixed(2)), items }) })).json();
         if (!data.ok) throw new Error(data.error || "No se pudo registrar el pedido");
         state.carrito = []; actualizarBadgeCarrito(); renderModalCarrito(); $("formPedido").reset(); $("cliCodigoPais").value = "58";
+        mostrarOjigiPedido(data.pedido_id);
         samuraiAgradecimientoPedido();
         await cargarCatalogo();
         mostrarMsg(msg, `¡Listo! Tu pedido ${data.pedido_id} fue reservado con éxito. O-kaiage makoto ni arigatō gozaimasu.`, true);
