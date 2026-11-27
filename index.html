@@ -672,6 +672,7 @@
     const ADMIN_PIN_PRUEBAS = "samurai#20200";
     const WISHLIST_STORAGE_KEY = "samurai_wishlist_ids_v1";
     const WISHLIST_STATS_KEY = "samurai_wishlist_stats_v1";
+    const LUGARES_STORAGE_KEY = "samurai_lugares_entrega_v1";
     const LUGARES_ENTREGA_DEFAULT = [
       "Entrega en Sambil la Candelaria",
       "Farmatodo de la Av.Urdaneta",
@@ -716,6 +717,20 @@
 
     function formatearFechaCorta(d = new Date()) {
       return d.toLocaleString("es-VE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    }
+
+    function cargarLugaresLocales() {
+      try {
+        const saved = String(localStorage.getItem(LUGARES_STORAGE_KEY) || "").trim();
+        if (saved) state.config.lugares_entrega = parseLugaresEntrega(saved).join("|");
+      } catch (_) {}
+    }
+
+    function guardarLugaresLocales(raw) {
+      const limpio = parseLugaresEntrega(raw).join("|");
+      state.config.lugares_entrega = limpio;
+      try { localStorage.setItem(LUGARES_STORAGE_KEY, limpio); } catch (_) {}
+      return limpio;
     }
 
     function cargarDeseosLocales() {
@@ -866,6 +881,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      cargarLugaresLocales();
       cargarDeseosLocales();
       iniciarSecuenciaMarcaAgua();
       $("cliCodigoPais").innerHTML = PAISES.map(([c, l]) => `<option value="${c}" ${c === "58" ? "selected" : ""}>${l}</option>`).join("");
@@ -1020,7 +1036,13 @@
 
     function aplicarDatosCatalogo(data) {
       const incomingCfg = Object.assign({}, data.config || {});
-      if (!String(incomingCfg.lugares_entrega || "").trim()) {
+      const remoteLugares = String(incomingCfg.lugares_entrega || "").trim();
+      const localLugares = String(state.config.lugares_entrega || "").trim();
+      if (remoteLugares) {
+        guardarLugaresLocales(remoteLugares);
+      } else if (localLugares) {
+        incomingCfg.lugares_entrega = localLugares;
+      } else {
         incomingCfg.lugares_entrega = LUGARES_ENTREGA_DEFAULT.join("|");
       }
       Object.assign(state.config, incomingCfg);
@@ -1475,9 +1497,11 @@
         const res = await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(pin)}&_t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         if (!data?.ok) throw new Error(data?.error || "PIN incorrecto");
-        if (!String(data.config?.lugares_entrega || "").trim()) {
-          data.config = Object.assign({}, data.config || {}, { lugares_entrega: LUGARES_ENTREGA_DEFAULT.join("|") });
-        }
+        const remoteLug = String(data.config?.lugares_entrega || "").trim();
+        const curLug = String(state.config.lugares_entrega || "").trim();
+        data.config = Object.assign({}, data.config || {}, {
+          lugares_entrega: remoteLug || curLug || LUGARES_ENTREGA_DEFAULT.join("|")
+        });
         data.categorias = (data.categorias || []).map(normalizarCategoriaSheet);
         data.productos = (data.productos || []).map(normalizarLibroSheet);
         data.deseos = obtenerListaDeseosCombinada(data.deseos || []);
@@ -1494,9 +1518,11 @@
         const res = await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(state.adminPin)}&_t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         if (data?.ok) {
-          if (!String(data.config?.lugares_entrega || "").trim()) {
-            data.config = Object.assign({}, data.config || {}, { lugares_entrega: LUGARES_ENTREGA_DEFAULT.join("|") });
-          }
+          const remoteLug = String(data.config?.lugares_entrega || "").trim();
+          const curLug = String(state.config.lugares_entrega || "").trim();
+          data.config = Object.assign({}, data.config || {}, {
+            lugares_entrega: remoteLug || curLug || LUGARES_ENTREGA_DEFAULT.join("|")
+          });
           data.categorias = (data.categorias || []).map(normalizarCategoriaSheet);
           data.productos = (data.productos || []).map(normalizarLibroSheet);
           data.deseos = obtenerListaDeseosCombinada(data.deseos || []);
@@ -1820,7 +1846,19 @@
     };
 
     async function guardarConfigAdmin() {
-      const lugaresVal = parseLugaresEntrega($("cfgLugaresEntrega")?.value).join("|");
+      const lugaresVal = guardarLugaresLocales($("cfgLugaresEntrega")?.value);
+      const metodosVal = $("cfgMetodosPago")?.value || "Pago Móvil|Divisas|PayPal";
+      state.config.metodos_pago = metodosVal;
+      if (state.adminData) {
+        state.adminData.config = Object.assign({}, state.adminData.config || {}, {
+          lugares_entrega: lugaresVal,
+          metodos_pago: metodosVal
+        });
+      }
+      actualizarEncabezadoEntrega();
+      poblarSelectorLugaresEntrega();
+      poblarSelectorMetodosPago();
+
       const data = await postAdmin({
         action: "updateConfig",
         patch: {
@@ -1829,11 +1867,16 @@
           instagram: INSTAGRAM_HANDLE, paypal_comision_pct: $("cfgPaypalPct")?.value.trim() || "5.4",
           paypal_comision_fija: $("cfgPaypalFija")?.value.trim() || "0.30", logo_url: $("cfgLogoUrl").value.trim(),
           portada_url: $("cfgPortadaUrl").value.trim(), lugares_entrega: lugaresVal,
-          metodos_pago: $("cfgMetodosPago")?.value || "Pago Móvil|Divisas|PayPal"
+          metodos_pago: metodosVal
         }
       });
-      if (data.ok) { mostrarMsg($("msgAdminCfg"), "Configuración, lugares de entrega, métodos de pago y tasa BCV guardados en la Sheet.", true); await refrescarAdminData(); }
-      else mostrarMsg($("msgAdminCfg"), data.error || "Error al guardar", false);
+      if (data.ok) {
+        guardarLugaresLocales(lugaresVal);
+        poblarSelectorLugaresEntrega();
+        mostrarMsg($("msgAdminCfg"), "Configuración, lugares de entrega, métodos de pago y tasa BCV guardados en la Sheet.", true);
+        await refrescarAdminData();
+        poblarSelectorLugaresEntrega();
+      } else mostrarMsg($("msgAdminCfg"), data.error || "Error al guardar", false);
     }
 
     async function toggleEstadoTiendaAdmin() {
