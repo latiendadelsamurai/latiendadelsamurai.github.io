@@ -336,7 +336,7 @@
       </div>
       <div class="top-actions">
         <button class="top-pill" type="button" onclick="abrirListaDeseos()" title="Ver tu página de lista de deseos">
-          <span>🎋 Lista de deseos</span><span id="wishlistCountBadge">(0)</span>
+          <span>♡ Lista de deseos</span><span id="wishlistCountBadge">(0)</span>
         </button>
         <a id="headerInstagram" class="top-pill" href="https://www.instagram.com/latiendadelsamurai/" target="_blank" rel="noopener noreferrer" title="Síguenos en Instagram @latiendadelsamurai">
           <svg width="16" height="16" aria-hidden="true"><use href="#ico-ig"></use></svg><span id="headerIgText">@latiendadelsamurai</span>
@@ -380,7 +380,7 @@
     <svg width="28" height="28" aria-hidden="true"><use href="#ico-wa"></use></svg>
   </a>
   <button class="fab-cart" type="button" onclick="abrirCarrito()">
-    <span>⚔️ Carrito</span><span id="cartCountBadge">(0)</span><span>•</span><span id="cartTotalUsdBadge">$0.00</span>
+    <span>Carrito</span><span id="cartCountBadge">(0)</span><span>•</span><span id="cartTotalUsdBadge">$0.00</span>
   </button>
 
   <!-- Página / Modal de Lista de Deseos -->
@@ -388,7 +388,7 @@
     <div class="modal-box wishlist-box">
       <div class="modal-head">
         <div>
-          <h3>🎋 Página de Lista de Deseos</h3>
+          <h3>♡ Página de Lista de Deseos</h3>
           <small style="color:var(--texto-suave);">Tus productos favoritos guardados para comprar cuando quieras</small>
         </div>
         <button class="btn btn-soft" type="button" onclick="cerrarModal('modalListaDeseos')">✕</button>
@@ -441,7 +441,7 @@
   <div class="modal-backdrop" id="modalCarrito">
     <div class="modal-box">
       <div class="modal-head">
-        <h3>⚔️ Tu Pedido en Tienda del Samurai</h3>
+        <h3>Tu Pedido en Tienda del Samurai</h3>
         <button class="btn btn-soft" type="button" onclick="cerrarModal('modalCarrito')">✕</button>
       </div>
       <div id="cartItemsList"></div>
@@ -697,7 +697,6 @@
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const ahora = audioCtx.currentTime;
 
-      // Golpe inicial firme
       const osc1 = audioCtx.createOscillator();
       const gain1 = audioCtx.createGain();
       osc1.type = 'triangle';
@@ -712,7 +711,6 @@
       osc1.start(ahora);
       osc1.stop(ahora + 0.13);
 
-      // Toque final de confirmación
       const osc2 = audioCtx.createOscillator();
       const gain2 = audioCtx.createGain();
       osc2.type = 'sine';
@@ -727,46 +725,75 @@
       osc2.stop(ahora + 0.25);
     }
 
-    // Agradecimiento samurái al finalizar orden de compra: "O-kaiage makoto ni arigatō gozaimasu"
+    // Agradecimiento samurái con cadencia de anciano: "Okaiage, makoto ni arigatō gozaimasu"
     function samuraiAgradecimientoPedido() {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (audioCtx.state === "suspended") audioCtx.resume();
       const ahora = audioCtx.currentTime;
 
-      // Acorde reverente de campana y bambú
-      [392.00, 587.33].forEach((freq, idx) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        const inicio = ahora + idx * 0.09;
+      const taiko = audioCtx.createOscillator();
+      const taikoGain = audioCtx.createGain();
+      taiko.type = "sine";
+      taiko.frequency.setValueAtTime(135, ahora);
+      taiko.frequency.exponentialRampToValueAtTime(58, ahora + 0.38);
 
-        osc.type = idx === 0 ? 'triangle' : 'sine';
-        osc.frequency.setValueAtTime(freq, inicio);
+      taikoGain.gain.setValueAtTime(0.001, ahora);
+      taikoGain.gain.linearRampToValueAtTime(0.28, ahora + 0.02);
+      taikoGain.gain.exponentialRampToValueAtTime(0.0008, ahora + 0.45);
 
-        gain.gain.setValueAtTime(0.001, inicio);
-        gain.gain.linearRampToValueAtTime(0.13, inicio + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0008, inicio + 0.55);
+      taiko.connect(taikoGain);
+      taikoGain.connect(audioCtx.destination);
+      taiko.start(ahora);
+      taiko.stop(ahora + 0.46);
 
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+      const armonico = audioCtx.createOscillator();
+      const armonicoGain = audioCtx.createGain();
+      armonico.type = "triangle";
+      armonico.frequency.setValueAtTime(220, ahora + 0.06);
 
-        osc.start(inicio);
-        osc.stop(inicio + 0.56);
-      });
+      armonicoGain.gain.setValueAtTime(0.001, ahora + 0.06);
+      armonicoGain.gain.linearRampToValueAtTime(0.08, ahora + 0.14);
+      armonicoGain.gain.exponentialRampToValueAtTime(0.0008, ahora + 0.95);
+
+      armonico.connect(armonicoGain);
+      armonicoGain.connect(audioCtx.destination);
+      armonico.start(ahora + 0.06);
+      armonico.stop(ahora + 0.96);
 
       if ("speechSynthesis" in window) {
-        try {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance("O-kaiage makoto ni arigatō gozaimasu");
-          utterance.lang = "ja-JP";
-          utterance.rate = 0.94;
-          utterance.pitch = 0.88;
-          utterance.volume = 0.95;
+        const hablarComoAnciano = () => {
+          try {
+            window.speechSynthesis.cancel();
+            const texto = "お買い上げ、誠にありがとうございます。";
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = "ja-JP";
+            utterance.rate = 0.8;
+            utterance.pitch = 0.72;
+            utterance.volume = 1.0;
 
-          const voices = window.speechSynthesis.getVoices();
-          const jpVoice = voices.find(v => /^ja(-|_|$)/i.test(v.lang));
-          if (jpVoice) utterance.voice = jpVoice;
+            const voices = window.speechSynthesis.getVoices() || [];
+            const jpVoices = voices.filter(v => /^ja(-|_|$)/i.test(v.lang));
 
-          window.speechSynthesis.speak(utterance);
-        } catch (_) {}
+            const evitarJuveniles = /(haruka|ayumi|nanami|sayaka|kyoko|mizuki|mei|ao|female)/i;
+            const preferirGraves = /(male|ichiro|kenji|naoto|otoya|takumi|keita)/i;
+
+            const elegida =
+              jpVoices.find(v => preferirGraves.test(v.name)) ||
+              jpVoices.find(v => !evitarJuveniles.test(v.name)) ||
+              jpVoices[0] ||
+              null;
+
+            if (elegida) utterance.voice = elegida;
+            window.speechSynthesis.speak(utterance);
+          } catch (_) {}
+        };
+
+        const voicesActuales = window.speechSynthesis.getVoices();
+        if (voicesActuales && voicesActuales.length > 0) {
+          hablarComoAnciano();
+        } else {
+          window.speechSynthesis.addEventListener("voiceschanged", hablarComoAnciano, { once: true });
+          setTimeout(hablarComoAnciano, 180);
+        }
       }
     }
 
@@ -1239,6 +1266,14 @@
       $("modalListaDeseos").classList.add("open");
     }
 
+    function anadirItemDeseoAlCarrito(prodId) {
+      const ok = agregarAlCarrito(prodId, 1, { silentSound: true });
+      if (!ok) return;
+      samuraiDeseos();
+      cerrarModal("modalListaDeseos");
+      abrirCarrito();
+    }
+
     function anadirLoteDeseosAlCarrito() {
       const items = state.deseos.map(id => state.prodMap.get(String(id))).filter(Boolean);
       let agregados = 0;
@@ -1254,7 +1289,7 @@
       });
 
       if (agregados > 0) {
-        samuraiCarrito();
+        samuraiDeseos();
         cerrarModal("modalListaDeseos");
         abrirCarrito();
       } else {
@@ -1282,7 +1317,7 @@
       const toolbarHtml = `
         <div class="wishlist-toolbar">
           <span style="font-size:12.5px;font-weight:700;color:var(--texto-suave);">${items.length} artículo(s) en tu lista • ${disponiblesCount} disponible(s)</span>
-          <button type="button" class="btn btn-primary btn-sm" ${disponiblesCount === 0 ? "disabled" : ""} onclick="anadirLoteDeseosAlCarrito()">⚔️ Añadir todo el lote al carrito (${disponiblesCount})</button>
+          <button type="button" class="btn btn-primary btn-sm" ${disponiblesCount === 0 ? "disabled" : ""} onclick="anadirLoteDeseosAlCarrito()">Añadir todo el lote al carrito (${disponiblesCount})</button>
         </div>`;
 
       box.innerHTML = `${toolbarHtml}<div class="wishlist-grid">${items.map(p => {
@@ -1302,7 +1337,7 @@
             <div class="wish-card-price">$${usd.toFixed(2)}</div>
             <div class="wish-card-bs">Bs. ${fmtBs(usd * tasa)}</div>
             <div class="wish-card-actions">
-              <button type="button" class="btn btn-primary" style="width:100%;" ${sinStock ? "disabled" : ""} onclick="agregarAlCarrito('${escAttr(p.id)}');cerrarModal('modalListaDeseos');abrirCarrito();">${sinStock ? "Sin stock" : "Añadir al carrito"}</button>
+              <button type="button" class="btn btn-primary" style="width:100%;" ${sinStock ? "disabled" : ""} onclick="anadirItemDeseoAlCarrito('${escAttr(p.id)}')">${sinStock ? "Sin stock" : "Añadir al carrito"}</button>
             </div>
           </div>`;
       }).join("")}</div>`;
