@@ -327,8 +327,8 @@
         <div>
           <div class="brand-title" id="brandTitle" role="button" tabindex="0" onclick="abrirModalPin()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirModalPin();}">Tienda del Samurai</div>
           <div class="brand-sub" id="brandSub">Tienda de libros • Caracas, Venezuela</div>
-          <div class="brand-delivery">
-            <div>Entrega en Candelaria • Farmatodo Av.Urdaneta • Envío nacional</div>
+          <div class="brand-delivery" id="brandDelivery">
+            <div>Entrega en Sambil la Candelaria • Farmatodo de la Av.Urdaneta • Envíos nacionales</div>
             <div>-Previo acuerdo-</div>
             <div>Lunes a Domingo, de 10:00 am a 7:00 pm.</div>
           </div>
@@ -464,10 +464,7 @@
         <div class="admin-grid-2">
           <div class="field">
             <label>Modalidad de Entrega *</label>
-            <select id="cliEntrega" required>
-              <option value="Entrega en Candelaria • Farmatodo Av.Urdaneta">Entrega en Candelaria • Farmatodo Av.Urdaneta</option>
-              <option value="Envío nacional">Envío nacional</option>
-            </select>
+            <select id="cliEntrega" required onchange="renderModalCarrito()"></select>
           </div>
           <div class="field">
             <label>Método de Pago *</label>
@@ -528,6 +525,15 @@
             <label>Subir Portada (se guarda en Google Drive y Sheet)</label>
             <input type="file" accept="image/*" onchange="subirArchivoConfig(this,'portada_url')" />
             <input type="text" id="cfgPortadaUrl" placeholder="URL de portada" style="margin-top:6px;" />
+          </div>
+          <div class="field" style="grid-column:1 / -1;">
+            <label>Lugares de Retiro o Envío (Crear o Eliminar)</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+              <input type="text" id="nuevoLugarEntregaInput" placeholder="Ej. Entrega en Sambil la Candelaria, Farmatodo de la Av.Urdaneta, Envíos nacionales..." style="flex:1;min-width:220px;" onkeydown="if(event.key==='Enter'){event.preventDefault();agregarLugarEntregaAdmin();}" />
+              <button class="btn btn-soft btn-sm" type="button" onclick="agregarLugarEntregaAdmin()">+ Crear lugar</button>
+            </div>
+            <div id="adminLugaresEntregaList" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+            <input type="hidden" id="cfgLugaresEntrega" />
           </div>
           <div class="field" style="grid-column:1 / -1;">
             <label>Métodos de Pago (Añadir o Quitar)</label>
@@ -666,6 +672,11 @@
     const ADMIN_PIN_PRUEBAS = "samurai#20200";
     const WISHLIST_STORAGE_KEY = "samurai_wishlist_ids_v1";
     const WISHLIST_STATS_KEY = "samurai_wishlist_stats_v1";
+    const LUGARES_ENTREGA_DEFAULT = [
+      "Entrega en Sambil la Candelaria",
+      "Farmatodo de la Av.Urdaneta",
+      "Envíos nacionales"
+    ];
 
     const PAISES = [
       ["58","+58 (VE)"],["57","+57 (CO)"],["1","+1 (US/CA)"],["34","+34 (ES)"],["52","+52 (MX)"],["54","+54 (AR)"],
@@ -686,6 +697,7 @@
         estado_servicio: "ACTIVO", tasa_bcv: 890, bcv_ultima_actualizacion: "", horas_expiracion_carrito: 2,
         nombre_tienda: "Tienda del Samurai", subtitulo_tienda: "Tienda de libros • Caracas, Venezuela",
         whatsapp: "584242855733", instagram: INSTAGRAM_HANDLE, metodos_pago: "Pago Móvil|Divisas|PayPal",
+        lugares_entrega: LUGARES_ENTREGA_DEFAULT.join("|"),
         paypal_comision_pct: 5.4, paypal_comision_fija: 0.30, color_primario: "#17171A", color_fondo: "#F7F5F2",
         color_acento: "#A61C1C", logo_url: "", portada_url: ""
       },
@@ -857,6 +869,7 @@
       cargarDeseosLocales();
       iniciarSecuenciaMarcaAgua();
       $("cliCodigoPais").innerHTML = PAISES.map(([c, l]) => `<option value="${c}" ${c === "58" ? "selected" : ""}>${l}</option>`).join("");
+      poblarSelectorLugaresEntrega();
       poblarSelectorMetodosPago();
       actualizarPreviewLibro();
       cargarCatalogo();
@@ -891,6 +904,68 @@
         box.appendChild(a);
         if (cursor) cursor.style.display = "none";
       })();
+    }
+
+    const parseLugaresEntrega = (raw) => {
+      if (Array.isArray(raw)) {
+        const a = raw.map(s => String(s || "").trim()).filter(Boolean);
+        return a.length ? a : LUGARES_ENTREGA_DEFAULT.slice();
+      }
+      const str = String(raw ?? "").trim();
+      if (!str) return LUGARES_ENTREGA_DEFAULT.slice();
+      const a = str.split("|").map(s => s.trim()).filter(Boolean);
+      return a.length ? a : LUGARES_ENTREGA_DEFAULT.slice();
+    };
+
+    function renderListaLugaresEntregaAdmin(lista) {
+      const lugares = parseLugaresEntrega(lista);
+      if ($("cfgLugaresEntrega")) $("cfgLugaresEntrega").value = lugares.join("|");
+      const box = $("adminLugaresEntregaList");
+      if (box) {
+        box.innerHTML = lugares.map((l, i) => `
+          <span style="display:inline-flex;align-items:center;gap:6px;background:#EFEAE3;color:var(--texto);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;">
+            <span>${escHtml(l)}</span>
+            <button type="button" title="Eliminar lugar" style="border:none;background:transparent;color:var(--peligro);font-weight:800;cursor:pointer;padding:0 2px;" onclick="quitarLugarEntregaAdmin(${i})">✕</button>
+          </span>`).join("");
+      }
+    }
+
+    function agregarLugarEntregaAdmin() {
+      const inp = $("nuevoLugarEntregaInput"), nombre = String(inp?.value || "").trim();
+      if (!nombre) return;
+      const cur = parseLugaresEntrega($("cfgLugaresEntrega")?.value);
+      if (!cur.some(x => x.toLowerCase() === nombre.toLowerCase())) {
+        cur.push(nombre);
+        renderListaLugaresEntregaAdmin(cur);
+      }
+      inp.value = "";
+    }
+
+    function quitarLugarEntregaAdmin(idx) {
+      const cur = parseLugaresEntrega($("cfgLugaresEntrega")?.value);
+      if (cur.length <= 1) return alert("Debe quedar al menos un lugar de retiro o envío.");
+      cur.splice(idx, 1);
+      renderListaLugaresEntregaAdmin(cur);
+    }
+
+    function poblarSelectorLugaresEntrega() {
+      const sel = $("cliEntrega");
+      if (!sel) return;
+      const lugares = parseLugaresEntrega(state.config.lugares_entrega);
+      const prev = sel.value;
+      sel.innerHTML = lugares.map(l => `<option value="${escAttr(l)}">${escHtml(l)}</option>`).join("");
+      if (prev && lugares.includes(prev)) sel.value = prev;
+      else if (lugares.length) sel.value = lugares[0];
+    }
+
+    function actualizarEncabezadoEntrega() {
+      const el = $("brandDelivery");
+      if (!el) return;
+      const lugares = parseLugaresEntrega(state.config.lugares_entrega);
+      el.innerHTML = `
+        <div>${escHtml(lugares.join(" • "))}</div>
+        <div>-Previo acuerdo-</div>
+        <div>Lunes a Domingo, de 10:00 am a 7:00 pm.</div>`;
     }
 
     const parseMetodos = (raw) => {
@@ -944,7 +1019,11 @@
     }
 
     function aplicarDatosCatalogo(data) {
-      Object.assign(state.config, data.config || {});
+      const incomingCfg = Object.assign({}, data.config || {});
+      if (!String(incomingCfg.lugares_entrega || "").trim()) {
+        incomingCfg.lugares_entrega = LUGARES_ENTREGA_DEFAULT.join("|");
+      }
+      Object.assign(state.config, incomingCfg);
       state.categorias = (data.categorias || []).map(normalizarCategoriaSheet).filter(c => c.categoria && c.oculta !== "SI");
       state.productos = (data.productos || []).map(normalizarLibroSheet);
       state.prodMap = new Map(state.productos.map(p => [String(p.id), p]));
@@ -988,6 +1067,7 @@
 
       $("brandTitle").textContent = nombreTienda;
       $("brandSub").textContent = subtituloTienda;
+      actualizarEncabezadoEntrega();
       document.title = `${nombreTienda} — Catálogo de Libros`;
 
       $("headerInstagram").href = INSTAGRAM_URL; $("fabInstagram").href = INSTAGRAM_URL;
@@ -1005,6 +1085,7 @@
       const portadaBox = $("portadaBox");
       if (c.portada_url) { $("portadaImg").src = c.portada_url; portadaBox.style.display = "block"; }
       else portadaBox.style.display = "none";
+      poblarSelectorLugaresEntrega();
       poblarSelectorMetodosPago();
     }
 
@@ -1310,11 +1391,12 @@
       const { totalUsd, totalUnidades } = calcularTotalesCarrito($("cliPago")?.value || "Pago Móvil");
       $("cartCountBadge").textContent = `(${totalUnidades})`; $("cartTotalUsdBadge").textContent = `$${totalUsd.toFixed(2)}`;
     }
-    function abrirCarrito() { renderModalCarrito(); $("modalCarrito").classList.add("open"); }
+    function abrirCarrito() { poblarSelectorLugaresEntrega(); renderModalCarrito(); $("modalCarrito").classList.add("open"); }
 
     function renderModalCarrito() {
       const list = $("cartItemsList"), descBox = $("orderDescriptionBox"), promoNote = $("cartPromoNote"), paypalAviso = $("paypalAvisoBox");
-      const metodoPago = $("cliPago")?.value || "Pago Móvil", esPagoMovil = /m[oó]vil|transferencia/i.test(metodoPago), tasa = parseFloat(state.config.tasa_bcv) || 890;
+      const metodoPago = $("cliPago")?.value || "Pago Móvil", modalidadEntrega = $("cliEntrega")?.value || parseLugaresEntrega(state.config.lugares_entrega)[0] || "";
+      const esPagoMovil = /m[oó]vil|transferencia/i.test(metodoPago), tasa = parseFloat(state.config.tasa_bcv) || 890;
       if (!state.carrito.length) {
         list.innerHTML = `<p style="color:var(--texto-suave);padding:12px 0;">Tu carrito está vacío.</p>`;
         promoNote.textContent = ""; if (paypalAviso) paypalAviso.style.display = "none"; descBox.innerHTML = ""; actualizarBadgeCarrito(); return;
@@ -1334,7 +1416,7 @@
         const u = precioUnitarioSegunPago(it, metodoPago);
         return `<li>• ${it.cantidad}x ${escHtml(it.nombre)}${it.qtySinControl ? " (Encargo/Preventa)" : ""} — $${u.toFixed(2)} c/u (<b>$${(u * it.cantidad).toFixed(2)}</b>)</li>`;
       }).join("");
-      descBox.innerHTML = `<div class="order-desc-box"><div class="order-desc-title">Descripción del pedido</div><ul class="order-desc-list">${itemsHtml}</ul><div class="order-desc-total">${usaPayPal ? `<div class="order-desc-sub">Subtotal: $${subtotalUsd.toFixed(2)} USD</div><div class="order-desc-sub">Comisión PayPal (${paypalPct}% + $${paypalFija.toFixed(2)}): +$${comisionPayPalUsd.toFixed(2)} USD</div>` : ""}Total ${usaPayPal ? "a enviar por PayPal" : "del carrito"}: $${totalUsd.toFixed(2)} USD${esPagoMovil ? `<div class="order-desc-bs">Son $${totalUsd.toFixed(2)} de tu carrito • Total en Bs.: Bs. ${fmtBs(totalUsd * tasa)} (Tasa BCV: Bs. ${fmtBs(tasa)})</div>` : ""}</div></div>`;
+      descBox.innerHTML = `<div class="order-desc-box"><div class="order-desc-title">Descripción del pedido</div><ul class="order-desc-list">${itemsHtml}</ul>${modalidadEntrega ? `<div class="order-desc-sub" style="margin-bottom:6px;">Entrega seleccionada: <b>${escHtml(modalidadEntrega)}</b></div>` : ""}<div class="order-desc-total">${usaPayPal ? `<div class="order-desc-sub">Subtotal: $${subtotalUsd.toFixed(2)} USD</div><div class="order-desc-sub">Comisión PayPal (${paypalPct}% + $${paypalFija.toFixed(2)}): +$${comisionPayPalUsd.toFixed(2)} USD</div>` : ""}Total ${usaPayPal ? "a enviar por PayPal" : "del carrito"}: $${totalUsd.toFixed(2)} USD${esPagoMovil ? `<div class="order-desc-bs">Son $${totalUsd.toFixed(2)} de tu carrito • Total en Bs.: Bs. ${fmtBs(totalUsd * tasa)} (Tasa BCV: Bs. ${fmtBs(tasa)})</div>` : ""}</div></div>`;
       actualizarBadgeCarrito();
     }
 
@@ -1362,7 +1444,7 @@
       try {
         const data = await (await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createOrder", cliente: $("cliNombre").value.trim(), telefono: `+${tel}`, modalidad_entrega: $("cliEntrega").value, metodo_pago: metodoPago, total_usd: Number(totalUsd.toFixed(2)), total_bs: Number((totalUsd * tasa).toFixed(2)), items }) })).json();
         if (!data.ok) throw new Error(data.error || "No se pudo registrar el pedido");
-        state.carrito = []; actualizarBadgeCarrito(); renderModalCarrito(); $("formPedido").reset(); $("cliCodigoPais").value = "58";
+        state.carrito = []; actualizarBadgeCarrito(); renderModalCarrito(); $("formPedido").reset(); $("cliCodigoPais").value = "58"; poblarSelectorLugaresEntrega();
         await cargarCatalogo();
         mostrarMsg(msg, `¡Listo! Tu pedido ${data.pedido_id} fue reservado con éxito.`, true);
       } catch (err) { mostrarMsg(msg, err.message, false); }
@@ -1393,6 +1475,9 @@
         const res = await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(pin)}&_t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         if (!data?.ok) throw new Error(data?.error || "PIN incorrecto");
+        if (!String(data.config?.lugares_entrega || "").trim()) {
+          data.config = Object.assign({}, data.config || {}, { lugares_entrega: LUGARES_ENTREGA_DEFAULT.join("|") });
+        }
         data.categorias = (data.categorias || []).map(normalizarCategoriaSheet);
         data.productos = (data.productos || []).map(normalizarLibroSheet);
         data.deseos = obtenerListaDeseosCombinada(data.deseos || []);
@@ -1409,6 +1494,9 @@
         const res = await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(state.adminPin)}&_t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         if (data?.ok) {
+          if (!String(data.config?.lugares_entrega || "").trim()) {
+            data.config = Object.assign({}, data.config || {}, { lugares_entrega: LUGARES_ENTREGA_DEFAULT.join("|") });
+          }
           data.categorias = (data.categorias || []).map(normalizarCategoriaSheet);
           data.productos = (data.productos || []).map(normalizarLibroSheet);
           data.deseos = obtenerListaDeseosCombinada(data.deseos || []);
@@ -1715,6 +1803,7 @@
       $("cfgPaypalPct").value = cfg.paypal_comision_pct ?? state.config.paypal_comision_pct ?? "5.4";
       $("cfgPaypalFija").value = cfg.paypal_comision_fija ?? state.config.paypal_comision_fija ?? "0.30";
       $("cfgLogoUrl").value = cfg.logo_url || ""; $("cfgPortadaUrl").value = cfg.portada_url || "";
+      renderListaLugaresEntregaAdmin(cfg.lugares_entrega ?? state.config.lugares_entrega);
       renderListaMetodosPagoAdmin(cfg.metodos_pago || state.config.metodos_pago);
       $("btnEstadoTienda").textContent = `Estado: ${String(cfg.estado_servicio || "ACTIVO").toUpperCase()}`;
 
@@ -1731,6 +1820,7 @@
     };
 
     async function guardarConfigAdmin() {
+      const lugaresVal = parseLugaresEntrega($("cfgLugaresEntrega")?.value).join("|");
       const data = await postAdmin({
         action: "updateConfig",
         patch: {
@@ -1738,10 +1828,11 @@
           nombre_tienda: $("cfgNombreTienda").value.trim() || "Tienda del Samurai", whatsapp: $("cfgWhatsapp").value.trim(),
           instagram: INSTAGRAM_HANDLE, paypal_comision_pct: $("cfgPaypalPct")?.value.trim() || "5.4",
           paypal_comision_fija: $("cfgPaypalFija")?.value.trim() || "0.30", logo_url: $("cfgLogoUrl").value.trim(),
-          portada_url: $("cfgPortadaUrl").value.trim(), metodos_pago: $("cfgMetodosPago")?.value || "Pago Móvil|Divisas|PayPal"
+          portada_url: $("cfgPortadaUrl").value.trim(), lugares_entrega: lugaresVal,
+          metodos_pago: $("cfgMetodosPago")?.value || "Pago Móvil|Divisas|PayPal"
         }
       });
-      if (data.ok) { mostrarMsg($("msgAdminCfg"), "Configuración, métodos de pago y tasa BCV guardados en la Sheet.", true); await refrescarAdminData(); }
+      if (data.ok) { mostrarMsg($("msgAdminCfg"), "Configuración, lugares de entrega, métodos de pago y tasa BCV guardados en la Sheet.", true); await refrescarAdminData(); }
       else mostrarMsg($("msgAdminCfg"), data.error || "Error al guardar", false);
     }
 
