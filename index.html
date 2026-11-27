@@ -244,6 +244,13 @@
     .order-desc-sub { font-size: 12px; color: var(--texto-suave); font-weight: 600; }
     .order-desc-bs { color: var(--acento); font-weight: 800; margin-top: 3px; }
 
+    .cuotas-checklist-wrap { margin-top: 8px; padding: 7px 8px; border-radius: 10px; background: #FAF8F5; border: 1px solid var(--borde); }
+    .cuotas-checklist-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11px; font-weight: 800; color: var(--texto-suave); margin-bottom: 6px; }
+    .cuotas-check-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+    .cuota-check-btn { border: 1.5px solid var(--borde); background: var(--blanco); color: var(--texto); border-radius: 7px; padding: 3px 7px; font-size: 11px; font-weight: 800; cursor: pointer; transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease; }
+    .cuota-check-btn:hover { border-color: var(--exito); }
+    .cuota-check-btn.pagada { background: var(--exito); border-color: var(--exito); color: var(--blanco); }
+
     .admin-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
     .admin-panel { display: none; }
     .admin-panel.active { display: block; }
@@ -687,6 +694,7 @@
     const WISHLIST_STORAGE_KEY = "samurai_wishlist_ids_v1";
     const WISHLIST_STATS_KEY = "samurai_wishlist_stats_v1";
     const LUGARES_STORAGE_KEY = "samurai_lugares_entrega_v1";
+    const CUOTAS_CHECK_STORAGE_KEY = "samurai_cuotas_checklist_v1";
     const LUGARES_ENTREGA_DEFAULT = [
       "Entrega en Sambil la Candelaria",
       "Farmatodo de la Av.Urdaneta",
@@ -697,11 +705,7 @@
       "APROBADO",
       "COMPLETADO",
       "CANCELADO",
-      "VENCIDO_2H",
-      "SOLICITUD_RECHAZADA",
-      "CUOTA_ABONADA",
-      "CUOTAS_AL_DIA",
-      "CUOTAS_FINALIZADAS"
+      "SOLICITUD_RECHAZADA"
     ];
 
     const PAISES = [
@@ -728,7 +732,7 @@
         color_acento: "#A61C1C", logo_url: "", portada_url: ""
       },
       categorias: [], productos: [], prodMap: new Map(), categoriaActiva: "TODAS",
-      carrito: [], deseos: [], wishStats: {}, lightboxProdId: null, lightboxQty: 1,
+      carrito: [], deseos: [], wishStats: {}, cuotasChecks: {}, lightboxProdId: null, lightboxQty: 1,
       catEditandoNombre: "", adminPin: "", adminData: null, toastTimer: null
     };
 
@@ -742,6 +746,74 @@
 
     function formatearFechaCorta(d = new Date()) {
       return d.toLocaleString("es-VE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    }
+
+    function cargarCuotasChecksLocales() {
+      try {
+        const raw = localStorage.getItem(CUOTAS_CHECK_STORAGE_KEY);
+        const obj = JSON.parse(raw || "{}");
+        state.cuotasChecks = (obj && typeof obj === "object") ? obj : {};
+      } catch (_) {
+        state.cuotasChecks = {};
+      }
+    }
+
+    function guardarCuotasChecksLocales() {
+      try {
+        localStorage.setItem(CUOTAS_CHECK_STORAGE_KEY, JSON.stringify(state.cuotasChecks));
+      } catch (_) {}
+    }
+
+    function detectarPlanCuotasPedido(ped) {
+      const texto = `${ped?.metodo_pago || ""} ${ped?.detalle_items || ""}`.toLowerCase();
+      if (!/cuota|quincena|semana/i.test(texto)) return null;
+      if (/10\s*semana/i.test(texto)) return { total: 10, prefijo: "S", etiqueta: "10 semanas" };
+      if (/5\s*quincena/i.test(texto)) return { total: 5, prefijo: "Q", etiqueta: "5 quincenas" };
+      return { total: 5, prefijo: "Q", etiqueta: "5 quincenas" };
+    }
+
+    function renderChecklistCuotasAdmin(ped) {
+      const plan = detectarPlanCuotasPedido(ped);
+      if (!plan) return "";
+      const pedidoId = String(ped.pedido_id || "");
+      const marcadas = Array.isArray(state.cuotasChecks[pedidoId]) ? state.cuotasChecks[pedidoId].map(Number) : [];
+      const botones = [];
+      for (let i = 1; i <= plan.total; i++) {
+        const activa = marcadas.includes(i);
+        botones.push(`<button type="button" class="cuota-check-btn ${activa ? "pagada" : ""}" title="${activa ? "Marcar cuota como pendiente" : "Marcar cuota como pagada"}" onclick="toggleCuotaPedido('${escAttr(pedidoId)}', ${i}, ${plan.total})">${activa ? "✓" : "○"} ${plan.prefijo}${i}</button>`);
+      }
+      return `
+        <div class="cuotas-checklist-wrap">
+          <div class="cuotas-checklist-head">
+            <span>${escHtml(plan.etiqueta)}</span>
+            <span style="color:${marcadas.length === plan.total ? "var(--exito)" : "var(--texto-suave)"};">${marcadas.length}/${plan.total}</span>
+          </div>
+          <div class="cuotas-check-grid">${botones.join("")}</div>
+        </div>`;
+    }
+
+    async function toggleCuotaPedido(pedidoId, numCuota, totalCuotas) {
+      const idStr = String(pedidoId || "");
+      if (!idStr) return;
+      const actual = new Set((Array.isArray(state.cuotasChecks[idStr]) ? state.cuotasChecks[idStr] : []).map(Number));
+      if (actual.has(numCuota)) actual.delete(numCuota);
+      else actual.add(numCuota);
+      const lista = Array.from(actual).sort((a, b) => a - b);
+      state.cuotasChecks[idStr] = lista;
+      guardarCuotasChecksLocales();
+
+      if (state.adminData?.pedidos) {
+        renderTablaPedidosAdmin(state.adminData.pedidos, state.adminData.config || {});
+      }
+
+      if (lista.length === totalCuotas) {
+        const ped = (state.adminData?.pedidos || []).find(p => String(p.pedido_id) === idStr);
+        if (ped && String(ped.estado || "").toUpperCase() !== "COMPLETADO") {
+          if (confirm(`Se marcaron las ${totalCuotas} cuotas de ${idStr}. ¿Deseas cambiar el estado del pedido a COMPLETADO?`)) {
+            await cambiarEstadoPedido(idStr, "COMPLETADO");
+          }
+        }
+      }
     }
 
     function cargarLugaresLocales() {
@@ -908,6 +980,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       cargarLugaresLocales();
       cargarDeseosLocales();
+      cargarCuotasChecksLocales();
       iniciarSecuenciaMarcaAgua();
       $("cliCodigoPais").innerHTML = PAISES.map(([c, l]) => `<option value="${c}" ${c === "58" ? "selected" : ""}>${l}</option>`).join("");
       poblarSelectorLugaresEntrega();
@@ -1704,6 +1777,7 @@
         const cuerpo = [cab, "", "detalle de la orden", detLines, esMovil ? `\nEl monto al día de hoy para Pago Móvil es Bs. ${fmtBs(usd * tasa)} (Tasa BCV: Bs. ${tasaFmt}).` : ""].join("\n").trim();
         const estadoActual = String(ped.estado || "EN_PROCESO");
         const opcionesEstado = ESTADOS_PEDIDO.includes(estadoActual) ? ESTADOS_PEDIDO : [estadoActual, ...ESTADOS_PEDIDO];
+        const checklistHtml = renderChecklistCuotasAdmin(ped);
         return `
           <tr>
             <td><b>${escHtml(ped.pedido_id)}</b></td>
@@ -1711,7 +1785,10 @@
             <td><b>${escHtml(ped.cliente)}</b><br><small>${escHtml(ped.telefono)}</small>${wa ? `<br><a class="btn-wa-mini" href="https://wa.me/${wa}?text=${encodeURIComponent(cuerpo)}" target="_blank" rel="noopener noreferrer">WhatsApp (+${wa})</a>` : ""}</td>
             <td>$${usd.toFixed(2)}<br><small>Bs. ${Number(ped.total_bs || 0).toFixed(2)}</small></td>
             <td><small>${escHtml(ped.detalle_items)}</small></td>
-            <td><select onchange="cambiarEstadoPedido('${escAttr(ped.pedido_id)}',this.value)">${opcionesEstado.map(st => `<option value="${escAttr(st)}" ${estadoActual === st ? "selected" : ""}>${escHtml(st)}</option>`).join("")}</select></td>
+            <td>
+              <select onchange="cambiarEstadoPedido('${escAttr(ped.pedido_id)}',this.value)">${opcionesEstado.map(st => `<option value="${escAttr(st)}" ${estadoActual === st ? "selected" : ""}>${escHtml(st)}</option>`).join("")}</select>
+              ${checklistHtml}
+            </td>
           </tr>`;
       }).join("");
     }
