@@ -527,16 +527,16 @@
             <input type="text" id="cfgPortadaUrl" placeholder="URL de portada" style="margin-top:6px;" />
           </div>
           <div class="field" style="grid-column:1 / -1;">
-            <label>Lugares de Retiro o Envío (Crear o Eliminar)</label>
+            <label>Lugares de Retiro o Envío (Añadir, Editar o Eliminar)</label>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
               <input type="text" id="nuevoLugarEntregaInput" placeholder="Ej. Entrega en Sambil la Candelaria, Farmatodo de la Av.Urdaneta, Envíos nacionales..." style="flex:1;min-width:220px;" onkeydown="if(event.key==='Enter'){event.preventDefault();agregarLugarEntregaAdmin();}" />
-              <button class="btn btn-soft btn-sm" type="button" onclick="agregarLugarEntregaAdmin()">+ Crear lugar</button>
+              <button class="btn btn-soft btn-sm" type="button" onclick="agregarLugarEntregaAdmin()">+ Añadir lugar</button>
             </div>
             <div id="adminLugaresEntregaList" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
             <input type="hidden" id="cfgLugaresEntrega" />
           </div>
           <div class="field" style="grid-column:1 / -1;">
-            <label>Métodos de Pago (Añadir o Quitar)</label>
+            <label>Métodos de Pago (Añadir, Editar o Quitar)</label>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
               <input type="text" id="nuevoMetodoPagoInput" placeholder="Ej. Zinli, USDT / Binance, Transferencia..." style="flex:1;min-width:200px;" onkeydown="if(event.key==='Enter'){event.preventDefault();agregarMetodoPagoAdmin();}" />
               <button class="btn btn-soft btn-sm" type="button" onclick="agregarMetodoPagoAdmin()">+ Añadir método</button>
@@ -933,6 +933,16 @@
       return a.length ? a : LUGARES_ENTREGA_DEFAULT.slice();
     };
 
+    function sincronizarLugaresEntregaEnVivo(lista) {
+      const limpio = guardarLugaresLocales(lista);
+      if ($("cfgLugaresEntrega")) $("cfgLugaresEntrega").value = limpio;
+      if (state.adminData) {
+        state.adminData.config = Object.assign({}, state.adminData.config || {}, { lugares_entrega: limpio });
+      }
+      actualizarEncabezadoEntrega();
+      poblarSelectorLugaresEntrega();
+    }
+
     function renderListaLugaresEntregaAdmin(lista) {
       const lugares = parseLugaresEntrega(lista);
       if ($("cfgLugaresEntrega")) $("cfgLugaresEntrega").value = lugares.join("|");
@@ -941,6 +951,7 @@
         box.innerHTML = lugares.map((l, i) => `
           <span style="display:inline-flex;align-items:center;gap:6px;background:#EFEAE3;color:var(--texto);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;">
             <span>${escHtml(l)}</span>
+            <button type="button" title="Editar lugar" style="border:none;background:transparent;color:var(--primario);font-weight:800;cursor:pointer;padding:0 2px;" onclick="editarLugarEntregaAdmin(${i})">✎</button>
             <button type="button" title="Eliminar lugar" style="border:none;background:transparent;color:var(--peligro);font-weight:800;cursor:pointer;padding:0 2px;" onclick="quitarLugarEntregaAdmin(${i})">✕</button>
           </span>`).join("");
       }
@@ -953,8 +964,25 @@
       if (!cur.some(x => x.toLowerCase() === nombre.toLowerCase())) {
         cur.push(nombre);
         renderListaLugaresEntregaAdmin(cur);
+        sincronizarLugaresEntregaEnVivo(cur);
       }
       inp.value = "";
+    }
+
+    function editarLugarEntregaAdmin(idx) {
+      const cur = parseLugaresEntrega($("cfgLugaresEntrega")?.value);
+      const actual = cur[idx];
+      if (!actual) return;
+      const nuevo = prompt("Editar lugar de retiro o envío:", actual);
+      if (nuevo === null) return;
+      const limpio = String(nuevo || "").trim();
+      if (!limpio) return alert("El nombre del lugar no puede quedar vacío.");
+      if (cur.some((x, i) => i !== idx && x.toLowerCase() === limpio.toLowerCase())) {
+        return alert("Ese lugar ya existe en la lista.");
+      }
+      cur[idx] = limpio;
+      renderListaLugaresEntregaAdmin(cur);
+      sincronizarLugaresEntregaEnVivo(cur);
     }
 
     function quitarLugarEntregaAdmin(idx) {
@@ -962,6 +990,7 @@
       if (cur.length <= 1) return alert("Debe quedar al menos un lugar de retiro o envío.");
       cur.splice(idx, 1);
       renderListaLugaresEntregaAdmin(cur);
+      sincronizarLugaresEntregaEnVivo(cur);
     }
 
     function poblarSelectorLugaresEntrega() {
@@ -992,7 +1021,7 @@
       const metodos = parseMetodos(Array.isArray(lista) ? lista.join("|") : lista);
       if ($("cfgMetodosPago")) $("cfgMetodosPago").value = metodos.join("|");
       const box = $("adminMetodosPagoList");
-      if (box) box.innerHTML = metodos.map((m, i) => `<span style="display:inline-flex;align-items:center;gap:6px;background:#EFEAE3;color:var(--texto);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;"><span>${escHtml(m)}</span><button type="button" title="Quitar método" style="border:none;background:transparent;color:var(--peligro);font-weight:800;cursor:pointer;padding:0 2px;" onclick="quitarMetodoPagoAdmin(${i})">✕</button></span>`).join("");
+      if (box) box.innerHTML = metodos.map((m, i) => `<span style="display:inline-flex;align-items:center;gap:6px;background:#EFEAE3;color:var(--texto);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;"><span>${escHtml(m)}</span><button type="button" title="Editar método" style="border:none;background:transparent;color:var(--primario);font-weight:800;cursor:pointer;padding:0 2px;" onclick="editarMetodoPagoAdmin(${i})">✎</button><button type="button" title="Quitar método" style="border:none;background:transparent;color:var(--peligro);font-weight:800;cursor:pointer;padding:0 2px;" onclick="quitarMetodoPagoAdmin(${i})">✕</button></span>`).join("");
     }
     function agregarMetodoPagoAdmin() {
       const inp = $("nuevoMetodoPagoInput"), nombre = String(inp?.value || "").trim();
@@ -1000,6 +1029,20 @@
       const cur = parseMetodos($("cfgMetodosPago")?.value);
       if (!cur.some(x => x.toLowerCase() === nombre.toLowerCase())) { cur.push(nombre); renderListaMetodosPagoAdmin(cur); }
       inp.value = "";
+    }
+    function editarMetodoPagoAdmin(idx) {
+      const cur = parseMetodos($("cfgMetodosPago")?.value);
+      const actual = cur[idx];
+      if (!actual) return;
+      const nuevo = prompt("Editar método de pago:", actual);
+      if (nuevo === null) return;
+      const limpio = String(nuevo || "").trim();
+      if (!limpio) return alert("El nombre del método de pago no puede quedar vacío.");
+      if (cur.some((x, i) => i !== idx && x.toLowerCase() === limpio.toLowerCase())) {
+        return alert("Ese método de pago ya existe en la lista.");
+      }
+      cur[idx] = limpio;
+      renderListaMetodosPagoAdmin(cur);
     }
     function quitarMetodoPagoAdmin(idx) {
       const cur = parseMetodos($("cfgMetodosPago")?.value);
