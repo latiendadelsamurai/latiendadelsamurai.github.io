@@ -89,7 +89,6 @@
     .stock-preventa { color: #8A4B08; }
     .stock-out { color: var(--peligro); }
 
-    /* Página / Modal de Lista de Deseos (estilo referencia visual) */
     .wishlist-box { max-width: 820px; }
     .wishlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
     .wish-card { background: #FAF8F5; border: 1.5px solid var(--borde); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; position: relative; }
@@ -279,7 +278,7 @@
     <div class="portada-box" id="portadaBox"><img id="portadaImg" src="" alt="Portada Tienda del Samurai" /></div>
 
     <section class="controls-bar">
-      <input type="text" id="searchInput" class="search-input" placeholder="Buscar libros, novelas, manga, separadores, linternas, editorial..." oninput="renderCatalogo()" />
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar libros, novelas, manga, separadores, linternas, subcampo..." oninput="renderCatalogo()" />
     </section>
 
     <section class="cat-showcase" id="catShowcase" aria-label="Categorías destacadas" style="display:none;">
@@ -336,7 +335,7 @@
         <div class="lightbox-img-wrap"><img id="lbImg" src="" alt="" /></div>
         <div class="book-sheet-info">
           <div class="lb-meta-below">
-            <div class="lb-editorial-row"><span id="lbSubcampoLabel">Editorial</span>: <span id="lbEditorial"></span></div>
+            <div class="lb-editorial-row">Subcampo: <span id="lbSubcampo"></span></div>
             <div class="lb-desc-text" id="lbDescripcion"></div>
           </div>
           <div class="lb-purchase-bar">
@@ -452,15 +451,6 @@
             <input type="text" id="cfgPortadaUrl" placeholder="URL de portada" style="margin-top:6px;" />
           </div>
           <div class="field" style="grid-column:1 / -1;">
-            <label>Subcampos del catálogo (Editorial, Accesorio y futuros)</label>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-              <input type="text" id="nuevoSubcampoInput" placeholder="Ej. Editorial, Accesorio, Marca, Edición..." style="flex:1;min-width:200px;" onkeydown="if(event.key==='Enter'){event.preventDefault();agregarSubcampoAdmin();}" />
-              <button class="btn btn-soft btn-sm" type="button" onclick="agregarSubcampoAdmin()">+ Añadir subcampo</button>
-            </div>
-            <div id="adminSubcamposList" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
-            <input type="hidden" id="cfgSubcamposCatalogo" />
-          </div>
-          <div class="field" style="grid-column:1 / -1;">
             <label>Métodos de Pago (Añadir o Quitar)</label>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
               <input type="text" id="nuevoMetodoPagoInput" placeholder="Ej. Zinli, USDT / Binance, Transferencia..." style="flex:1;min-width:200px;" onkeydown="if(event.key==='Enter'){event.preventDefault();agregarMetodoPagoAdmin();}" />
@@ -524,14 +514,13 @@
             <div class="book-fields-grid">
               <div class="field"><label>ID (vacío para crear nuevo)</label><input type="text" id="prodId" placeholder="Ej. LIB-1 o vacío" /></div>
               <div class="field"><label>Categoría</label><select id="prodCategoria"></select></div>
-              <div class="field"><label>Título / Nombre *</label><input type="text" id="prodNombre" placeholder="Ej. El Arte de la Guerra / Separador..." /></div>
-              <div class="field"><label>Tipo de Subcampo</label><select id="prodSubcampoTipo" onchange="actualizarEtiquetaSubcampoInput()"></select></div>
-              <div class="field"><label id="prodSubcampoValorLabel">Editorial / Detalle *</label><input type="text" id="prodEditorial" placeholder="Ej. Planeta, Norma, Separador metálico..." /></div>
-              <div class="field"><label>Detalle / Edición / Autor</label><input type="text" id="prodDetalle" placeholder="Ej. Tapa blanda • Sun Tzu" /></div>
+              <div class="field"><label>Título / Nombre *</label><input type="text" id="prodNombre" placeholder="Ej. El Arte de la Guerra / Lámpara..." /></div>
+              <div class="field"><label>Subcampo *</label><input type="text" id="prodEditorial" placeholder="Ej. Editorial Penguin, iluminación..." /></div>
+              <div class="field"><label>Detalle / Edición / Autor</label><input type="text" id="prodDetalle" placeholder="Ej. Color: Blanco / Tapa blanda" /></div>
               <div class="field"><label>Precio BCV (USD) *</label><input type="number" step="0.01" id="prodPrecioUsd" /></div>
               <div class="field"><label>Precio Promo Divisas (opcional)</label><input type="number" step="0.01" id="prodPromoUsd" /></div>
               <div class="field"><label>Stock (unidades)</label><input type="number" step="1" id="prodStock" value="5" /></div>
-              <div class="field" style="grid-column:1 / -1;"><label>Descripción (se muestra debajo de la imagen al abrirlo)</label><textarea id="prodDescripcion" rows="2" placeholder="Sinopsis, características de la linterna/separador o detalles..."></textarea></div>
+              <div class="field" style="grid-column:1 / -1;"><label>Descripción (se muestra debajo de la imagen al abrirlo)</label><textarea id="prodDescripcion" rows="2" placeholder="Sinopsis, características del accesorio o detalles..."></textarea></div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;">
               <button class="btn btn-primary" type="button" onclick="guardarProductoAdmin()">Guardar Ítem</button>
@@ -588,7 +577,6 @@
   </div>
 
   <script>
-    // IMPORTANTE: Cambia esta URL por la Web App (/exec) de tu hoja duplicada al hacer pruebas
     const API_URL = "https://script.google.com/macros/s/AKfycbzEe56uybEKr0osUWhlQ44SSK248UyURrDwDMBEp13ZF35OrykzBw0HIv9I4Ef-rAlBSQ/exec";
     const INSTAGRAM_URL = "https://www.instagram.com/latiendadelsamurai/";
     const INSTAGRAM_HANDLE = "@latiendadelsamurai";
@@ -606,9 +594,8 @@
 
     const PROD_FIELDS = [
       ["prodId","id",""],["prodCategoria","categoria","Otros"],["prodNombre","nombre",""],
-      ["prodSubcampoTipo","tipo_subcampo","Editorial"],["prodEditorial","editorial",""],
-      ["prodDetalle","detalle_variante",""],["prodPrecioUsd","precio_bcv_usd",0],["prodPromoUsd","precio_promo_divisas",""],
-      ["prodStock","stock",0],["prodImagenUrl","imagen_url",""],["prodDescripcion","descripcion",""]
+      ["prodEditorial","editorial",""],["prodDetalle","detalle_variante",""],["prodPrecioUsd","precio_bcv_usd",0],
+      ["prodPromoUsd","precio_promo_divisas",""],["prodStock","stock",0],["prodImagenUrl","imagen_url",""],["prodDescripcion","descripcion",""]
     ];
 
     const state = {
@@ -616,7 +603,6 @@
         estado_servicio: "ACTIVO", tasa_bcv: 890, bcv_ultima_actualizacion: "", horas_expiracion_carrito: 2,
         nombre_tienda: "Tienda del Samurai", subtitulo_tienda: "Tienda de libros • Caracas, Venezuela",
         whatsapp: "584242855733", instagram: INSTAGRAM_HANDLE, metodos_pago: "Pago Móvil|Divisas|PayPal",
-        subcampos_catalogo: "Editorial|Accesorio",
         paypal_comision_pct: 5.4, paypal_comision_fija: 0.30, color_primario: "#17171A", color_fondo: "#F7F5F2",
         color_acento: "#A61C1C", logo_url: "", portada_url: ""
       },
@@ -680,7 +666,6 @@
     function normalizarLibroSheet(p) {
       if (!p) return p;
       return Object.assign({}, p, {
-        tipo_subcampo: String(p.tipo_subcampo || "Editorial").trim() || "Editorial",
         editorial: String(p.editorial ?? "").trim(),
         descripcion: String(p.descripcion ?? "").trim(),
         imagen_url: String(p.imagen_url ?? p.imagen ?? p.foto_url ?? "").trim()
@@ -706,7 +691,6 @@
       iniciarSecuenciaMarcaAgua();
       $("cliCodigoPais").innerHTML = PAISES.map(([c, l]) => `<option value="${c}" ${c === "58" ? "selected" : ""}>${l}</option>`).join("");
       poblarSelectorMetodosPago();
-      poblarSelectorSubcampos();
       actualizarPreviewLibro();
       cargarCatalogo();
       document.addEventListener("keydown", (e) => { if (e.key === "Escape") { cerrarModal("modalLightbox"); cerrarModal("modalPin"); cerrarModal("modalListaDeseos"); } });
@@ -738,53 +722,10 @@
       })();
     }
 
-    const parsePipeList = (raw, fallback) => {
+    const parseMetodos = (raw) => {
       const a = String(raw || "").split("|").map(s => s.trim()).filter(Boolean);
-      return a.length ? a : fallback;
+      return a.length ? a : ["Pago Móvil","Divisas","PayPal"];
     };
-
-    const parseMetodos = (raw) => parsePipeList(raw, ["Pago Móvil","Divisas","PayPal"]);
-    const parseSubcampos = (raw) => parsePipeList(raw, ["Editorial","Accesorio"]);
-
-    function renderListaSubcamposAdmin(lista) {
-      const subs = parseSubcampos(Array.isArray(lista) ? lista.join("|") : lista);
-      if ($("cfgSubcamposCatalogo")) $("cfgSubcamposCatalogo").value = subs.join("|");
-      const box = $("adminSubcamposList");
-      if (box) box.innerHTML = subs.map((s, i) => `<span style="display:inline-flex;align-items:center;gap:6px;background:#EFEAE3;color:var(--texto);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;"><span>${escHtml(s)}</span><button type="button" title="Quitar subcampo" style="border:none;background:transparent;color:var(--peligro);font-weight:800;cursor:pointer;padding:0 2px;" onclick="quitarSubcampoAdmin(${i})">✕</button></span>`).join("");
-    }
-
-    function agregarSubcampoAdmin() {
-      const inp = $("nuevoSubcampoInput"), nombre = String(inp?.value || "").trim();
-      if (!nombre) return;
-      const cur = parseSubcampos($("cfgSubcamposCatalogo")?.value);
-      if (!cur.some(x => x.toLowerCase() === nombre.toLowerCase())) { cur.push(nombre); renderListaSubcamposAdmin(cur); poblarSelectorSubcampos(cur.join("|")); }
-      inp.value = "";
-    }
-
-    function quitarSubcampoAdmin(idx) {
-      const cur = parseSubcampos($("cfgSubcamposCatalogo")?.value);
-      if (cur.length <= 1) return alert("Debe quedar al menos un tipo de subcampo (ej. Editorial).");
-      cur.splice(idx, 1); renderListaSubcamposAdmin(cur); poblarSelectorSubcampos(cur.join("|"));
-    }
-
-    function poblarSelectorSubcampos(rawOverride) {
-      const sel = $("prodSubcampoTipo");
-      if (!sel) return;
-      const subs = parseSubcampos(rawOverride || state.config.subcampos_catalogo);
-      const prev = sel.value;
-      sel.innerHTML = subs.map(s => `<option value="${escAttr(s)}">${escHtml(s)}</option>`).join("");
-      if (prev && subs.includes(prev)) sel.value = prev;
-      actualizarEtiquetaSubcampoInput();
-    }
-
-    function actualizarEtiquetaSubcampoInput() {
-      const tipo = String($("prodSubcampoTipo")?.value || "Editorial").trim() || "Editorial";
-      const lbl = $("prodSubcampoValorLabel");
-      if (lbl) lbl.textContent = `${tipo} *`;
-      const inp = $("prodEditorial");
-      if (inp) inp.placeholder = tipo.toLowerCase().includes("acces") ? "Ej. Separador metálico, Linterna LED..." : "Ej. Planeta, Crossbooks, Norma...";
-    }
-
     function renderListaMetodosPagoAdmin(lista) {
       const metodos = parseMetodos(Array.isArray(lista) ? lista.join("|") : lista);
       if ($("cfgMetodosPago")) $("cfgMetodosPago").value = metodos.join("|");
@@ -837,7 +778,7 @@
       state.productos = (data.productos || []).map(normalizarLibroSheet);
       state.prodMap = new Map(state.productos.map(p => [String(p.id), p]));
       if (state.categoriaActiva !== "TODAS" && !state.categorias.some(c => c.categoria === state.categoriaActiva)) state.categoriaActiva = "TODAS";
-      aplicarTemaYMarca(); poblarSelectorSubcampos(); renderCategorias(); renderCatalogo(); actualizarBadgeCarrito();
+      aplicarTemaYMarca(); renderCategorias(); renderCatalogo(); actualizarBadgeCarrito();
       if ($("modalListaDeseos")?.classList.contains("open")) renderListaDeseosModal();
     }
 
@@ -928,7 +869,7 @@
       const filtrados = state.productos.filter(p => {
         if (hidden.has(String(p.categoria || "").trim().toLowerCase())) return false;
         return (state.categoriaActiva === "TODAS" || p.categoria === state.categoriaActiva) &&
-          (!q || `${p.nombre} ${p.tipo_subcampo || ""} ${p.editorial || ""} ${p.detalle_variante || ""} ${p.descripcion || ""} ${p.categoria}`.toLowerCase().includes(q));
+          (!q || `${p.nombre} ${p.editorial || ""} ${p.detalle_variante || ""} ${p.descripcion || ""} ${p.categoria}`.toLowerCase().includes(q));
       });
 
       const grid = $("gridProductos");
@@ -938,8 +879,7 @@
         const usd = Number(p.precio_bcv_usd) || 0, promo = parseFloat(p.precio_promo_divisas), tienePromo = !isNaN(promo) && promo > 0;
         const stock = Number(p.stock) || 0, qtyOff = esCantidadDesactivadaProducto(p, state.categorias), sinStock = !qtyOff && stock <= 0;
         const stockTxt = qtyOff ? "Disponible • Encargo / Preventa" : (sinStock ? "Agotado por ahora" : `Disponible: ${stock} und.`);
-        const subTipo = p.tipo_subcampo || "Editorial";
-        const subTexto = p.editorial ? `${subTipo}: ${p.editorial}` : (p.detalle_variante || "");
+        const subTexto = p.editorial ? `Subcampo: ${p.editorial}` : (p.detalle_variante || "");
         const wished = esDeseado(p.id);
         const imgHtml = p.imagen_url
           ? `<img src="${escAttr(p.imagen_url)}" alt="${escAttr(p.nombre)}" loading="lazy" decoding="async" />`
@@ -991,7 +931,7 @@
             producto_id: prod.id,
             nombre: prod.nombre,
             categoria: prod.categoria,
-            subcampo: prod.tipo_subcampo || "Editorial",
+            subcampo: prod.editorial || "",
             delta: yaEsta ? -1 : 1
           })
         });
@@ -1031,7 +971,6 @@
         const stock = Number(p.stock) || 0;
         const qtyOff = esCantidadDesactivadaProducto(p, state.categorias);
         const sinStock = !qtyOff && stock <= 0;
-        const subTipo = p.tipo_subcampo || "Editorial";
         const subVal = p.editorial || p.detalle_variante || "";
         return `
           <div class="wish-card">
@@ -1040,7 +979,7 @@
               ${p.imagen_url ? `<img src="${escAttr(p.imagen_url)}" alt="${escAttr(p.nombre)}" />` : `<span style="font-weight:800;color:var(--acento);">${escHtml(p.nombre.slice(0,2).toUpperCase())}</span>`}
             </div>
             <div class="wish-card-title">${escHtml(p.nombre)}</div>
-            ${subVal ? `<div class="wish-card-sub">${escHtml(subTipo)}: <b>${escHtml(subVal)}</b></div>` : ""}
+            ${subVal ? `<div class="wish-card-sub">Subcampo: <b>${escHtml(subVal)}</b></div>` : ""}
             <div class="wish-card-price">$${usd.toFixed(2)}</div>
             <div class="wish-card-bs">Bs. ${fmtBs(usd * tasa)}</div>
             <div class="wish-card-actions">
@@ -1061,8 +1000,7 @@
       $("lbDetalle").textContent = [prod.categoria, prod.detalle_variante].filter(Boolean).join(" • ");
       const imgEl = $("lbImg");
       imgEl.src = prod.imagen_url || ""; imgEl.alt = prod.imagen_url ? (prod.nombre || "Producto") : ""; imgEl.style.display = prod.imagen_url ? "block" : "none";
-      $("lbSubcampoLabel").textContent = prod.tipo_subcampo || "Editorial";
-      $("lbEditorial").textContent = prod.editorial || prod.detalle_variante || "Disponible";
+      $("lbSubcampo").textContent = prod.editorial || prod.detalle_variante || "Disponible";
       $("lbDescripcion").textContent = prod.descripcion || prod.detalle_variante || "Consulta disponibilidad y detalles con nosotros.";
       $("lbPrecioUsd").textContent = `$${usd.toFixed(2)}`; $("lbPrecioBs").textContent = `Bs. ${fmtBs(usd * tasa)}`; $("lbQtyValue").textContent = "1";
       sincronizarBotonDeseoLightbox();
@@ -1306,7 +1244,7 @@
           <td><b>${i + 1}</b></td>
           <td><b>${escHtml(d.nombre || d.producto_id)}</b> <small style="color:var(--texto-suave);">(${escHtml(d.producto_id)})</small></td>
           <td>${escHtml(d.categoria || "-")}</td>
-          <td>${escHtml(d.subcampo || "Editorial")}</td>
+          <td>${escHtml(d.subcampo || "-")}</td>
           <td><span class="badge-tag cat-badge-img">${Number(d.total_deseos) || 0} deseos</span></td>
           <td><small>${escHtml(d.ultima_actualizacion || "-")}</small></td>
         </tr>`).join("");
@@ -1435,14 +1373,14 @@
 
     function renderTablaProductosAdmin(productos) {
       const todos = Array.isArray(productos) ? productos : [], q = obtenerFiltroAdmin();
-      const filtrados = q ? todos.filter(p => `${p.id} ${p.categoria} ${p.nombre} ${p.tipo_subcampo || ""} ${p.editorial || ""} ${p.detalle_variante || ""}`.toLowerCase().includes(q)) : todos;
+      const filtrados = q ? todos.filter(p => `${p.id} ${p.categoria} ${p.nombre} ${p.editorial || ""} ${p.detalle_variante || ""}`.toLowerCase().includes(q)) : todos;
       if (!filtrados.length) { $("adminProdBody").innerHTML = `<tr><td colspan="8" style="color:var(--texto-suave);">No se encontraron ítems con ese filtro.</td></tr>`; return; }
       const catsRef = state.adminData?.categorias || state.categorias || [];
 
       $("adminProdBody").innerHTML = filtrados.map(p => {
         const idx = todos.findIndex(x => String(x.id) === String(p.id)), oculto = String(p.activo || "SI").toUpperCase() !== "SI";
         const qtyOff = esCantidadDesactivadaProducto(p, catsRef), promo = parseFloat(p.precio_promo_divisas);
-        const subTxt = p.editorial ? `<b>${escHtml(p.tipo_subcampo || "Editorial")}:</b> ${escHtml(p.editorial)}` : "-";
+        const subTxt = p.editorial ? `<b>Subcampo:</b> ${escHtml(p.editorial)}` : "-";
         return `
           <tr class="${oculto ? "prod-row-hidden" : ""}">
             <td><b>${escHtml(p.id)}</b></td>
@@ -1535,8 +1473,6 @@
       $("cfgPaypalPct").value = cfg.paypal_comision_pct ?? state.config.paypal_comision_pct ?? "5.4";
       $("cfgPaypalFija").value = cfg.paypal_comision_fija ?? state.config.paypal_comision_fija ?? "0.30";
       $("cfgLogoUrl").value = cfg.logo_url || ""; $("cfgPortadaUrl").value = cfg.portada_url || "";
-      renderListaSubcamposAdmin(cfg.subcampos_catalogo || state.config.subcampos_catalogo);
-      poblarSelectorSubcampos(cfg.subcampos_catalogo || state.config.subcampos_catalogo);
       renderListaMetodosPagoAdmin(cfg.metodos_pago || state.config.metodos_pago);
       $("btnEstadoTienda").textContent = `Estado: ${String(cfg.estado_servicio || "ACTIVO").toUpperCase()}`;
 
@@ -1560,11 +1496,10 @@
           nombre_tienda: $("cfgNombreTienda").value.trim() || "Tienda del Samurai", whatsapp: $("cfgWhatsapp").value.trim(),
           instagram: INSTAGRAM_HANDLE, paypal_comision_pct: $("cfgPaypalPct")?.value.trim() || "5.4",
           paypal_comision_fija: $("cfgPaypalFija")?.value.trim() || "0.30", logo_url: $("cfgLogoUrl").value.trim(),
-          portada_url: $("cfgPortadaUrl").value.trim(), metodos_pago: $("cfgMetodosPago")?.value || "Pago Móvil|Divisas|PayPal",
-          subcampos_catalogo: $("cfgSubcamposCatalogo")?.value || "Editorial|Accesorio"
+          portada_url: $("cfgPortadaUrl").value.trim(), metodos_pago: $("cfgMetodosPago")?.value || "Pago Móvil|Divisas|PayPal"
         }
       });
-      if (data.ok) { mostrarMsg($("msgAdminCfg"), "Configuración, subcampos, métodos de pago y tasa BCV guardados en la Sheet.", true); await refrescarAdminData(); }
+      if (data.ok) { mostrarMsg($("msgAdminCfg"), "Configuración, métodos de pago y tasa BCV guardados en la Sheet.", true); await refrescarAdminData(); }
       else mostrarMsg($("msgAdminCfg"), data.error || "Error al guardar", false);
     }
 
@@ -1577,31 +1512,27 @@
     function editarProductoPorId(prodId) {
       const p = normalizarLibroSheet((state.adminData?.productos || []).find(x => String(x.id) === String(prodId)));
       if (!p) return;
-      poblarSelectorSubcampos();
       for (const [elId, prop, def] of PROD_FIELDS) $(elId).value = p[prop] ?? def;
-      actualizarEtiquetaSubcampoInput();
       if ($("prodFotoFile")) $("prodFotoFile").value = "";
       actualizarPreviewLibro();
     }
     function limpiarFormProducto() {
       for (const [elId, , def] of PROD_FIELDS) $(elId).value = def;
-      actualizarEtiquetaSubcampoInput();
       if ($("prodFotoFile")) $("prodFotoFile").value = "";
       $("prodStock").value = "5"; actualizarPreviewLibro();
     }
 
     async function guardarProductoAdmin() {
       const idActual = $("prodId").value.trim(), edVal = $("prodEditorial")?.value.trim() || "", descVal = $("prodDescripcion")?.value.trim() || "";
-      const tipoSub = $("prodSubcampoTipo")?.value.trim() || "Editorial";
       const ex = idActual ? (state.adminData?.productos || []).find(x => String(x.id) === idActual) : null;
       const data = await postAdmin({
         action: "saveProduct",
         product: {
           id: idActual, categoria: $("prodCategoria").value, nombre: $("prodNombre").value.trim(),
-          tipo_subcampo: tipoSub, editorial: edVal, descripcion: descVal,
-          detalle_variante: $("prodDetalle").value.trim(), precio_bcv_usd: parseFloat($("prodPrecioUsd").value) || 0,
-          precio_promo_divisas: $("prodPromoUsd").value.trim(), stock: parseInt($("prodStock").value, 10) || 0,
-          imagen_url: $("prodImagenUrl").value.trim(), activo: ex ? String(ex.activo || "SI") : "SI"
+          editorial: edVal, descripcion: descVal, detalle_variante: $("prodDetalle").value.trim(),
+          precio_bcv_usd: parseFloat($("prodPrecioUsd").value) || 0, precio_promo_divisas: $("prodPromoUsd").value.trim(),
+          stock: parseInt($("prodStock").value, 10) || 0, imagen_url: $("prodImagenUrl").value.trim(),
+          activo: ex ? String(ex.activo || "SI") : "SI"
         }
       });
       if (data.ok) {
