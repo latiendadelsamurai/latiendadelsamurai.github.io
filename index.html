@@ -39,6 +39,7 @@
     .btn-qty-off { background: #FFF4E5; color: #8A4B08; border: 1px solid #F2C98A; }
     .btn-qty-on { background: #E7F7EF; color: var(--exito); border: 1px solid #A7DEC4; }
     .btn-danger { background: #FDECEF; color: var(--peligro); }
+    .btn-danger:hover { background: #FAD7DD; }
     .btn-wa-mini { background: #25D366; color: var(--blanco); padding: 5px 10px; font-size: 11.5px; border-radius: 8px; margin-top: 5px; display: inline-flex; align-items: center; gap: 4px; font-weight: 700; text-decoration: none; }
     .btn-wa-mini:hover { background: #1ebe5d; }
 
@@ -237,7 +238,7 @@
     .cuotas-box { margin-top: 10px; padding: 12px; border-radius: 12px; background: #FAF8F5; border: 1.5px solid var(--borde); display: none; }
     .cuotas-summary { font-size: 12.5px; color: var(--texto); font-weight: 700; line-height: 1.45; margin-top: 8px; }
     .cuotas-approval-note { margin-top: 8px; padding: 8px 10px; border-radius: 9px; background: #FFF3CD; border: 1px solid #F2D388; color: #6B4E00; font-size: 12px; font-weight: 800; line-height: 1.35; }
-    .cuotas-min-note { margin-top: 8px; padding: 8px 10px; border-radius: 9px; background: #FDECEF; border: 1px solid #E8B4B4; color: var(--peligro); font-size: 12px; font-weight: 700; line-height: 1.35; display: none; }
+    .cuotas-min-note { margin-top: 8px; padding: 8px 10px; border-radius: 9px; background: #FFF3CD; border: 1px solid #F2D388; color: #6B4E00; font-size: 12px; font-weight: 700; line-height: 1.35; display: none; }
     .lugares-fijos-list { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
     .lugar-fijo-pill { display: inline-flex; align-items: center; background: #EFEAE3; color: var(--texto); padding: 5px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid var(--borde); }
     .order-desc-box { margin-top: 12px; padding: 12px; border-radius: 12px; background: #FAF8F5; border: 1px solid var(--borde); font-size: 12.5px; }
@@ -286,6 +287,7 @@
     .cat-badge-qty-off { background: #FFF4E5; color: #8A4B08; border: 1px solid #F2C98A; }
     .cat-badge-img { background: #E7F7EF; color: var(--exito); border: 1px solid #A7DEC4; }
     .cat-order-actions, .prod-actions-cell { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .pedido-estado-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
     .mov-badge { display: inline-flex; align-items: center; gap: 5px; font-weight: 800; padding: 3px 8px; border-radius: 999px; font-size: 12px; }
     .mov-in { color: var(--exito); background: #E7F7EF; }
@@ -464,10 +466,10 @@
       <div id="cartItemsList"></div>
       <div class="promo-note" id="cartPromoNote"></div>
       <div class="paypal-note" id="paypalAvisoBox">Recuerde que usted asume la comisión de envío.</div>
-      <div class="cuotas-min-note" id="cuotasMinAvisoBox">El financiamiento a cuotas aplica desde $50.00 USD en adelante.</div>
+      <div class="cuotas-min-note" id="cuotasMinAvisoBox">El método de pago a cuotas requiere un pedido mínimo de $50.00 USD.</div>
       <div class="cuotas-box" id="cuotasConfigBox">
         <div class="field" style="margin-bottom:0;">
-          <label for="cliPlazoCuotas">Plazo de Cuotas (Desde $50.00 • Inicial del 10% del artículo o lote) *</label>
+          <label for="cliPlazoCuotas">Plazo de Cuotas (Mínimo $50.00 • Inicial del 10% del artículo o lote) *</label>
           <select id="cliPlazoCuotas" onchange="renderModalCarrito()">
             <option value="5 quincenas">5 quincenas</option>
             <option value="10 semanas">10 semanas</option>
@@ -649,7 +651,9 @@
           <svg width="18" height="18" style="color:var(--acento);flex-shrink:0;" aria-hidden="true"><use href="#ico-search"></use></svg>
           <input type="search" id="pedidosSearchInput" placeholder="Buscar pedido por ID, cliente, teléfono, ítem, estado..." oninput="filtrarPedidosAdmin()" />
           <button class="btn btn-soft btn-sm" type="button" id="btnLimpiarPedidosSearch" onclick="limpiarBusquedaPedidos()" style="display:none;">Limpiar</button>
+          <button class="btn btn-danger btn-sm" type="button" id="btnVaciarPedidosAdmin" onclick="vaciarListaPedidosAdmin()" title="Eliminar toda la lista de pedidos">✕ Vaciar lista</button>
         </div>
+        <div class="status-msg" id="msgAdminPedidos" style="margin-top:0;margin-bottom:12px;"></div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Pedido</th><th>Fecha</th><th>Cliente / WhatsApp</th><th>Total USD / Bs</th><th>Detalle</th><th>Estado</th></tr></thead>
@@ -1110,18 +1114,42 @@
       if (cur.length <= 1) return alert("Debe quedar al menos un método de pago activo.");
       cur.splice(idx, 1); renderListaMetodosPagoAdmin(cur);
     }
-    function poblarSelectorMetodosPago() {
-      const sel = $("cliPago");
-      if (!sel) return;
-      const metodos = parseMetodos(state.config.metodos_pago), prev = sel.value;
-      sel.innerHTML = metodos.map(m => `<option value="${escAttr(m)}">${escHtml(m)}</option>`).join("");
-      if (prev && metodos.includes(prev)) sel.value = prev;
-      renderModalCarrito();
-    }
 
     const esMetodoPayPal = (m) => /paypal/i.test(String(m || "").trim());
     const esMetodoCuotas = (m) => /cuota/i.test(String(m || "").trim());
     const cumpleMinimoCuotas = (montoUsd) => (Number(montoUsd) || 0) >= MONTO_MINIMO_CUOTAS_USD;
+
+    function calcularSubtotalBaseCarrito() {
+      let total = 0;
+      for (const it of state.carrito) {
+        total += (Number(it.cantidad) || 0) * (Number(it.precio_usd) || 0);
+      }
+      return Number(total.toFixed(2));
+    }
+
+    function poblarSelectorMetodosPago() {
+      const sel = $("cliPago");
+      if (!sel) return;
+      const metodos = parseMetodos(state.config.metodos_pago);
+      const prev = sel.value;
+      const subtotalBase = calcularSubtotalBaseCarrito();
+      const permiteCuotas = cumpleMinimoCuotas(subtotalBase);
+
+      sel.innerHTML = metodos.map(m => {
+        const esCuota = esMetodoCuotas(m);
+        const disabledAttr = (esCuota && !permiteCuotas) ? "disabled" : "";
+        const label = esCuota ? `${m} (mín. $${MONTO_MINIMO_CUOTAS_USD.toFixed(2)})` : m;
+        return `<option value="${escAttr(m)}" ${disabledAttr}>${escHtml(label)}</option>`;
+      }).join("");
+
+      if (prev && metodos.includes(prev) && !(esMetodoCuotas(prev) && !permiteCuotas)) {
+        sel.value = prev;
+      } else {
+        const primerDisponible = metodos.find(m => !(esMetodoCuotas(m) && !permiteCuotas)) || metodos[0];
+        if (primerDisponible) sel.value = primerDisponible;
+      }
+    }
+
     function obtenerPlazoCuotasSeleccionado() {
       const val = String($("cliPlazoCuotas")?.value || "5 quincenas").trim();
       return val === "10 semanas" ? { plazo: "10 semanas", numCuotas: 10, unidad: "semana(s)" } : { plazo: "5 quincenas", numCuotas: 5, unidad: "quincena(s)" };
@@ -1226,6 +1254,7 @@
       else portadaBox.style.display = "none";
       poblarSelectorLugaresEntrega();
       poblarSelectorMetodosPago();
+      if ($("modalCarrito")?.classList.contains("open")) renderModalCarrito();
     }
 
     function renderCategorias() {
@@ -1516,6 +1545,7 @@
         const promo = parseFloat(prod.precio_promo_divisas);
         state.carrito.push({ id: prod.id, nombre: prod.nombre, precio_usd: Number(prod.precio_bcv_usd) || 0, promo_divisas: (!isNaN(promo) && promo > 0) ? promo : null, cantidad: cant, qtySinControl: qtyOff, maxStock: qtyOff ? Infinity : stock });
       }
+      poblarSelectorMetodosPago();
       actualizarBadgeCarrito();
       return true;
     }
@@ -1528,6 +1558,7 @@
       else if (item.qtySinControl || next <= item.maxStock) {
         item.cantidad = next;
       }
+      poblarSelectorMetodosPago();
       actualizarBadgeCarrito(); renderModalCarrito();
     }
 
@@ -1535,14 +1566,17 @@
       const { totalUsd, totalUnidades } = calcularTotalesCarrito($("cliPago")?.value || "Pago Móvil");
       $("cartCountBadge").textContent = `(${totalUnidades})`; $("cartTotalUsdBadge").textContent = `$${totalUsd.toFixed(2)}`;
     }
-    function abrirCarrito() { poblarSelectorLugaresEntrega(); renderModalCarrito(); $("modalCarrito").classList.add("open"); }
+    function abrirCarrito() { poblarSelectorLugaresEntrega(); poblarSelectorMetodosPago(); renderModalCarrito(); $("modalCarrito").classList.add("open"); }
 
     function renderModalCarrito() {
       const list = $("cartItemsList"), descBox = $("orderDescriptionBox"), promoNote = $("cartPromoNote"), paypalAviso = $("paypalAvisoBox");
       const cuotasBox = $("cuotasConfigBox"), cuotasResumen = $("cuotasResumenTxt"), cuotasMinAviso = $("cuotasMinAvisoBox");
+      poblarSelectorMetodosPago();
       const selPago = $("cliPago");
       const metodoPago = selPago?.value || "Pago Móvil", modalidadEntrega = $("cliEntrega")?.value || LUGARES_ENTREGA_FIJOS[0];
       const esPagoMovil = /m[oó]vil|transferencia/i.test(metodoPago), tasa = parseFloat(state.config.tasa_bcv) || 890;
+      const tieneMetodoCuotasConfig = parseMetodos(state.config.metodos_pago).some(esMetodoCuotas);
+
       if (!state.carrito.length) {
         list.innerHTML = `<p style="color:var(--texto-suave);padding:12px 0;">Tu carrito está vacío.</p>`;
         promoNote.textContent = ""; if (paypalAviso) paypalAviso.style.display = "none";
@@ -1562,8 +1596,9 @@
         else paypalAviso.style.display = "none";
       }
       if (cuotasMinAviso) {
-        if (eligioCuotas && !cuotasHabilitadas) {
-          cuotasMinAviso.textContent = `El financiamiento a cuotas está disponible desde $${MONTO_MINIMO_CUOTAS_USD.toFixed(2)} USD en adelante (tu pedido actual es de $${subtotalUsd.toFixed(2)} USD).`;
+        if (tieneMetodoCuotasConfig && !cumpleMinimoCuotas(subtotalUsd)) {
+          const faltante = Math.max(0, MONTO_MINIMO_CUOTAS_USD - subtotalUsd);
+          cuotasMinAviso.textContent = `El método de pago a cuotas requiere un pedido mínimo de $${MONTO_MINIMO_CUOTAS_USD.toFixed(2)} USD (te faltan $${faltante.toFixed(2)} USD para habilitarlo).`;
           cuotasMinAviso.style.display = "block";
         } else {
           cuotasMinAviso.style.display = "none";
@@ -1609,7 +1644,7 @@
       const metodoPago = $("cliPago").value, tasa = parseFloat(state.config.tasa_bcv) || 890;
       const { subtotalUsd, totalUsd, comisionPayPalUsd, usaPayPal, eligioCuotas, cuotasHabilitadas, cuotas } = calcularTotalesCarrito(metodoPago);
       if (eligioCuotas && !cuotasHabilitadas) {
-        return mostrarMsg(msg, `El financiamiento a cuotas aplica desde $${MONTO_MINIMO_CUOTAS_USD.toFixed(2)} USD en adelante (actual: $${subtotalUsd.toFixed(2)} USD).`, false);
+        return mostrarMsg(msg, `El método de pago a cuotas requiere un pedido mínimo de $${MONTO_MINIMO_CUOTAS_USD.toFixed(2)} USD (actual: $${subtotalUsd.toFixed(2)} USD).`, false);
       }
 
       const items = state.carrito.map(it => ({ id: it.id, nombre: it.nombre, cantidad: it.cantidad, precio_usd: Number(precioUnitarioSegunPago(it, metodoPago).toFixed(2)), sin_control_cantidad: Boolean(it.qtySinControl) }));
@@ -1639,7 +1674,7 @@
         }
         const data = await (await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })).json();
         if (!data.ok) throw new Error(data.error || "No se pudo registrar el pedido");
-        state.carrito = []; actualizarBadgeCarrito(); renderModalCarrito(); $("formPedido").reset(); $("cliCodigoPais").value = "58"; poblarSelectorLugaresEntrega();
+        state.carrito = []; poblarSelectorMetodosPago(); actualizarBadgeCarrito(); renderModalCarrito(); $("formPedido").reset(); $("cliCodigoPais").value = "58"; poblarSelectorLugaresEntrega();
         await cargarCatalogo();
         mostrarMsg(msg, (cuotasHabilitadas && cuotas)
           ? `¡Listo! Tu solicitud ${data.pedido_id} a cuotas (${cuotas.plazo}, inicial $${cuotas.inicialUsd.toFixed(2)}) fue registrada y está sujeta a aprobación.`
@@ -1767,7 +1802,10 @@
           <td>${montoColHtml}</td>
           <td><small>${escHtml(ped.detalle_items)}</small></td>
           <td>
-            <select onchange="cambiarEstadoPedido('${escAttr(ped.pedido_id)}',this.value)">${opcionesEstado.map(st => `<option value="${escAttr(st)}" ${estadoActual === st ? "selected" : ""}>${escHtml(st)}</option>`).join("")}</select>
+            <div class="pedido-estado-row">
+              <select onchange="cambiarEstadoPedido('${escAttr(ped.pedido_id)}',this.value)">${opcionesEstado.map(st => `<option value="${escAttr(st)}" ${estadoActual === st ? "selected" : ""}>${escHtml(st)}</option>`).join("")}</select>
+              <button class="btn btn-danger btn-sm" type="button" title="Eliminar pedido ${escAttr(ped.pedido_id)}" onclick="eliminarPedidoAdmin('${escAttr(ped.pedido_id)}')">✕</button>
+            </div>
             ${checklistHtml}
           </td>
         </tr>`;
@@ -1776,6 +1814,7 @@
     function renderTablaPedidosAdmin(pedidos, cfg) {
       const q = obtenerFiltroPedidos();
       const list = q ? (pedidos || []).filter(p => [p.pedido_id,p.fecha,p.cliente,p.telefono,p.modalidad_entrega,p.metodo_pago,p.total_usd,p.total_bs,p.detalle_items,p.estado].join(" ").toLowerCase().includes(q)) : (pedidos || []);
+      if ($("btnVaciarPedidosAdmin")) $("btnVaciarPedidosAdmin").disabled = !(pedidos && pedidos.length);
       if (!list.length) { $("adminPedidosBody").innerHTML = `<tr><td colspan="6" style="color:var(--texto-suave);">${q ? "No se encontraron pedidos con ese filtro." : "No hay pedidos registrados."}</td></tr>`; return; }
       $("adminPedidosBody").innerHTML = list.map(ped => construirFilaPedidoHtml(ped, cfg, false)).join("");
     }
@@ -1792,6 +1831,62 @@
         return;
       }
       tbody.innerHTML = list.map(ped => construirFilaPedidoHtml(ped, cfg, true)).join("");
+    }
+
+    async function eliminarPedidoAdmin(pedidoId) {
+      const idStr = String(pedidoId || "").trim();
+      const msg = $("msgAdminPedidos");
+      if (!idStr) return;
+      if (!confirm(`¿Eliminar el pedido "${idStr}" de la lista?`)) return;
+
+      if (state.adminData?.pedidos) {
+        state.adminData.pedidos = state.adminData.pedidos.filter(p => String(p.pedido_id) !== idStr);
+        delete state.cuotasChecks[idStr];
+        guardarCuotasChecksLocales();
+        const cfg = state.adminData.config || state.config;
+        renderTablaPedidosAdmin(state.adminData.pedidos, cfg);
+        renderTablaCuotasAdmin(state.adminData.pedidos, cfg);
+      }
+
+      try {
+        const data = await postAdmin({ action: "deleteOrder", pedido_id: idStr });
+        if (data && data.ok === false) {
+          mostrarMsg(msg, data.error || `Pedido "${idStr}" eliminado de la vista local.`, false);
+          return;
+        }
+        mostrarMsg(msg, `Pedido "${idStr}" eliminado.`, true);
+        await refrescarAdminData();
+      } catch (err) {
+        mostrarMsg(msg, `Pedido "${idStr}" eliminado de la vista (${err.message}).`, true);
+      }
+    }
+
+    async function vaciarListaPedidosAdmin() {
+      const pedidos = state.adminData?.pedidos || [];
+      const msg = $("msgAdminPedidos");
+      if (!pedidos.length) return mostrarMsg(msg, "La lista de pedidos ya está vacía.", false);
+      if (!confirm(`¿Eliminar toda la lista de pedidos (${pedidos.length} pedido(s))? Esta acción no se puede deshacer.`)) return;
+
+      const ids = pedidos.map(p => String(p.pedido_id || "")).filter(Boolean);
+      state.adminData.pedidos = [];
+      state.cuotasChecks = {};
+      guardarCuotasChecksLocales();
+      const cfg = state.adminData.config || state.config;
+      renderTablaPedidosAdmin([], cfg);
+      renderTablaCuotasAdmin([], cfg);
+
+      try {
+        const data = await postAdmin({ action: "clearOrders", pedido_ids: ids });
+        if (data && data.ok === false) {
+          for (const id of ids) {
+            try { await postAdmin({ action: "deleteOrder", pedido_id: id }); } catch (_) {}
+          }
+        }
+        mostrarMsg(msg, "La lista de pedidos ha sido eliminada por completo.", true);
+        await refrescarAdminData();
+      } catch (err) {
+        mostrarMsg(msg, `Lista de pedidos vaciada en pantalla (${err.message}).`, true);
+      }
     }
 
     function renderTablaDeseosAdmin(deseos) {
