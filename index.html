@@ -237,6 +237,9 @@
     .cuotas-box { margin-top: 10px; padding: 12px; border-radius: 12px; background: #FAF8F5; border: 1.5px solid var(--borde); display: none; }
     .cuotas-summary { font-size: 12.5px; color: var(--texto); font-weight: 700; line-height: 1.45; margin-top: 8px; }
     .cuotas-approval-note { margin-top: 8px; padding: 8px 10px; border-radius: 9px; background: #FFF3CD; border: 1px solid #F2D388; color: #6B4E00; font-size: 12px; font-weight: 800; line-height: 1.35; }
+    .cuotas-min-note { margin-top: 8px; padding: 8px 10px; border-radius: 9px; background: #FDECEF; border: 1px solid #E8B4B4; color: var(--peligro); font-size: 12px; font-weight: 700; line-height: 1.35; display: none; }
+    .lugares-fijos-list { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+    .lugar-fijo-pill { display: inline-flex; align-items: center; background: #EFEAE3; color: var(--texto); padding: 5px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid var(--borde); }
     .order-desc-box { margin-top: 12px; padding: 12px; border-radius: 12px; background: #FAF8F5; border: 1px solid var(--borde); font-size: 12.5px; }
     .order-desc-title { font-size: 13px; font-weight: 800; color: var(--texto); margin-bottom: 8px; }
     .order-desc-list { list-style: none; display: flex; flex-direction: column; gap: 4px; color: var(--texto-suave); margin-bottom: 8px; }
@@ -339,7 +342,7 @@
           <div class="brand-title" id="brandTitle" role="button" tabindex="0" onclick="abrirModalPin()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirModalPin();}">Tienda del Samurai</div>
           <div class="brand-sub" id="brandSub">Tienda de libros • Caracas, Venezuela</div>
           <div class="brand-delivery" id="brandDelivery">
-            <div>Entrega en Sambil la Candelaria • Farmatodo de la Av.Urdaneta • Envíos nacionales</div>
+            <div>Entrega en Sambil la Candelaria • Farmatodo de la Av.Urdaneta • Envíos nacionales • Acordar punto de entrega</div>
             <div>-Previo acuerdo-</div>
             <div>Lunes a Domingo, de 10:00 am a 7:00 pm.</div>
           </div>
@@ -461,9 +464,10 @@
       <div id="cartItemsList"></div>
       <div class="promo-note" id="cartPromoNote"></div>
       <div class="paypal-note" id="paypalAvisoBox">Recuerde que usted asume la comisión de envío.</div>
+      <div class="cuotas-min-note" id="cuotasMinAvisoBox">El financiamiento a cuotas aplica desde $50.00 USD en adelante.</div>
       <div class="cuotas-box" id="cuotasConfigBox">
         <div class="field" style="margin-bottom:0;">
-          <label for="cliPlazoCuotas">Plazo de Cuotas (Inicial del 10% del artículo o lote) *</label>
+          <label for="cliPlazoCuotas">Plazo de Cuotas (Desde $50.00 • Inicial del 10% del artículo o lote) *</label>
           <select id="cliPlazoCuotas" onchange="renderModalCarrito()">
             <option value="5 quincenas">5 quincenas</option>
             <option value="10 semanas">10 semanas</option>
@@ -534,7 +538,6 @@
       <div class="admin-panel active" id="tabTasa">
         <div class="admin-grid-2">
           <div class="field"><label>Tasa BCV Manual (Bs por $1) *</label><input type="number" step="0.01" min="0.01" id="cfgTasaBcv" /><small style="color:var(--texto-suave);" id="cfgUltimaAct"></small></div>
-          <div class="field"><label>Horas expiración carrito</label><input type="number" step="0.5" min="0.5" id="cfgHorasExp" /></div>
           <div class="field"><label>Nombre de la Tienda</label><input type="text" id="cfgNombreTienda" /></div>
           <div class="field"><label>WhatsApp (ej. 584242855733)</label><input type="text" id="cfgWhatsapp" /></div>
           <div class="field"><label>Comisión PayPal (%)</label><input type="number" step="0.01" min="0" id="cfgPaypalPct" /></div>
@@ -550,13 +553,8 @@
             <input type="text" id="cfgPortadaUrl" placeholder="URL de portada" style="margin-top:6px;" />
           </div>
           <div class="field" style="grid-column:1 / -1;">
-            <label>Lugares de Retiro o Envío (Añadir, Editar o Eliminar)</label>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-              <input type="text" id="nuevoLugarEntregaInput" placeholder="Ej. Entrega en Sambil la Candelaria, Farmatodo de la Av.Urdaneta, Envíos nacionales..." style="flex:1;min-width:220px;" onkeydown="if(event.key==='Enter'){event.preventDefault();agregarLugarEntregaAdmin();}" />
-              <button class="btn btn-soft btn-sm" type="button" onclick="agregarLugarEntregaAdmin()">+ Añadir lugar</button>
-            </div>
-            <div id="adminLugaresEntregaList" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
-            <input type="hidden" id="cfgLugaresEntrega" />
+            <label>Lugares de Retiro o Envío (Fijos)</label>
+            <div id="adminLugaresEntregaList" class="lugares-fijos-list"></div>
           </div>
           <div class="field" style="grid-column:1 / -1;">
             <label>Métodos de Pago (Añadir, Editar o Quitar)</label>
@@ -709,12 +707,13 @@
     const ADMIN_PIN_PRUEBAS = "samurai#20200";
     const WISHLIST_STORAGE_KEY = "samurai_wishlist_ids_v1";
     const WISHLIST_STATS_KEY = "samurai_wishlist_stats_v1";
-    const LUGARES_STORAGE_KEY = "samurai_lugares_entrega_v1";
     const CUOTAS_CHECK_STORAGE_KEY = "samurai_cuotas_checklist_v1";
-    const LUGARES_ENTREGA_DEFAULT = [
+    const MONTO_MINIMO_CUOTAS_USD = 50;
+    const LUGARES_ENTREGA_FIJOS = [
       "Entrega en Sambil la Candelaria",
       "Farmatodo de la Av.Urdaneta",
-      "Envíos nacionales"
+      "Envíos nacionales",
+      "Acordar punto de entrega"
     ];
     const ESTADOS_PEDIDO = [
       "EN_PROCESO",
@@ -740,10 +739,10 @@
 
     const state = {
       config: {
-        estado_servicio: "ACTIVO", tasa_bcv: 890, bcv_ultima_actualizacion: "", horas_expiracion_carrito: 2,
+        estado_servicio: "ACTIVO", tasa_bcv: 890, bcv_ultima_actualizacion: "",
         nombre_tienda: "Tienda del Samurai", subtitulo_tienda: "Tienda de libros • Caracas, Venezuela",
         whatsapp: "584242855733", instagram: INSTAGRAM_HANDLE, metodos_pago: "Pago Móvil|Divisas|PayPal|Cuotas",
-        lugares_entrega: LUGARES_ENTREGA_DEFAULT.join("|"),
+        lugares_entrega: LUGARES_ENTREGA_FIJOS.join("|"),
         paypal_comision_pct: 5.4, paypal_comision_fija: 0.30, color_primario: "#17171A", color_fondo: "#F7F5F2",
         color_acento: "#A61C1C", logo_url: "", portada_url: ""
       },
@@ -854,20 +853,6 @@
           }
         }
       }
-    }
-
-    function cargarLugaresLocales() {
-      try {
-        const saved = String(localStorage.getItem(LUGARES_STORAGE_KEY) || "").trim();
-        if (saved) state.config.lugares_entrega = parseLugaresEntrega(saved).join("|");
-      } catch (_) {}
-    }
-
-    function guardarLugaresLocales(raw) {
-      const limpio = parseLugaresEntrega(raw).join("|");
-      state.config.lugares_entrega = limpio;
-      try { localStorage.setItem(LUGARES_STORAGE_KEY, limpio); } catch (_) {}
-      return limpio;
     }
 
     function cargarDeseosLocales() {
@@ -1018,7 +1003,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      cargarLugaresLocales();
+      state.config.lugares_entrega = LUGARES_ENTREGA_FIJOS.join("|");
       cargarDeseosLocales();
       cargarCuotasChecksLocales();
       iniciarSecuenciaMarcaAgua();
@@ -1060,93 +1045,31 @@
       })();
     }
 
-    const parseLugaresEntrega = (raw) => {
-      if (Array.isArray(raw)) {
-        const a = raw.map(s => String(s || "").trim()).filter(Boolean);
-        return a.length ? a : LUGARES_ENTREGA_DEFAULT.slice();
-      }
-      const str = String(raw ?? "").trim();
-      if (!str) return LUGARES_ENTREGA_DEFAULT.slice();
-      const a = str.split("|").map(s => s.trim()).filter(Boolean);
-      return a.length ? a : LUGARES_ENTREGA_DEFAULT.slice();
-    };
+    const parseLugaresEntrega = () => LUGARES_ENTREGA_FIJOS.slice();
 
-    function sincronizarLugaresEntregaEnVivo(lista) {
-      const limpio = guardarLugaresLocales(lista);
-      if ($("cfgLugaresEntrega")) $("cfgLugaresEntrega").value = limpio;
-      if (state.adminData) {
-        state.adminData.config = Object.assign({}, state.adminData.config || {}, { lugares_entrega: limpio });
-      }
-      actualizarEncabezadoEntrega();
-      poblarSelectorLugaresEntrega();
-    }
-
-    function renderListaLugaresEntregaAdmin(lista) {
-      const lugares = parseLugaresEntrega(lista);
-      if ($("cfgLugaresEntrega")) $("cfgLugaresEntrega").value = lugares.join("|");
+    function renderListaLugaresEntregaAdmin() {
+      state.config.lugares_entrega = LUGARES_ENTREGA_FIJOS.join("|");
       const box = $("adminLugaresEntregaList");
       if (box) {
-        box.innerHTML = lugares.map((l, i) => `
-          <span style="display:inline-flex;align-items:center;gap:6px;background:#EFEAE3;color:var(--texto);padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;">
-            <span>${escHtml(l)}</span>
-            <button type="button" title="Editar lugar" style="border:none;background:transparent;color:var(--primario);font-weight:800;cursor:pointer;padding:0 2px;" onclick="editarLugarEntregaAdmin(${i})">✎</button>
-            <button type="button" title="Eliminar lugar" style="border:none;background:transparent;color:var(--peligro);font-weight:800;cursor:pointer;padding:0 2px;" onclick="quitarLugarEntregaAdmin(${i})">✕</button>
-          </span>`).join("");
+        box.innerHTML = LUGARES_ENTREGA_FIJOS.map(l => `<span class="lugar-fijo-pill">${escHtml(l)}</span>`).join("");
       }
-    }
-
-    function agregarLugarEntregaAdmin() {
-      const inp = $("nuevoLugarEntregaInput"), nombre = String(inp?.value || "").trim();
-      if (!nombre) return;
-      const cur = parseLugaresEntrega($("cfgLugaresEntrega")?.value);
-      if (!cur.some(x => x.toLowerCase() === nombre.toLowerCase())) {
-        cur.push(nombre);
-        renderListaLugaresEntregaAdmin(cur);
-        sincronizarLugaresEntregaEnVivo(cur);
-      }
-      inp.value = "";
-    }
-
-    function editarLugarEntregaAdmin(idx) {
-      const cur = parseLugaresEntrega($("cfgLugaresEntrega")?.value);
-      const actual = cur[idx];
-      if (!actual) return;
-      const nuevo = prompt("Editar lugar de retiro o envío:", actual);
-      if (nuevo === null) return;
-      const limpio = String(nuevo || "").trim();
-      if (!limpio) return alert("El nombre del lugar no puede quedar vacío.");
-      if (cur.some((x, i) => i !== idx && x.toLowerCase() === limpio.toLowerCase())) {
-        return alert("Ese lugar ya existe en la lista.");
-      }
-      cur[idx] = limpio;
-      renderListaLugaresEntregaAdmin(cur);
-      sincronizarLugaresEntregaEnVivo(cur);
-    }
-
-    function quitarLugarEntregaAdmin(idx) {
-      const cur = parseLugaresEntrega($("cfgLugaresEntrega")?.value);
-      if (cur.length <= 1) return alert("Debe quedar al menos un lugar de retiro o envío.");
-      cur.splice(idx, 1);
-      renderListaLugaresEntregaAdmin(cur);
-      sincronizarLugaresEntregaEnVivo(cur);
     }
 
     function poblarSelectorLugaresEntrega() {
       const sel = $("cliEntrega");
       if (!sel) return;
-      const lugares = parseLugaresEntrega(state.config.lugares_entrega);
+      const lugares = parseLugaresEntrega();
       const prev = sel.value;
       sel.innerHTML = lugares.map(l => `<option value="${escAttr(l)}">${escHtml(l)}</option>`).join("");
       if (prev && lugares.includes(prev)) sel.value = prev;
-      else if (lugares.length) sel.value = lugares[0];
+      else sel.value = lugares[0];
     }
 
     function actualizarEncabezadoEntrega() {
       const el = $("brandDelivery");
       if (!el) return;
-      const lugares = parseLugaresEntrega(state.config.lugares_entrega);
       el.innerHTML = `
-        <div>${escHtml(lugares.join(" • "))}</div>
+        <div>${escHtml(LUGARES_ENTREGA_FIJOS.join(" • "))}</div>
         <div>-Previo acuerdo-</div>
         <div>Lunes a Domingo, de 10:00 am a 7:00 pm.</div>`;
     }
@@ -1198,6 +1121,7 @@
 
     const esMetodoPayPal = (m) => /paypal/i.test(String(m || "").trim());
     const esMetodoCuotas = (m) => /cuota/i.test(String(m || "").trim());
+    const cumpleMinimoCuotas = (montoUsd) => (Number(montoUsd) || 0) >= MONTO_MINIMO_CUOTAS_USD;
     function obtenerPlazoCuotasSeleccionado() {
       const val = String($("cliPlazoCuotas")?.value || "5 quincenas").trim();
       return val === "10 semanas" ? { plazo: "10 semanas", numCuotas: 10, unidad: "semana(s)" } : { plazo: "5 quincenas", numCuotas: 5, unidad: "quincena(s)" };
@@ -1229,16 +1153,10 @@
     }
 
     function aplicarDatosCatalogo(data) {
-      const incomingCfg = Object.assign({}, data.config || {});
-      const remoteLugares = String(incomingCfg.lugares_entrega || "").trim();
-      const localLugares = String(state.config.lugares_entrega || "").trim();
-      if (remoteLugares) {
-        guardarLugaresLocales(remoteLugares);
-      } else if (localLugares) {
-        incomingCfg.lugares_entrega = localLugares;
-      } else {
-        incomingCfg.lugares_entrega = LUGARES_ENTREGA_DEFAULT.join("|");
-      }
+      const incomingCfg = Object.assign({}, data.config || {}, {
+        lugares_entrega: LUGARES_ENTREGA_FIJOS.join("|")
+      });
+      delete incomingCfg.horas_expiracion_carrito;
       if (!String(incomingCfg.metodos_pago || "").trim()) {
         incomingCfg.metodos_pago = "Pago Móvil|Divisas|PayPal|Cuotas";
       } else if (!esMetodoCuotas(incomingCfg.metodos_pago)) {
@@ -1565,14 +1483,17 @@
         totalUnidades += it.cantidad; subtotalUsd += it.cantidad * unit;
         if (unit < base) ahorroPromo += it.cantidad * (base - unit);
       }
-      const usaPayPal = esMetodoPayPal(metodoPago) && subtotalUsd > 0;
-      const pp = usaPayPal ? calcularComisionPayPal(subtotalUsd) : { comisionUsd: 0, totalEnviarUsd: subtotalUsd, pct: 5.4, fija: 0.30 };
-      const usaCuotas = esMetodoCuotas(metodoPago) && subtotalUsd > 0;
-      const cuotas = usaCuotas ? calcularResumenCuotas(subtotalUsd) : null;
+      const subtotalRedondeado = Number(subtotalUsd.toFixed(2));
+      const usaPayPal = esMetodoPayPal(metodoPago) && subtotalRedondeado > 0;
+      const pp = usaPayPal ? calcularComisionPayPal(subtotalRedondeado) : { comisionUsd: 0, totalEnviarUsd: subtotalRedondeado, pct: 5.4, fija: 0.30 };
+      const eligioCuotas = esMetodoCuotas(metodoPago) && subtotalRedondeado > 0;
+      const cuotasHabilitadas = eligioCuotas && cumpleMinimoCuotas(subtotalRedondeado);
+      const cuotas = cuotasHabilitadas ? calcularResumenCuotas(subtotalRedondeado) : null;
       return {
-        subtotalUsd: Number(subtotalUsd.toFixed(2)), comisionPayPalUsd: pp.comisionUsd,
-        totalUsd: usaPayPal ? pp.totalEnviarUsd : Number(subtotalUsd.toFixed(2)),
-        paypalPct: pp.pct, paypalFija: pp.fija, usaPayPal, usaCuotas, cuotas, totalUnidades, ahorroPromo
+        subtotalUsd: subtotalRedondeado, comisionPayPalUsd: pp.comisionUsd,
+        totalUsd: usaPayPal ? pp.totalEnviarUsd : subtotalRedondeado,
+        paypalPct: pp.pct, paypalFija: pp.fija, usaPayPal,
+        eligioCuotas, cuotasHabilitadas, cuotas, totalUnidades, ahorroPromo
       };
     }
 
@@ -1618,13 +1539,15 @@
 
     function renderModalCarrito() {
       const list = $("cartItemsList"), descBox = $("orderDescriptionBox"), promoNote = $("cartPromoNote"), paypalAviso = $("paypalAvisoBox");
-      const cuotasBox = $("cuotasConfigBox"), cuotasResumen = $("cuotasResumenTxt");
-      const metodoPago = $("cliPago")?.value || "Pago Móvil", modalidadEntrega = $("cliEntrega")?.value || parseLugaresEntrega(state.config.lugares_entrega)[0] || "";
+      const cuotasBox = $("cuotasConfigBox"), cuotasResumen = $("cuotasResumenTxt"), cuotasMinAviso = $("cuotasMinAvisoBox");
+      const selPago = $("cliPago");
+      const metodoPago = selPago?.value || "Pago Móvil", modalidadEntrega = $("cliEntrega")?.value || LUGARES_ENTREGA_FIJOS[0];
       const esPagoMovil = /m[oó]vil|transferencia/i.test(metodoPago), tasa = parseFloat(state.config.tasa_bcv) || 890;
       if (!state.carrito.length) {
         list.innerHTML = `<p style="color:var(--texto-suave);padding:12px 0;">Tu carrito está vacío.</p>`;
         promoNote.textContent = ""; if (paypalAviso) paypalAviso.style.display = "none";
         if (cuotasBox) cuotasBox.style.display = "none";
+        if (cuotasMinAviso) cuotasMinAviso.style.display = "none";
         descBox.innerHTML = ""; actualizarBadgeCarrito(); return;
       }
       list.innerHTML = state.carrito.map(it => {
@@ -1632,14 +1555,22 @@
         return `<div class="cart-item"><div><div style="font-weight:700;">${escHtml(it.nombre)}</div><div style="font-size:12px;color:${esPromo ? "var(--exito)" : "var(--texto-suave)"};font-weight:${esPromo ? "700" : "400"};">$${unit.toFixed(2)} c/u ${esPromo ? `(Promo • antes $${Number(it.precio_usd).toFixed(2)})` : ""}${it.qtySinControl ? ` • <span style="color:#8A4B08;font-weight:700;">Encargo</span>` : ""}</div></div><div class="qty-controls"><button class="qty-btn" type="button" onclick="cambiarCantidadCarrito('${escAttr(it.id)}',-1)">-</button><span style="font-weight:700;min-width:20px;text-align:center;">${it.cantidad}</span><button class="qty-btn" type="button" onclick="cambiarCantidadCarrito('${escAttr(it.id)}',1)">+</button></div></div>`;
       }).join("");
 
-      const { subtotalUsd, comisionPayPalUsd, totalUsd, paypalPct, paypalFija, usaPayPal, usaCuotas, cuotas, ahorroPromo } = calcularTotalesCarrito(metodoPago);
+      const { subtotalUsd, comisionPayPalUsd, totalUsd, paypalPct, paypalFija, usaPayPal, eligioCuotas, cuotasHabilitadas, cuotas, ahorroPromo } = calcularTotalesCarrito(metodoPago);
       promoNote.textContent = ahorroPromo > 0 ? `¡Promoción aplicada! Ahorras $${ahorroPromo.toFixed(2)} en este pedido.` : "";
       if (paypalAviso) {
         if (esMetodoPayPal(metodoPago)) { paypalAviso.textContent = `Recuerde que usted asume la comisión de envío. Cálculo PayPal (${paypalPct}% + $${paypalFija.toFixed(2)}): comisión estimada $${comisionPayPalUsd.toFixed(2)} USD.`; paypalAviso.style.display = "block"; }
         else paypalAviso.style.display = "none";
       }
+      if (cuotasMinAviso) {
+        if (eligioCuotas && !cuotasHabilitadas) {
+          cuotasMinAviso.textContent = `El financiamiento a cuotas está disponible desde $${MONTO_MINIMO_CUOTAS_USD.toFixed(2)} USD en adelante (tu pedido actual es de $${subtotalUsd.toFixed(2)} USD).`;
+          cuotasMinAviso.style.display = "block";
+        } else {
+          cuotasMinAviso.style.display = "none";
+        }
+      }
       if (cuotasBox && cuotasResumen) {
-        if (usaCuotas && cuotas) {
+        if (cuotasHabilitadas && cuotas) {
           cuotasBox.style.display = "block";
           cuotasResumen.innerHTML = `
             <div>Inicial (10% del pedido/lote): <b>$${cuotas.inicialUsd.toFixed(2)} USD</b> (Bs. ${fmtBs(cuotas.inicialUsd * tasa)})</div>
@@ -1653,7 +1584,7 @@
         const u = precioUnitarioSegunPago(it, metodoPago);
         return `<li>• ${it.cantidad}x ${escHtml(it.nombre)}${it.qtySinControl ? " (Encargo/Preventa)" : ""} — $${u.toFixed(2)} c/u (<b>$${(u * it.cantidad).toFixed(2)}</b>)</li>`;
       }).join("");
-      const cuotasExtraHtml = (usaCuotas && cuotas) ? `
+      const cuotasExtraHtml = (cuotasHabilitadas && cuotas) ? `
         <div class="order-desc-sub" style="margin-top:4px;color:var(--acento);font-weight:700;">Plan elegido: ${escHtml(cuotas.plazo)} • Inicial 10%: $${cuotas.inicialUsd.toFixed(2)} USD • Saldo: $${cuotas.restanteUsd.toFixed(2)} USD</div>
         <div class="order-desc-sub" style="color:#6B4E00;font-weight:700;">Solicitud sujeta a aprobación</div>` : "";
       descBox.innerHTML = `<div class="order-desc-box"><div class="order-desc-title">Descripción del pedido</div><ul class="order-desc-list">${itemsHtml}</ul>${modalidadEntrega ? `<div class="order-desc-sub" style="margin-bottom:6px;">Entrega seleccionada: <b>${escHtml(modalidadEntrega)}</b></div>` : ""}<div class="order-desc-total">${usaPayPal ? `<div class="order-desc-sub">Subtotal: $${subtotalUsd.toFixed(2)} USD</div><div class="order-desc-sub">Comisión PayPal (${paypalPct}% + $${paypalFija.toFixed(2)}): +$${comisionPayPalUsd.toFixed(2)} USD</div>` : ""}Total ${usaPayPal ? "a enviar por PayPal" : "del carrito"}: $${totalUsd.toFixed(2)} USD${esPagoMovil ? `<div class="order-desc-bs">Son $${totalUsd.toFixed(2)} de tu carrito • Total en Bs.: Bs. ${fmtBs(totalUsd * tasa)} (Tasa BCV: Bs. ${fmtBs(tasa)})</div>` : ""}${cuotasExtraHtml}</div></div>`;
@@ -1676,11 +1607,15 @@
       if (!tel || tel.length < 8) return mostrarMsg(msg, "Ingresa un número de WhatsApp válido.", false);
 
       const metodoPago = $("cliPago").value, tasa = parseFloat(state.config.tasa_bcv) || 890;
-      const { totalUsd, comisionPayPalUsd, usaPayPal, usaCuotas, cuotas } = calcularTotalesCarrito(metodoPago);
+      const { subtotalUsd, totalUsd, comisionPayPalUsd, usaPayPal, eligioCuotas, cuotasHabilitadas, cuotas } = calcularTotalesCarrito(metodoPago);
+      if (eligioCuotas && !cuotasHabilitadas) {
+        return mostrarMsg(msg, `El financiamiento a cuotas aplica desde $${MONTO_MINIMO_CUOTAS_USD.toFixed(2)} USD en adelante (actual: $${subtotalUsd.toFixed(2)} USD).`, false);
+      }
+
       const items = state.carrito.map(it => ({ id: it.id, nombre: it.nombre, cantidad: it.cantidad, precio_usd: Number(precioUnitarioSegunPago(it, metodoPago).toFixed(2)), sin_control_cantidad: Boolean(it.qtySinControl) }));
       if (usaPayPal && comisionPayPalUsd > 0) items.push({ id: "COM-PAYPAL", nombre: `Comisión PayPal (${state.config.paypal_comision_pct || 5.4}% + $${Number(state.config.paypal_comision_fija || 0.30).toFixed(2)})`, cantidad: 1, precio_usd: Number(comisionPayPalUsd.toFixed(2)) });
 
-      const metodoFinal = (usaCuotas && cuotas)
+      const metodoFinal = (cuotasHabilitadas && cuotas)
         ? `${metodoPago} (${cuotas.plazo} • Inicial 10%: $${cuotas.inicialUsd.toFixed(2)} • Sujeto a aprobación)`
         : metodoPago;
 
@@ -1696,7 +1631,7 @@
           total_bs: Number((totalUsd * tasa).toFixed(2)),
           items
         };
-        if (usaCuotas && cuotas) {
+        if (cuotasHabilitadas && cuotas) {
           payload.plan_cuotas = cuotas.plazo;
           payload.inicial_cuotas_usd = cuotas.inicialUsd;
           payload.saldo_cuotas_usd = cuotas.restanteUsd;
@@ -1706,7 +1641,7 @@
         if (!data.ok) throw new Error(data.error || "No se pudo registrar el pedido");
         state.carrito = []; actualizarBadgeCarrito(); renderModalCarrito(); $("formPedido").reset(); $("cliCodigoPais").value = "58"; poblarSelectorLugaresEntrega();
         await cargarCatalogo();
-        mostrarMsg(msg, (usaCuotas && cuotas)
+        mostrarMsg(msg, (cuotasHabilitadas && cuotas)
           ? `¡Listo! Tu solicitud ${data.pedido_id} a cuotas (${cuotas.plazo}, inicial $${cuotas.inicialUsd.toFixed(2)}) fue registrada y está sujeta a aprobación.`
           : `¡Listo! Tu pedido ${data.pedido_id} fue reservado con éxito.`, true);
       } catch (err) { mostrarMsg(msg, err.message, false); }
@@ -1737,11 +1672,10 @@
         const res = await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(pin)}&_t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         if (!data?.ok) throw new Error(data?.error || "PIN incorrecto");
-        const remoteLug = String(data.config?.lugares_entrega || "").trim();
-        const curLug = String(state.config.lugares_entrega || "").trim();
         data.config = Object.assign({}, data.config || {}, {
-          lugares_entrega: remoteLug || curLug || LUGARES_ENTREGA_DEFAULT.join("|")
+          lugares_entrega: LUGARES_ENTREGA_FIJOS.join("|")
         });
+        delete data.config.horas_expiracion_carrito;
         data.categorias = (data.categorias || []).map(normalizarCategoriaSheet);
         data.productos = (data.productos || []).map(normalizarLibroSheet);
         data.deseos = obtenerListaDeseosCombinada(data.deseos || []);
@@ -1758,11 +1692,10 @@
         const res = await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(state.adminPin)}&_t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         if (data?.ok) {
-          const remoteLug = String(data.config?.lugares_entrega || "").trim();
-          const curLug = String(state.config.lugares_entrega || "").trim();
           data.config = Object.assign({}, data.config || {}, {
-            lugares_entrega: remoteLug || curLug || LUGARES_ENTREGA_DEFAULT.join("|")
+            lugares_entrega: LUGARES_ENTREGA_FIJOS.join("|")
           });
+          delete data.config.horas_expiracion_carrito;
           data.categorias = (data.categorias || []).map(normalizarCategoriaSheet);
           data.productos = (data.productos || []).map(normalizarLibroSheet);
           data.deseos = obtenerListaDeseosCombinada(data.deseos || []);
@@ -2096,14 +2029,13 @@
       const d = state.adminData || construirDatosAdminLocales(), cfg = d.config || {};
       $("cfgTasaBcv").value = cfg.tasa_bcv || "890";
       $("cfgUltimaAct").textContent = cfg.bcv_ultima_actualizacion ? `Última actualización: ${cfg.bcv_ultima_actualizacion}` : "Sin fecha registrada aún";
-      $("cfgHorasExp").value = cfg.horas_expiracion_carrito || "2";
       const nom = String(cfg.nombre_tienda || "").trim();
       $("cfgNombreTienda").value = (!nom || /pao'?s?\s*world/i.test(nom)) ? "Tienda del Samurai" : nom;
       $("cfgWhatsapp").value = cfg.whatsapp || "";
       $("cfgPaypalPct").value = cfg.paypal_comision_pct ?? state.config.paypal_comision_pct ?? "5.4";
       $("cfgPaypalFija").value = cfg.paypal_comision_fija ?? state.config.paypal_comision_fija ?? "0.30";
       $("cfgLogoUrl").value = cfg.logo_url || ""; $("cfgPortadaUrl").value = cfg.portada_url || "";
-      renderListaLugaresEntregaAdmin(cfg.lugares_entrega ?? state.config.lugares_entrega);
+      renderListaLugaresEntregaAdmin();
       renderListaMetodosPagoAdmin(cfg.metodos_pago || state.config.metodos_pago);
       $("btnEstadoTienda").textContent = `Estado: ${String(cfg.estado_servicio || "ACTIVO").toUpperCase()}`;
 
@@ -2121,8 +2053,9 @@
     };
 
     async function guardarConfigAdmin() {
-      const lugaresVal = guardarLugaresLocales($("cfgLugaresEntrega")?.value);
+      const lugaresVal = LUGARES_ENTREGA_FIJOS.join("|");
       const metodosVal = $("cfgMetodosPago")?.value || "Pago Móvil|Divisas|PayPal|Cuotas";
+      state.config.lugares_entrega = lugaresVal;
       state.config.metodos_pago = metodosVal;
       if (state.adminData) {
         state.adminData.config = Object.assign({}, state.adminData.config || {}, {
@@ -2137,7 +2070,7 @@
       const data = await postAdmin({
         action: "updateConfig",
         patch: {
-          tasa_bcv: $("cfgTasaBcv").value.trim(), horas_expiracion_carrito: $("cfgHorasExp").value.trim(),
+          tasa_bcv: $("cfgTasaBcv").value.trim(),
           nombre_tienda: $("cfgNombreTienda").value.trim() || "Tienda del Samurai", whatsapp: $("cfgWhatsapp").value.trim(),
           instagram: INSTAGRAM_HANDLE, paypal_comision_pct: $("cfgPaypalPct")?.value.trim() || "5.4",
           paypal_comision_fija: $("cfgPaypalFija")?.value.trim() || "0.30", logo_url: $("cfgLogoUrl").value.trim(),
@@ -2146,7 +2079,6 @@
         }
       });
       if (data.ok) {
-        guardarLugaresLocales(lugaresVal);
         poblarSelectorLugaresEntrega();
         mostrarMsg($("msgAdminCfg"), "Configuración, lugares de entrega, métodos de pago y tasa BCV guardados en la Sheet.", true);
         await refrescarAdminData();
