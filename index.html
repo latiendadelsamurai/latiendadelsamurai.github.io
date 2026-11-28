@@ -538,9 +538,9 @@
   <!-- Modal PIN -->
   <div class="modal-backdrop" id="modalPin" onclick="cerrarBackdrop(event,'modalPin')">
     <div class="modal-box" style="max-width:380px;">
-      <div class="modal-head"><h3>PIN</h3><button class="btn btn-soft" type="button" onclick="cerrarModal('modalPin')">✕</button></div>
+      <div class="modal-head"><h3>Acceso Admin</h3><button class="btn btn-soft" type="button" onclick="cerrarModal('modalPin')">✕</button></div>
       <form onsubmit="loginAdmin(event)">
-        <div class="field"><input type="password" id="adminPinInput" required placeholder="PIN" aria-label="PIN" /></div>
+        <div class="field"><input type="password" id="adminPinInput" required placeholder="Ingresa tu PIN" aria-label="PIN" autocomplete="current-password" /></div>
         <button class="btn btn-primary" style="width:100%;" type="submit" id="btnLoginPin">Entrar</button>
         <div class="status-msg" id="msgPin"></div>
       </form>
@@ -738,7 +738,6 @@
     const INSTAGRAM_URL = "https://www.instagram.com/latiendadelsamurai/";
     const INSTAGRAM_HANDLE = "@latiendadelsamurai";
     const DEV_WA_URL = "https://wa.me/584241913036?text=Hola%20Kevin%2C%20vi%20la%20p%C3%A1gina%20de%20Tienda%20del%20Samurai%20y%20me%20gustar%C3%ADa%20cotizar%20una%20web%20para%20mi%20negocio.";
-    const ADMIN_PIN_PRUEBAS = "samurai#20200";
     const WISHLIST_STORAGE_KEY = "samurai_wishlist_ids_v1";
     const WISHLIST_STATS_KEY = "samurai_wishlist_stats_v1";
     const CUOTAS_CHECK_STORAGE_KEY = "samurai_cuotas_checklist_v1";
@@ -1714,57 +1713,66 @@
     }
 
     const normalizarWhatsAppAdmin = (t) => String(t || "").replace(/\D/g, "");
-    const construirDatosAdminLocales = () => ({
-      config: Object.assign({}, state.config),
-      categorias: state.categorias.slice().map(normalizarCategoriaSheet),
-      productos: state.productos.slice().map(normalizarLibroSheet),
-      pedidos: state.adminData?.pedidos || [],
-      movimientos: state.adminData?.movimientos || [],
-      deseos: obtenerListaDeseosCombinada(state.adminData?.deseos || [])
+    const construirDatosAdminLocales = (baseData = {}) => ({
+      config: Object.assign({}, state.config, baseData.config || {}),
+      categorias: (baseData.categorias || []).map(normalizarCategoriaSheet),
+      productos: (baseData.productos || []).map(normalizarLibroSheet),
+      pedidos: baseData.pedidos || [],
+      movimientos: baseData.movimientos || [],
+      deseos: obtenerListaDeseosCombinada(baseData.deseos || [])
     });
 
-    async function abrirModalPin() {
-      $("msgPin").style.display = "none"; $("msgPin").className = "status-msg";
-      const pin = state.adminPin || ADMIN_PIN_PRUEBAS; $("adminPinInput").value = pin;
-      $("modalPin").classList.add("open"); setTimeout(() => $("adminPinInput")?.focus(), 40);
-      await autenticarAdmin(pin, true);
+    function abrirModalPin() {
+      $("msgPin").style.display = "none";
+      $("msgPin").className = "status-msg";
+      $("adminPinInput").value = "";
+      $("modalPin").classList.add("open");
+      setTimeout(() => $("adminPinInput")?.focus(), 40);
     }
-    const loginAdmin = async (ev) => { if (ev?.preventDefault) ev.preventDefault(); const p = String($("adminPinInput")?.value || "").trim(); if (!p) return mostrarMsg($("msgPin"), "Escribe tu PIN de administrador.", false); await autenticarAdmin(p, false); };
+
+    const loginAdmin = async (ev) => {
+      if (ev?.preventDefault) ev.preventDefault();
+      const p = String($("adminPinInput")?.value || "").trim();
+      if (!p) return mostrarMsg($("msgPin"), "Escribe tu PIN de administrador.", false);
+      await autenticarAdmin(p, false);
+    };
 
     async function autenticarAdmin(pin, silencioso) {
-      const btn = $("btnLoginPin"); if (btn) { btn.disabled = true; btn.textContent = "Verificando..."; }
+      const btn = $("btnLoginPin");
+      if (btn) { btn.disabled = true; btn.textContent = "Verificando..."; }
       try {
         const res = await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(pin)}&_t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         if (!data?.ok) throw new Error(data?.error || "PIN incorrecto");
-        data.config = Object.assign({}, data.config || {}, {
+        const clean = construirDatosAdminLocales(data);
+        clean.config = Object.assign({}, clean.config || {}, {
           lugares_entrega: LUGARES_ENTREGA_FIJOS.join("|")
         });
-        delete data.config.horas_expiracion_carrito;
-        data.categorias = (data.categorias || []).map(normalizarCategoriaSheet);
-        data.productos = (data.productos || []).map(normalizarLibroSheet);
-        data.deseos = obtenerListaDeseosCombinada(data.deseos || []);
-        state.adminPin = pin; state.adminData = data; cerrarModal("modalPin"); poblarPanelAdmin(); $("modalAdmin").classList.add("open");
+        delete clean.config.horas_expiracion_carrito;
+        state.adminPin = pin;
+        state.adminData = clean;
+        cerrarModal("modalPin");
+        poblarPanelAdmin();
+        $("modalAdmin").classList.add("open");
       } catch (err) {
-        if (pin === ADMIN_PIN_PRUEBAS && (silencioso || !state.adminData)) {
-          state.adminPin = pin; state.adminData = construirDatosAdminLocales(); cerrarModal("modalPin"); poblarPanelAdmin(); $("modalAdmin").classList.add("open");
-        } else if (!silencioso) mostrarMsg($("msgPin"), err.message || "PIN incorrecto", false);
-      } finally { if (btn) { btn.disabled = false; btn.textContent = "Entrar"; } }
+        if (!silencioso) mostrarMsg($("msgPin"), err.message || "PIN incorrecto", false);
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = "Entrar"; }
+      }
     }
 
     async function refrescarAdminData() {
+      if (!state.adminPin) return;
       try {
         const res = await fetch(`${API_URL}?action=adminData&pin=${encodeURIComponent(state.adminPin)}&_t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         if (data?.ok) {
-          data.config = Object.assign({}, data.config || {}, {
+          const clean = construirDatosAdminLocales(data);
+          clean.config = Object.assign({}, clean.config || {}, {
             lugares_entrega: LUGARES_ENTREGA_FIJOS.join("|")
           });
-          delete data.config.horas_expiracion_carrito;
-          data.categorias = (data.categorias || []).map(normalizarCategoriaSheet);
-          data.productos = (data.productos || []).map(normalizarLibroSheet);
-          data.deseos = obtenerListaDeseosCombinada(data.deseos || []);
-          state.adminData = data;
+          delete clean.config.horas_expiracion_carrito;
+          state.adminData = clean;
           poblarPanelAdmin();
         }
       } catch (_) {}
