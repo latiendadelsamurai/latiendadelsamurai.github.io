@@ -704,7 +704,7 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzEe56uybEKr0osUWhlQ44SSK248UyURrDwDMBEp13ZF35OrykzBw0HIv9I4Ef-rAlBSQ/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbwo56czW1_h5JD8jJVzrMIk4zzEBC_aW7q1WQd-6ODdIFQni4R2vEGkA5i3p8gHYnQytA/exec";
     const INSTAGRAM_URL = "https://www.instagram.com/latiendadelsamurai/";
     const INSTAGRAM_HANDLE = "@latiendadelsamurai";
     const DEV_WA_URL = "https://wa.me/584241913036?text=Hola%20Kevin%2C%20vi%20la%20p%C3%A1gina%20de%20Tienda%20del%20Samurai%20y%20me%20gustar%C3%ADa%20cotizar%20una%20web%20para%20mi%20negocio.";
@@ -1837,7 +1837,7 @@
       const idStr = String(pedidoId || "").trim();
       const msg = $("msgAdminPedidos");
       if (!idStr) return;
-      if (!confirm(`¿Eliminar el pedido "${idStr}" de la lista?`)) return;
+      if (!confirm(`¿Eliminar el pedido "${idStr}" de la lista y de la Sheet?`)) return;
 
       if (state.adminData?.pedidos) {
         state.adminData.pedidos = state.adminData.pedidos.filter(p => String(p.pedido_id) !== idStr);
@@ -1850,14 +1850,14 @@
 
       try {
         const data = await postAdmin({ action: "deleteOrder", pedido_id: idStr });
-        if (data && data.ok === false) {
-          mostrarMsg(msg, data.error || `Pedido "${idStr}" eliminado de la vista local.`, false);
+        if (!data || data.ok === false) {
+          mostrarMsg(msg, data?.error || `Pedido "${idStr}" quitado de la vista, pero no se pudo borrar en la Sheet.`, false);
           return;
         }
-        mostrarMsg(msg, `Pedido "${idStr}" eliminado.`, true);
+        mostrarMsg(msg, `Pedido "${idStr}" eliminado de la lista y de la Sheet.`, true);
         await refrescarAdminData();
       } catch (err) {
-        mostrarMsg(msg, `Pedido "${idStr}" eliminado de la vista (${err.message}).`, true);
+        mostrarMsg(msg, `Error al eliminar "${idStr}" en la Sheet: ${err.message}`, false);
       }
     }
 
@@ -1865,7 +1865,7 @@
       const pedidos = state.adminData?.pedidos || [];
       const msg = $("msgAdminPedidos");
       if (!pedidos.length) return mostrarMsg(msg, "La lista de pedidos ya está vacía.", false);
-      if (!confirm(`¿Eliminar toda la lista de pedidos (${pedidos.length} pedido(s))? Esta acción no se puede deshacer.`)) return;
+      if (!confirm(`¿Eliminar toda la lista de pedidos (${pedidos.length} pedido(s)) de la web y de la Sheet? Esta acción no se puede deshacer.`)) return;
 
       const ids = pedidos.map(p => String(p.pedido_id || "")).filter(Boolean);
       state.adminData.pedidos = [];
@@ -1877,15 +1877,14 @@
 
       try {
         const data = await postAdmin({ action: "clearOrders", pedido_ids: ids });
-        if (data && data.ok === false) {
-          for (const id of ids) {
-            try { await postAdmin({ action: "deleteOrder", pedido_id: id }); } catch (_) {}
-          }
+        if (!data || data.ok === false) {
+          mostrarMsg(msg, data?.error || "No se pudo vaciar la hoja Pedidos en la Sheet.", false);
+          return;
         }
-        mostrarMsg(msg, "La lista de pedidos ha sido eliminada por completo.", true);
+        mostrarMsg(msg, `Lista de pedidos eliminada por completo (${data.deleted_count ?? ids.length} pedido(s) borrados de la Sheet).`, true);
         await refrescarAdminData();
       } catch (err) {
-        mostrarMsg(msg, `Lista de pedidos vaciada en pantalla (${err.message}).`, true);
+        mostrarMsg(msg, `Error al vaciar pedidos en la Sheet: ${err.message}`, false);
       }
     }
 
